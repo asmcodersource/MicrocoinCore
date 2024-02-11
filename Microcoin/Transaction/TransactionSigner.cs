@@ -1,16 +1,16 @@
-﻿using NodeNet.Message;
-using NodeNet.SignOptions;
+﻿using Microcoin.RSAEncryptions;
+using NodeNet.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 
-namespace NodeNet.RSASigner
+namespace Microcoin.Transaction
 {
-    internal class MessageSigner : IMessageSigner
+    internal class TransactionSigner : ITransactionSigner
     {
         public SenderSignOptions SignOptions { get; protected set; }
 
@@ -18,22 +18,22 @@ namespace NodeNet.RSASigner
         public void SetSignOptions(ISenderSignOptions options)
         {
             SignOptions = options as SenderSignOptions;
-            if( SignOptions == null)
+            if (SignOptions == null)
                 throw new ArgumentException(nameof(options));
         }
 
-        public void Sign(Message.Message message)
+        public void Sign(ITransaction transaction)
         {
-            if( SignOptions == null) 
+            if (SignOptions == null)
                 throw new NullReferenceException(nameof(SignOptions));
             using (MemoryStream memoryStream = new MemoryStream())
             {
+                // TODO: Think about sign field impact on transaction sign
                 IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(memoryStream, message.Info);
-                formatter.Serialize(memoryStream, message.Data);
+                formatter.Serialize(memoryStream, transaction);
 
                 string sign = RSAEncryption.Sign(memoryStream.ToArray(), SignOptions);
-                message.SetMessageSign(sign);
+                transaction.Sign = sign;
             }
         }
     }

@@ -1,10 +1,5 @@
 ﻿using NodeNet.Message;
-using NodeNet.RSASigner;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace NodeNet.ReceiveMiddleware
 {
@@ -22,7 +17,8 @@ namespace NodeNet.ReceiveMiddleware
 
         public bool Invoke(MessageContext messageContext)
         {
-            MessageValidator.SetValidateOptions(new ReceiverSignOptions(messageContext.Message));
+            var validateOptions = NodeNet.Message.MessageValidator.GetReceiverValidateOptions(messageContext.Message);
+            MessageValidator.SetValidateOptions(validateOptions);
             var signCorrect = MessageValidator.Validate(messageContext.Message);
             if (signCorrect)
                 return Next != null ? Next.Invoke(messageContext) : true;

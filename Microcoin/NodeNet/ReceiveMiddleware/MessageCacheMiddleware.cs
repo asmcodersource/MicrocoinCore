@@ -1,13 +1,7 @@
 ﻿using NodeNet.Message;
-using NodeNet.RSASigner;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NodeNet.ReceiveMiddleware
 {

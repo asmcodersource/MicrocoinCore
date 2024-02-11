@@ -1,5 +1,5 @@
-﻿using NodeNet.Message;
-using NodeNet.SignOptions;
+﻿using Microcoin.RSAEncryptions;
+using NodeNet.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +8,9 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NodeNet.RSASigner
+namespace Microcoin.Transaction
 {
-    internal class MessageValidator : IMessageValidator
+    internal class MessageValidator : ITransactionValidator
     {
         public ReceiverSignOptions ValidateOptions { get; protected set; }
 
@@ -22,17 +22,22 @@ namespace NodeNet.RSASigner
                 throw new ArgumentException(nameof(options));
         }
 
-        public bool Validate(Message.Message message)
+        public bool Validate(ITransaction transaction)
         {
             if (ValidateOptions == null)
                 throw new NullReferenceException(nameof(ValidateOptions));
             using (MemoryStream memoryStream = new MemoryStream())
             {
+                // TODO: Think about sign field impact on transaction sign
                 IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(memoryStream, message.Info);
-                formatter.Serialize(memoryStream, message.Data);
-                return RSAEncryption.VerifySign(memoryStream.ToArray(), message.MessageSign, ValidateOptions);
+                formatter.Serialize(memoryStream, transaction);
+                return RSAEncryption.VerifySign(memoryStream.ToArray(), transaction.Sign, ValidateOptions);
             }
+        }
+
+        public static IReceiverSignOptions GetReceiverValidateOptions(Transaction transaction)
+        {
+            return new ReceiverSignOptions(transaction.SenderPublicKey);
         }
     }
 }

@@ -2,7 +2,6 @@
 using NodeNet.Communication;
 using NodeNet.Message;
 using NodeNet.NetworkExplorer.Requests;
-using NodeNet.RSASigner;
 using System;
 using System.Collections.Generic;
 using System.Linq;

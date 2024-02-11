@@ -1,16 +1,9 @@
-﻿
-using NodeNet.Communication;
+﻿using NodeNet.Communication;
 using NodeNet.TcpCommunication;
 using NodeNet.Message;
 using NodeNet.NodeActions;
 using NodeNet.ReceiveMiddleware;
-using NodeNet.RSASigner;
-using NodeNet.SignOptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microcoin.RSAEncryptions;
 
 namespace NodeNet
 {
@@ -29,8 +22,8 @@ namespace NodeNet
         public static Node CreateRSAHttpNode( SenderSignOptions options, TcpListenerOptions listenerOptions )
         {
 
-            IMessageSigner messageSigner = new RSASigner.MessageSigner();
-            IMessageValidator messageValidator = new RSASigner.MessageValidator();
+            IMessageSigner messageSigner = new MessageSigner();
+            IMessageValidator messageValidator = new MessageValidator();
             messageSigner.SetSignOptions(options);
 
             Node node = new Node();

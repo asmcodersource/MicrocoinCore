@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NodeNet.SignOptions;
+﻿using Microcoin.RSAEncryptions;
 
-namespace NodeNet.RSASigner
+namespace Microcoin.RSAEncryptions
 {
     internal class SenderSignOptions : ISenderSignOptions
     {

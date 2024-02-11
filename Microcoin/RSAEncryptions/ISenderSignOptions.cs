@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NodeNet.SignOptions
+namespace Microcoin.RSAEncryptions
 {
-    internal interface IReceiverSignOptions
+    internal interface ISenderSignOptions
     {
         public string PublicKey { get; protected set; }
+        public string PrivateKey { get; protected set; }
     }
 }
