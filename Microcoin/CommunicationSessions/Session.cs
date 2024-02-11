@@ -4,21 +4,18 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using NodeNet.Message;
 
 namespace Microcoin.CommunicationSessions
 {
-    // TODO: change to NodeNet messages
-    interface Message { }
-    interface Node { }
-
     /// <summary>
     /// Implements communication across different sessions on top of one communication stream. 
     /// Allows you to conduct multiple threads of communication simultaneously.
     /// </summary>
     internal class Session
     {
-        protected Queue<Message> messages = new Queue<Message>();
-        protected event Action<Message> onMessageReceive = null;
+        protected Queue<MessageContext> MessageContexts = new Queue<MessageContext>();
+        protected event Action<MessageContext> onMessageContextReceive = null;
 
         public short LocalSideId { get; protected set; }
         public short RemoteSideId { get; protected set; }
@@ -26,37 +23,39 @@ namespace Microcoin.CommunicationSessions
 
         public Session(short localSideId, short remoteSideId)
         {
-            this.LocalSideId = localSideId;
-            this.RemoteSideId = remoteSideId;
+            LocalSideId = localSideId;
+            RemoteSideId = remoteSideId;
         }
 
-        public void AddMessageToQueue(Message message)
+        public void AddMessageContextToQueue(MessageContext MessageContext)
         {
-            lock (messages)
+            lock (MessageContexts)
             {
-                messages.Enqueue(message);
-                onMessageReceive?.Invoke(message);
+                MessageContexts.Enqueue(MessageContext);
+                onMessageContextReceive?.Invoke(MessageContext);
             }
         }
 
-        public async Task<Message> GetMessage(CancellationToken token)
+        public async Task<MessageContext> GetMessageContext(CancellationToken token)
         {
-            var taskCompletionSource = new TaskCompletionSource<Message>();
+            var taskCompletionSource = new TaskCompletionSource<MessageContext>();
             try
             {
-                lock (messages)
+                lock (MessageContexts)
                 {
-                    if (messages.Count != 0)
-                        return messages.Dequeue();
-                    onMessageReceive += (message) =>
+                    if (MessageContexts.Count != 0)
+                        return MessageContexts.Dequeue();
+                    onMessageContextReceive += (MessageContext) =>
                     {
-                        onMessageReceive = null;
-                        taskCompletionSource.SetResult(messages.Dequeue());
+                        onMessageContextReceive = null;
+                        taskCompletionSource.SetResult(MessageContexts.Dequeue());
                     };
                 }
                 return await taskCompletionSource.Task;
-            } finally { 
-                onMessageReceive = null;
+            }
+            finally
+            {
+                onMessageContextReceive = null;
             }
         }
     }

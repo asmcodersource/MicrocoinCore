@@ -1,10 +1,14 @@
-﻿using Microcoin.CommunicationSessions;
-using Microcoin.PipelineHandling;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microcoin.PipelineHandling;
+using Microcoin.Transaction;
+using Microcoin.TransactionPool;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Microcoin.TransactionPool
 {
@@ -12,6 +16,7 @@ namespace Microcoin.TransactionPool
     {
         public event Action<TransactionsPool> OnTransactionReceived;
         public List<ITransaction> Pool { get; protected set; } = new List<ITransaction>();
+        public HashSet<ITransaction> PresentedTransactions { get; protected set; } = new HashSet<ITransaction>();
         public IHandlePipeline<ITransaction> HandlePipeline { get; set; } = new EmptyPipeline<ITransaction>();
 
         public List<ITransaction> TakeTransactions()
@@ -29,14 +34,22 @@ namespace Microcoin.TransactionPool
                 RemoveTransaction(transaction);
         }
 
-        public async Task HandleTransactionMessage(IMessage message)
+        public async Task HandleTransactionMessage(NodeNet.Message.MessageContext messageContext)
         {
-            // TODO:
-            // parse message to ITransaction object
-            ITransaction transaction = null;
+            // Parsing transaction json to transaction object
+            JObject jsonRequestObject = JObject.Parse(messageContext.Message.Data);
+            JToken? jsonTransactionToken = jsonRequestObject["transaction"];
+            if (jsonTransactionToken is null)
+                return;
+            string transactionJsonString = jsonTransactionToken.ToString();
+            ITransaction? transaction = Transaction.Transaction.ParseTransactionFromJson(transactionJsonString);
+            if (transaction == null)
+                return;            
+            // Handle transaction on verifing pipeline
             var handleResult = await Task.Run(() => HandlePipeline.Handle(transaction));
             if (handleResult.IsHandleSuccesful is not true)
                 return;
+            // If transaction succesfully pass pipeline, add it to pool
             AddTransaction(transaction);
         }
 
@@ -50,13 +63,23 @@ namespace Microcoin.TransactionPool
 
         protected void AddTransaction(ITransaction transaction)
         {
-            Pool.Add(transaction);
-            OnTransactionReceived?.Invoke(this);
+            lock (this)
+            {
+                if (PresentedTransactions.Contains(transaction))
+                    return;
+                Pool.Add(transaction);
+                PresentedTransactions.Add(transaction);
+                OnTransactionReceived?.Invoke(this);
+            }
         }
 
         protected void RemoveTransaction(ITransaction transaction)
         {
-            Pool.Remove(transaction);
+            lock (this)
+            {
+                PresentedTransactions.Remove(transaction);
+                Pool.Remove(transaction);
+            }
         }
     }
 }
