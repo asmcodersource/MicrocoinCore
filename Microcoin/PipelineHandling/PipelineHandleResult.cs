@@ -9,6 +9,6 @@ namespace Microcoin.PipelineHandling
     internal record PipelineHandleResult<HandleType>
     {
         public IPipelineHandler<HandleType> LastExecutedHandle { get; set; } = null;
-        public bool HandleSuccesful { get; set; } = false;
+        public bool IsHandleSuccesful { get; set; } = false;
     }
 }

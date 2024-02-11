@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Microcoin.PipelineHandling
 {
-    internal class HandlePipeline<HandleType>
+    internal class HandlePipeline<HandleType> : IHandlePipeline<HandleType>
     {
         protected List<IPipelineHandler<HandleType>> handlers = new List<IPipelineHandler<HandleType>>();
 
         public async Task<PipelineHandleResult<HandleType>> Handle(HandleType handleObject)
         {
             var handleResult = new PipelineHandleResult<HandleType>();
-            handleResult.HandleSuccesful = false;
+            handleResult.IsHandleSuccesful = false;
             foreach(var handler in handlers)
             {
                 handleResult.LastExecutedHandle = handler;
@@ -21,7 +21,7 @@ namespace Microcoin.PipelineHandling
                 if( handleSuccess is not true )
                     return handleResult;
             }
-            handleResult.HandleSuccesful = true;
+            handleResult.IsHandleSuccesful = true;
             return handleResult;
         }
 
