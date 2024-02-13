@@ -28,10 +28,9 @@ namespace Microcoin.Transaction
                 throw new NullReferenceException(nameof(SignOptions));
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                // TODO: Think about sign field impact on transaction sign
+                transaction.Sign = "";
                 IFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(memoryStream, transaction);
-
                 string sign = RSAEncryption.Sign(memoryStream.ToArray(), SignOptions);
                 transaction.Sign = sign;
             }

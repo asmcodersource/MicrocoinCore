@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Transaction
 {
-    internal class MessageValidator : ITransactionValidator
+    internal class TransactionValidator : ITransactionValidator
     {
         public ReceiverSignOptions ValidateOptions { get; protected set; }
 
@@ -28,14 +28,16 @@ namespace Microcoin.Transaction
                 throw new NullReferenceException(nameof(ValidateOptions));
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                // TODO: Think about sign field impact on transaction sign
+                var tempSign = transaction.Sign;
+                transaction.Sign = "";
                 IFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(memoryStream, transaction);
+                transaction.Sign = tempSign;
                 return RSAEncryption.VerifySign(memoryStream.ToArray(), transaction.Sign, ValidateOptions);
             }
         }
 
-        public static IReceiverSignOptions GetReceiverValidateOptions(Transaction transaction)
+        public static IReceiverSignOptions GetReceiverValidateOptions(ITransaction transaction)
         {
             return new ReceiverSignOptions(transaction.SenderPublicKey);
         }

@@ -10,9 +10,13 @@ namespace Microcoin.TransactionPool
 {
     internal class VerifyTransactionFields : IPipelineHandler<ITransaction>
     {
-        public Task<bool> Handle(ITransaction handleObject)
+        public async Task<bool> Handle(ITransaction transaction)
         {
-            throw new NotImplementedException();
+            if (transaction.TransferAmount <= 0) // Someone may try to transfer negative or zero count of coins ;) 
+                return false;
+            if( transaction.SenderPublicKey == transaction.ReceiverPublicKey)  // Transactions between same wallet is invalid
+                return false;
+            return true;
         }
     }
 }

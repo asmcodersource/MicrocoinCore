@@ -30,7 +30,8 @@ namespace NodeNet.NetworkExplorer
             LoadRecentConnectionsFromFile(filePath);
         }
 
-        // TODO: change this to something legal
+        //
+        // : change this to something legal
         ~NetworkExplorer()
         {
             SaveRecentConnectionsToFile(filePath);
