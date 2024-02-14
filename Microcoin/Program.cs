@@ -1,2 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using Microcoin.TransactionPool;
+using Microcoin.RSAEncryptions;
+using NodeNet.TcpCommunication;
+using NodeNet;
+
+while (true) ;

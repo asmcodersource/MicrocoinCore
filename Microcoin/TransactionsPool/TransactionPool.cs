@@ -15,17 +15,17 @@ namespace Microcoin.TransactionPool
     internal class TransactionsPool
     {
         public event Action<TransactionsPool> OnTransactionReceived;
-        public List<ITransaction> Pool { get; protected set; } = new List<ITransaction>();
-        public HashSet<ITransaction> PresentedTransactions { get; protected set; } = new HashSet<ITransaction>();
-        public IHandlePipeline<ITransaction> HandlePipeline { get; set; } = new EmptyPipeline<ITransaction>();
+        public List<Transaction.Transaction> Pool { get; protected set; } = new List<Transaction.Transaction>();
+        public HashSet<Transaction.Transaction> PresentedTransactions { get; protected set; } = new HashSet<Transaction.Transaction>();
+        public IHandlePipeline<Transaction.Transaction> HandlePipeline { get; set; } = new EmptyPipeline<Transaction.Transaction>();
 
-        public List<ITransaction> TakeTransactions()
+        public List<Transaction.Transaction> TakeTransactions()
         {
             var transactions = Pool.ToList();
             return transactions;
         }
 
-        public void RemoveTransactions(List<ITransaction> removeTransactions)
+        public void RemoveTransactions(List<Transaction.Transaction> removeTransactions)
         {
             // Some transaction can be expired after some events
             // ( for example being include in some block already )
@@ -34,17 +34,8 @@ namespace Microcoin.TransactionPool
                 RemoveTransaction(transaction);
         }
 
-        public async Task HandleTransactionMessage(NodeNet.Message.MessageContext messageContext)
-        {
-            // Parsing transaction json to transaction object
-            JObject jsonRequestObject = JObject.Parse(messageContext.Message.Data);
-            JToken? jsonTransactionToken = jsonRequestObject["transaction"];
-            if (jsonTransactionToken is null)
-                return;
-            string transactionJsonString = jsonTransactionToken.ToString();
-            ITransaction? transaction = Transaction.Transaction.ParseTransactionFromJson(transactionJsonString);
-            if (transaction == null)
-                return;            
+        public async Task HandleTransactionMessage(Transaction.Transaction transaction)
+        {      
             // Handle transaction on verifing pipeline
             var handleResult = await Task.Run(() => HandlePipeline.Handle(transaction));
             if (handleResult.IsHandleSuccesful is not true)
@@ -53,15 +44,15 @@ namespace Microcoin.TransactionPool
             AddTransaction(transaction);
         }
 
-        protected void InitializeHandlerPipeline()
+        public void InitializeHandlerPipeline()
         {
-            HandlePipeline = new HandlePipeline<ITransaction>();
+            HandlePipeline = new HandlePipeline<Transaction.Transaction>();
             HandlePipeline.AddHandlerToPipeline(new VerifyTransactionSign());
             HandlePipeline.AddHandlerToPipeline(new VerifyTransactionFields());
             HandlePipeline.AddHandlerToPipeline(new VerifyTransactionDuplication());
         }
 
-        protected void AddTransaction(ITransaction transaction)
+        protected void AddTransaction(Transaction.Transaction transaction)
         {
             lock (this)
             {
@@ -73,7 +64,7 @@ namespace Microcoin.TransactionPool
             }
         }
 
-        protected void RemoveTransaction(ITransaction transaction)
+        protected void RemoveTransaction(Transaction.Transaction transaction)
         {
             lock (this)
             {

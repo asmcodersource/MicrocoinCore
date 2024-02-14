@@ -5,6 +5,6 @@ namespace Microcoin.Transaction
     internal interface ITransactionValidator
     {
         void SetValidateOptions(IReceiverSignOptions options);
-        bool Validate(ITransaction message);
+        bool Validate(Transaction message);
     }
 }

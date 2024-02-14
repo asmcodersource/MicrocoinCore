@@ -22,7 +22,7 @@ namespace Microcoin.Transaction
                 throw new ArgumentException(nameof(options));
         }
 
-        public void Sign(ITransaction transaction)
+        public void Sign(Transaction transaction)
         {
             if (SignOptions == null)
                 throw new NullReferenceException(nameof(SignOptions));

@@ -11,11 +11,11 @@ namespace Microcoin.TransactionPool
     // Remember: I don't need this verify when receiving trasaction from network
     // because I have condition check before adding new value to list
     // but I need this because something can change from receiving one or multiple block from network
-    internal class VerifyTransactionDuplication : IPipelineHandler<ITransaction>
+    internal class VerifyTransactionDuplication : IPipelineHandler<Transaction.Transaction>
     {
-        public Task<bool> Handle(ITransaction transaction)
+        public async Task<bool> Handle(Transaction.Transaction transaction)
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }

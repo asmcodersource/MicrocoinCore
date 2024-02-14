@@ -22,7 +22,7 @@ namespace Microcoin.Transaction
                 throw new ArgumentException(nameof(options));
         }
 
-        public bool Validate(ITransaction transaction)
+        public bool Validate(Transaction transaction)
         {
             if (ValidateOptions == null)
                 throw new NullReferenceException(nameof(ValidateOptions));
@@ -37,7 +37,7 @@ namespace Microcoin.Transaction
             }
         }
 
-        public static IReceiverSignOptions GetReceiverValidateOptions(ITransaction transaction)
+        public static IReceiverSignOptions GetReceiverValidateOptions(Transaction transaction)
         {
             return new ReceiverSignOptions(transaction.SenderPublicKey);
         }
