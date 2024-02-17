@@ -1,6 +1,5 @@
-﻿using Microcoin.TransactionPool;
-using Microcoin.RSAEncryptions;
-using NodeNet.TcpCommunication;
-using NodeNet;
+﻿using Microcoin;
 
-while (true) ;
+Peer peer = new Peer();
+peer.LoadOrCreateWalletKeys("wallet.keys");
+peer.InitializeNetworking();

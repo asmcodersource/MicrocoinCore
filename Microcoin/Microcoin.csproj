@@ -12,8 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Blockchain\" />
-    <Folder Include="NodeNet\SignOptions\" />
+    <Folder Include="Network\NodeNet\SignOptions\" />
   </ItemGroup>
 
 </Project>
