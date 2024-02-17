@@ -1,10 +1,6 @@
 ﻿using Microcoin.Blockchain.TransactionsPool;
-using Microcoin.Network.NodeNet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microcoin.Blockchain.Transaction;
+using Newtonsoft.Json;
 
 namespace Microcoin
 {
@@ -13,6 +9,22 @@ namespace Microcoin
         public TransactionsPool TransactionsPool { get; protected set; } = new TransactionsPool();
         public PeerNetworking PeerNetworking { get; protected set; } 
         public PeerWalletKeys PeerWalletKeys { get; protected set; }
+
+
+        public void SendCoins(String receiverPublicKey, decimal coinsCount )
+        {
+            if (PeerNetworking == null || PeerWalletKeys == null)
+                throw new NullReferenceException("Peer is not initialized");
+
+            Transaction transaction = new Transaction();
+            transaction.ReceiverPublicKey = receiverPublicKey;
+            transaction.TransferAmount = coinsCount;
+            transaction.DateTime = DateTime.UtcNow;
+            PeerWalletKeys.SignTransaction( transaction );
+
+            var transactionBroadcast = JsonConvert.SerializeObject( transaction );
+            PeerNetworking.NetworkNode.SendMessage(transactionBroadcast);
+        }
 
         public void InitializeNetworking()
         {

@@ -17,10 +17,18 @@ namespace Microcoin
 
         public void SaveKeys(string filePath)
         {
-            using (FileStream fs = new FileStream(filePath, FileMode.Create))
+            try
             {
-                XmlSerializer xSer = new XmlSerializer(typeof(TransactionSigner));
-                xSer.Serialize(fs, transactionSigner);
+                using (FileStream fs = new FileStream(filePath, FileMode.Create))
+                {
+                    XmlSerializer xSer = new XmlSerializer(typeof(TransactionSigner));
+                    xSer.Serialize(fs, transactionSigner);
+                }
+            } catch (Exception ex)
+            {
+                // well, at least, I should remove broken file
+                File.Delete(filePath);
+                throw ex;
             }
         }
 

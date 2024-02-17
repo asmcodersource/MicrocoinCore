@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Transaction
 {
-    internal class TransactionSigner : ITransactionSigner
+    public class TransactionSigner : ITransactionSigner
     {
         SenderSignOptions SignOptions { get; set; }
 

@@ -2,9 +2,9 @@
 
 namespace Microcoin.Blockchain.Transaction
 {
-    internal interface ITransactionSigner
+    public interface ITransactionSigner
     {
-        void SetSignOptions(ISenderSignOptions options);
-        void Sign(Transaction message);
+        public void SetSignOptions(ISenderSignOptions options);
+        public void Sign(Transaction message);
     }
 }
