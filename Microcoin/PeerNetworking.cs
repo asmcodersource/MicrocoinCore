@@ -30,6 +30,15 @@ namespace Microcoin
             var senderEncryptionOptions = RSAEncryption.CreateSignOptions();
             var senderTcpOptions = new TcpListenerOptions(1300);
             NetworkNode = Node.CreateRSAHttpNode(senderEncryptionOptions, senderTcpOptions);
+            NetworkNode.NetworkExplorer.LoadRecentConnectionsFromFile("knownPeers.json");
         }
+
+        public void PostInitialize()
+        {
+            NetworkNode.NetworkExplorer.SendExploreEcho();
+            // Wait until node speaks with network for first time
+            Thread.Sleep(5000);
+            NetworkNode.NetworkExplorer.SaveRecentConnectionsToFile("knownPeers.json");
+        } 
     }
 }

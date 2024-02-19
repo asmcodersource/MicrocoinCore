@@ -28,7 +28,6 @@ namespace Microcoin.Network.NodeNet.NetworkExplorer
             Middleware = new NetworkExplorerMiddleware(node, this);
             this.filePath = filePath;
             Node = node;
-            LoadRecentConnectionsFromFile(filePath);
         }
 
         //
@@ -95,6 +94,7 @@ namespace Microcoin.Network.NodeNet.NetworkExplorer
                 var stream = File.OpenRead(path);
                 var file = new StreamReader(stream);
                 var savedNodeConnections = JsonConvert.DeserializeObject<List<RecentNodeConnection>>(file.ReadToEnd());
+                file.Close();
                 recentNodeConnections.AddRange(savedNodeConnections);
             }
             catch (Exception ex)
@@ -107,10 +107,11 @@ namespace Microcoin.Network.NodeNet.NetworkExplorer
         {
             try
             {
+                var serrializedList = JsonConvert.SerializeObject(recentNodeConnections, Formatting.Indented);
                 var stream = File.OpenWrite(path);
                 var file = new StreamWriter(stream);
-                var serrializedList = JsonConvert.SerializeObject(recentNodeConnections, Formatting.Indented);
                 file.Write(serrializedList);
+                file.Close();
             }
             catch (Exception ex)
             {

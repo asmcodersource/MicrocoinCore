@@ -1,15 +1,17 @@
 ﻿using Microcoin.Blockchain.TransactionsPool;
 using Microcoin.Blockchain.Transaction;
 using Newtonsoft.Json;
+using Microcoin.Blockchain.BlocksPool;
+using Microcoin.PipelineHandling;
 
 namespace Microcoin
 {
     internal class Peer
     {
+        public BlocksPool BlocksPool { get; protected set; } = new BlocksPool();
         public TransactionsPool TransactionsPool { get; protected set; } = new TransactionsPool();
         public PeerNetworking PeerNetworking { get; protected set; } 
         public PeerWalletKeys PeerWalletKeys { get; protected set; }
-
 
         public void SendCoins(String receiverPublicKey, decimal coinsCount )
         {
@@ -19,11 +21,16 @@ namespace Microcoin
             Transaction transaction = new Transaction();
             transaction.ReceiverPublicKey = receiverPublicKey;
             transaction.TransferAmount = coinsCount;
-            transaction.DateTime = DateTime.UtcNow;
             PeerWalletKeys.SignTransaction( transaction );
 
             var transactionBroadcast = JsonConvert.SerializeObject( transaction );
             PeerNetworking.NetworkNode.SendMessage(transactionBroadcast);
+        }
+
+        public void InitializeAcceptancePools()
+        {
+            TransactionsPool.InitializeHandlerPipeline();
+            BlocksPool.InitializeHandlerPipeline(TransactionsPool.HandlePipeline);
         }
 
         public void InitializeNetworking()
@@ -31,8 +38,9 @@ namespace Microcoin
             PeerNetworking = new PeerNetworking();
             PeerNetworking.CreateDefaultNode();
             PeerNetworking.CreateDefaultRouting();
+            PeerNetworking.PostInitialize();
             PeerNetworking.TransactionReceived += (transaction) => TransactionsPool.HandleTransaction(transaction);
-            // PeerNetworking.BlockReceived += 
+            PeerNetworking.BlockReceived += (block) => BlocksPool.HandleBlock(block); 
         }
 
         public void LoadOrCreateWalletKeys(string filePath = "wallet.keys")

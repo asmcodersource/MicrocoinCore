@@ -12,7 +12,7 @@ namespace Microcoin.Blockchain.Transaction
 {
     public class TransactionSigner : ITransactionSigner
     {
-        SenderSignOptions SignOptions { get; set; }
+        public SenderSignOptions SignOptions { get; set; }
 
 
         public void SetSignOptions(ISenderSignOptions options)
@@ -29,6 +29,8 @@ namespace Microcoin.Blockchain.Transaction
             using (MemoryStream memoryStream = new MemoryStream())
             {
                 transaction.Sign = "";
+                transaction.DateTime = DateTime.UtcNow;
+                transaction.SenderPublicKey = SignOptions.PublicKey;
                 IFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(memoryStream, transaction);
                 string sign = RSAEncryption.Sign(memoryStream.ToArray(), SignOptions);
