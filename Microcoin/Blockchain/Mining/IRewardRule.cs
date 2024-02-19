@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microcoin.Blockchain.Chain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace Microcoin.Blockchain.Mining
 {
     internal interface IRewardRule
     {
-        public decimal CalculateReward(List<Blockchain.Block.Block> blocks, int blockId);
+        public decimal CalculateReward(IChain contextChain, Block.Block block);
     }
 }

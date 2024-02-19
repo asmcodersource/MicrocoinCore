@@ -3,10 +3,10 @@
 namespace Microcoin.Blockchain.Chain
 {
     internal class Chain : IChain
-    { 
-        public Chain PreviousChain { get; protected set; }
-        public List<Block.Block> ChainList { get; protected set; } = new List<Block.Block>();
-        public Dictionary<string, Block.Block> ChainDictionary { get; protected set; } = new Dictionary<string, Block.Block>();
+    {
+        public Chain? PreviousChain { get; protected set; } = null;
+        public List<Block.Block> BlocksList { get; protected set; } = new List<Block.Block>();
+        public Dictionary<string, Block.Block> BlocksDictionary { get; protected set; } = new Dictionary<string, Block.Block>();
 
 
     }
