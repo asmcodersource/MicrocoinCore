@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microcoin.Blockchain.Chain
+namespace Microcoin.Blockchain
 {
     /// <summary>
     /// Part of blockchain realizations, responsible to loading long chains of blocks
@@ -13,6 +13,8 @@ namespace Microcoin.Blockchain.Chain
     /// </summary>
     internal class ChainLoader
     {
-
+        ChainLoader() 
+        {
+        }
     }
 }
