@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microcoin.Blockchain.Block;
+using Microcoin.Blockchain.Chain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,8 +15,11 @@ namespace Microcoin.Blockchain
     /// </summary>
     internal class ChainLoader
     {
-        ChainLoader() 
+        public event Action<IChain> ChainFetched;
+
+        public void RequestChainFetch(Block.Block block)
         {
+
         }
     }
 }
