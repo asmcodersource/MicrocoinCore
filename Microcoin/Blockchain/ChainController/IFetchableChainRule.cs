@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microcoin.Blockchain.Chain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,6 @@ namespace Microcoin.Blockchain.ChainController
     /// </summary>
     internal interface IFetchableChainRule
     {
-        public bool IsPossibleChainUpgrade(Block.Block block);
+        public bool IsPossibleChainUpgrade(IChain chain, Block.Block block);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microcoin.Blockchain.Chain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,9 +9,14 @@ namespace Microcoin.Blockchain.ChainController
 {
     internal class BasicFetchableChainRule : IFetchableChainRule
     {
-        bool IFetchableChainRule.IsPossibleChainUpgrade(Block.Block block)
+        public bool IsPossibleChainUpgrade(IChain chain, Block.Block block)
         {
-            throw new NotImplementedException();
+            // The simplest implementation without additional checks.
+            // If a chain from the network is N blocks longer than the local one, then it is a candidate for replacing the current chain.
+            const int N = 10;
+            if( (chain.GetLastBlock().MiningBlockInfo.BlockId + N) >= block.MiningBlockInfo.BlockId )
+                return false;
+            return true;
         }
     }
 }

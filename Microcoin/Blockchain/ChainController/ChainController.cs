@@ -39,7 +39,7 @@ namespace Microcoin.Blockchain.ChainController
                     return; 
                 AddBlockToTail(block);  // this block valid as new tail of current blockchain, try to set it as tail
             }
-            else if (ChainLoader != null && FetchableChainRule.IsPossibleChainUpgrade(block))
+            else if (ChainLoader != null && FetchableChainRule.IsPossibleChainUpgrade(ChainTail, block))
             {
                 // Essentially, with this call we only request that the chain be loaded, but not necessarily that it will be loaded.
                 // We don't care about everything else inside the chain.
@@ -67,17 +67,25 @@ namespace Microcoin.Blockchain.ChainController
 
         protected async Task<bool> DeepBlockVerify(Block.Block block, IChain chainTail, CancellationToken cancellationToken)
         {
-            var isBlockRewardCorrect = await MiningRules.RewardRule.Verify(ChainTail, block);
-            if (isBlockRewardCorrect is not true)
-                return false;
-            var isBlockComplexityCorrect = await MiningRules.ComplexityRule.Verify(ChainTail, block);
-            if (isBlockComplexityCorrect is not true)
+            var isShortBlockValid = await ShortBlockVerify(block, chainTail, cancellationToken);
+            if (isShortBlockValid is not true)
                 return false;
             var isTransactionsCorrect = await DeepTransactionVerify.Verify(ChainTail, block.Transactions, cancellationToken); // as it the most long operations, I put it on end of execution
             if (isTransactionsCorrect is not true)
                 return false;
             return true;
         } 
+
+        protected async Task<bool> ShortBlockVerify(Block.Block block, IChain chainTail, CancellationToken cancellationToken)
+        {
+            var isBlockRewardCorrect = await MiningRules.RewardRule.Verify(ChainTail, block);
+            if (isBlockRewardCorrect is not true)
+                return false;
+            var isBlockComplexityCorrect = await MiningRules.ComplexityRule.Verify(ChainTail, block);
+            if (isBlockComplexityCorrect is not true)
+                return false;
+            return true;
+        }
 
         // Any actions that start for some Chain valid only for this chain
         // If some operation change current chain, all operations have to be cancelled
