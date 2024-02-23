@@ -13,8 +13,10 @@ namespace Microcoin.Blockchain.Chain
     /// </summary>
     internal interface IChain
     {
-        public ImmutableChain? PreviousChain { get;  }
-        public List<Block.Block> BlocksList { get;}
-        public Dictionary<string, Block.Block> BlocksDictionary { get;  }
+        public ImmutableChain? PreviousChain { get; }
+        public List<Block.Block> BlocksList { get; }
+        public Dictionary<string, Block.Block> BlocksDictionary { get; }
+
+        public Block.Block GetLastBlock() => BlocksList.Last();
     }
 }

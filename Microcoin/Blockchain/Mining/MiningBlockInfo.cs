@@ -8,7 +8,7 @@ namespace Microcoin.Blockchain.Mining
 {
     internal class MiningBlockInfo
     {
-        int BlockId { get; set; } = -1;
+        public int BlockId { get; set; } = -1;
         public string PreviousBlockHash { get; set; } = "";
         public string MinerPublicKey { get; set; } = "";
         public decimal MinerReward { get; set; } = 0;
