@@ -20,6 +20,8 @@ namespace Microcoin.Blockchain.Block
         {
             foreach(var transaction in block.Transactions)
             {
+                if (transaction.DateTime > block.CreateTime)
+                    return false;
                 var handleResult = await transactionVerifyPipeline.Handle(transaction);
                 if (handleResult.IsHandleSuccesful is not true)
                     return false;

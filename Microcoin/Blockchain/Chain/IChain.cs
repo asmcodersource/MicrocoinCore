@@ -16,7 +16,11 @@ namespace Microcoin.Blockchain.Chain
         public Dictionary<string, decimal> WalletsCoins { get; }
         public ImmutableChain? PreviousChain { get; }
         public List<Block.Block> BlocksList { get; }
+        public HashSet<Transaction.Transaction> TransactionsSet {  get; }
         public Dictionary<string, Block.Block> BlocksDictionary { get; }
+
+        public bool IsChainHasTransaction(Transaction.Transaction transaction)
+            => TransactionsSet.Contains(transaction);
 
         public decimal GetWalletCoins(string walletPublicKey)
             => WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;

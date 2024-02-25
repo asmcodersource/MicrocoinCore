@@ -33,10 +33,14 @@ namespace Microcoin.Blockchain.ChainController
             CancellationToken cancellationToken = GetChainOperationCancellationToken();
             if (NextBlockRule.IsBlockNextToChain(block, ChainTail))
             {
-                var isBlockValid = await DeepBlockVerify(block, ChainTail, cancellationToken);
-                if (isBlockValid is not true)
-                    return; 
-                AddBlockToTail(block);  // this block valid as new tail of current blockchain, try to set it as tail
+                try
+                {
+                    var isBlockValid = await DeepBlockVerify(block, ChainTail, cancellationToken);
+                    if (isBlockValid is not true)
+                        return; 
+                    AddBlockToTail(block);  // this block valid as new tail of current blockchain, try to set it as tail
+                }
+                catch (TaskCanceledException) { /* This block did not have time to pass the inspection, most likely another block was accepted as the final one. */ }
             }
             else if (ChainLoader != null && FetchableChainRule.IsPossibleChainUpgrade(ChainTail, block))
             {

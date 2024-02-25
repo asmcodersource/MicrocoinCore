@@ -8,7 +8,8 @@ namespace Microcoin.Blockchain.Chain
 {
     internal class ImmutableChain : IChain
     {
-        public Dictionary<string, decimal> WalletsCoins { get; protected set; }
+        public HashSet<Transaction.Transaction> TransactionsSet { get;}
+        public Dictionary<string, decimal> WalletsCoins { get; }
         public ImmutableChain? PreviousChain { get; }
         public List<Block.Block> BlocksList { get; }
         public Dictionary<string, Block.Block> BlocksDictionary { get; }
