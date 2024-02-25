@@ -16,8 +16,8 @@ namespace Microcoin.Blockchain.ChainController
         public Chain.Chain ChainTail { get; protected set; }
         public MiningRules MiningRules { get; protected set; }
         public INextBlockRule NextBlockRule { get; protected set; }
+        public IDeepTransactionsVerify DeepTransactionsVerify { get; protected set; }
         public IFetchableChainRule FetchableChainRule { get; protected set; }
-        public IDeepTransactionsVerify DeepTransactionVerify { get; protected set; }
 
         public ChainController(Chain.Chain chainTail, ChainLoader chainLoader = null)
         {
@@ -26,7 +26,6 @@ namespace Microcoin.Blockchain.ChainController
             ChainTail = chainTail;
             ChainLoader = chainLoader;
             currentChainOperationsCTS = new CancellationTokenSource();
-            DeepTransactionVerify = new DeepTransactionsVerify();
         }
 
         public async Task AcceptBlock(Block.Block block)
@@ -43,9 +42,6 @@ namespace Microcoin.Blockchain.ChainController
             {
                 // Essentially, with this call we only request that the chain be loaded, but not necessarily that it will be loaded.
                 // We don't care about everything else inside the chain.
-                var isBlockValid = await DeepBlockVerify(block, ChainTail, cancellationToken);
-                if (isBlockValid is not true)
-                    return;
                 ChainLoader.RequestChainFetch(block);
             }
         }
@@ -67,10 +63,12 @@ namespace Microcoin.Blockchain.ChainController
 
         protected async Task<bool> DeepBlockVerify(Block.Block block, IChain chainTail, CancellationToken cancellationToken)
         {
+            // verify block is corret itself
             var isShortBlockValid = await ShortBlockVerify(block, chainTail, cancellationToken);
             if (isShortBlockValid is not true)
                 return false;
-            var isTransactionsCorrect = await DeepTransactionVerify.Verify(ChainTail, block.Transactions, cancellationToken); // as it the most long operations, I put it on end of execution
+            // Verify each transactions to have correct count of coins
+            var isTransactionsCorrect = await DeepTransactionsVerify.Verify(chainTail, block.Transactions, cancellationToken);
             if (isTransactionsCorrect is not true)
                 return false;
             return true;

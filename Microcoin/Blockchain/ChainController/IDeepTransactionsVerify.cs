@@ -9,6 +9,6 @@ namespace Microcoin.Blockchain.ChainController
 {
     internal interface IDeepTransactionsVerify
     {
-        public Task<bool> Verify(IChain chain, List<Transaction.Transaction> transaction, CancellationToken cancellationToken);
+        public Task<bool> Verify(IChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken);
     }
 }

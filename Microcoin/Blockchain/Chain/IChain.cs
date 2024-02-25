@@ -13,10 +13,16 @@ namespace Microcoin.Blockchain.Chain
     /// </summary>
     internal interface IChain
     {
+        public Dictionary<string, decimal> WalletsCoins { get; }
         public ImmutableChain? PreviousChain { get; }
         public List<Block.Block> BlocksList { get; }
         public Dictionary<string, Block.Block> BlocksDictionary { get; }
 
-        public Block.Block GetLastBlock() => BlocksList.Last();
+        public decimal GetWalletCoins(string walletPublicKey)
+            => WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;
+
+        public Block.Block GetLastBlock() 
+            => BlocksList.Last();
+
     }
 }
