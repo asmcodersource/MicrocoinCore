@@ -108,31 +108,49 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
         protected async Task MessageListener()
         {
             // TODO: verify received part is correct json document, receive until correct json will be received
+            StringBuilder receiveStringBuilder = new StringBuilder();
             var buffer = new ArraySegment<byte>(new byte[1024 * 16]);
             try
             {
                 while (IsListening)
                 {
+                    // read another part or from stream, and add it to result string 
                     var size = await TcpClient.GetStream().ReadAsync(buffer, CancellationToken.None);
-                    try
-                    {
-                        var jsonString = Encoding.UTF8.GetString(buffer.Take(size).ToArray());
-                        var message = JsonSerializer.Deserialize<Message.Message>(jsonString);
-                        Array.Fill<byte>(buffer.Array, 0, 0, 1024 * 16);
-                        AddMessageToQueue(message);
-                        MessageReceived?.Invoke(this);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("what? {0}", ex.Message);
-                        continue;
-                    }
+                    var jsonStringPart = Encoding.UTF8.GetString(buffer.Take(size).ToArray());
+                    receiveStringBuilder.Append(jsonStringPart);
+                    // find and parse Messages in json stream
+                    FindAndParseJsonMessages(receiveStringBuilder);
                 }
             }
             catch (Exception ex)
             {
             }
             CloseConnection();
+        }
+
+        protected void FindAndParseJsonMessages(StringBuilder receiveStringBuilder)
+        {
+            for( int i = 0; i < receiveStringBuilder.Length; i++)
+            {
+                if (receiveStringBuilder[i] != '}')
+                    continue;
+                var part = receiveStringBuilder.ToString().Substring(0, i + 1);
+                Message.Message? message = null;
+                try
+                {
+                    message = JsonSerializer.Deserialize<Message.Message>(part);
+                } catch( JsonException ) { continue; /* This part isn't correct json */ }
+                if( message is null)
+                {
+                    // correct json, but incorrect message json?
+                    // TODO: think about this case
+                }
+                receiveStringBuilder.Remove(0, i + 1);
+                AddMessageToQueue(message);
+                MessageReceived?.Invoke(this);
+                // start cycle again, because receiveStringBuilder have changed
+                i = -1;
+            }
         }
 
         protected void AddMessageToQueue(Message.Message message)
