@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.TcpCommunication
 {
-    internal class TcpListenerOptions
+    public class TcpListenerOptions
     {
         public int Port { get; set; } = 8080;
 

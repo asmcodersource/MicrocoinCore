@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.ReceiveMiddleware
 {
-    internal class HashTree
+    public class HashTree
     {
         Dictionary<byte, HashTree> tree = new Dictionary<byte, HashTree>();
 

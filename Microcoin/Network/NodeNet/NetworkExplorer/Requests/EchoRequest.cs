@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.NetworkExplorer.Requests
 {
-    internal class EchoRequest : IRequest
+    public class EchoRequest : IRequest
     {
         public string MyAddress { get; set; }
         public string MessageType { get { return typeof(EchoRequest).FullName; } }

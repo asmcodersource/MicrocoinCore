@@ -12,7 +12,7 @@ using Microcoin.Network.NodeNet.Communication;
 
 namespace Microcoin.Network.NodeNet.TcpCommunication
 {
-    internal class NodeTcpConnection : INodeConnection
+    public class NodeTcpConnection : INodeConnection
     {
         public bool IsListening { get; set; } = false;
         protected Task? ListeningTask { get; set; } = null;
@@ -67,10 +67,13 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
 
         public void SendMessage(Message.Message message)
         {
-            var jsonMessage = JsonSerializer.Serialize(message);
-            var segment = new ArraySegment<byte>(Encoding.UTF8.GetBytes(jsonMessage));
-            var stream = TcpClient.GetStream();
-            stream.Write(segment);
+            lock (this)
+            {
+                var jsonMessage = JsonSerializer.Serialize(message);
+                var segment = new ArraySegment<byte>(Encoding.UTF8.GetBytes(jsonMessage));
+                var stream = TcpClient.GetStream();
+                stream.Write(segment);
+            }
         }
 
         public async Task SendRawData(byte[] data, CancellationToken cancellationToken)
@@ -80,7 +83,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
 
         public async Task<byte[]> ReceiveRawData(CancellationToken cancellationToken)
         {
-            ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[4096]);
+            ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[1024*16]);
             try
             {
                 var size = await TcpClient.GetStream().ReadAsync(buffer, cancellationToken);
@@ -104,7 +107,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
 
         protected async Task MessageListener()
         {
-            // TODO: verify disconnect execution
+            // TODO: verify received part is correct json document, receive until correct json will be received
             var buffer = new ArraySegment<byte>(new byte[1024 * 16]);
             try
             {
@@ -121,6 +124,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
                     }
                     catch (Exception ex)
                     {
+                        Console.WriteLine("what? {0}", ex.Message);
                         continue;
                     }
                 }

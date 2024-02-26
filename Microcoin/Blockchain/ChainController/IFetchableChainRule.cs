@@ -13,7 +13,7 @@ namespace Microcoin.Blockchain.ChainController
     /// It is better to download the one that broke away further in the number of blocks, because this means that it is supported by a larger number of miners ( PoW ), 
     /// besides, in the future, the implementation of synchronization blacklists may be needed, and so on.
     /// </summary>
-    internal interface IFetchableChainRule
+    public interface IFetchableChainRule
     {
         public bool IsPossibleChainUpgrade(IChain chain, Block.Block block);
     }

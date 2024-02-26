@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.MessageAcceptors
 {
-    internal class EntryAcceptor : IAcceptor
+    public class EntryAcceptor : IAcceptor
     {
         public TransactionsAcceptor TransactionsAcceptor { get; protected set; }
         public BlocksAcceptor BlocksAcceptor { get; protected set; }

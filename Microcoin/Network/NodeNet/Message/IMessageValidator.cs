@@ -2,7 +2,7 @@
 
 namespace Microcoin.Network.NodeNet.Message
 {
-    internal interface IMessageValidator
+    public interface IMessageValidator
     {
         void SetValidateOptions(IReceiverSignOptions options);
         bool Validate(Message message);

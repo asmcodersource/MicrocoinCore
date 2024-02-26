@@ -3,7 +3,7 @@ using Microcoin.RSAEncryptions;
 
 namespace Microcoin.RSAEncryptions
 {
-    internal class RSAEncryption
+    public class RSAEncryption
     {
         // Generate new keys for sender
         public static SenderSignOptions CreateSignOptions()

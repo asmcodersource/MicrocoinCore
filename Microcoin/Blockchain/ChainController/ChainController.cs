@@ -9,7 +9,7 @@ using Microcoin.Blockchain.Mining;
 
 namespace Microcoin.Blockchain.ChainController
 {
-    internal class ChainController
+    public class ChainController
     {   
         protected CancellationTokenSource currentChainOperationsCTS;
         public ChainLoader ChainLoader { get; protected set; }

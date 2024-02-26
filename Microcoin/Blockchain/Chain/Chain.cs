@@ -2,7 +2,7 @@
 
 namespace Microcoin.Blockchain.Chain
 {
-    internal class Chain : IChain
+    public class Chain : IChain
     {
         public HashSet<Transaction.Transaction> TransactionsSet { get; protected set; } = new HashSet<Transaction.Transaction>();
         public Dictionary<string, decimal> WalletsCoins { get; protected set; } = new Dictionary<string, decimal>();

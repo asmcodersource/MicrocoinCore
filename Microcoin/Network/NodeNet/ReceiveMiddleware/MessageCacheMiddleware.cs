@@ -8,7 +8,7 @@ namespace Microcoin.Network.NodeNet.ReceiveMiddleware
     // Caching used to know if same message was received earlier
     // Resolves problem of cycles on connections network
     // TODO: Use hashtree to make it effective 
-    internal class MessageCacheMiddleware : IReceiveMiddleware
+    public class MessageCacheMiddleware : IReceiveMiddleware
     {
         public IReceiveMiddleware Next { get; protected set; } = null;
         public uint MessageStorageSize { get; protected set; } = 10000;

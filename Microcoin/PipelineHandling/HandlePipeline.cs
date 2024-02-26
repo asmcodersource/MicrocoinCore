@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.PipelineHandling
 {
-    internal class HandlePipeline<HandleType> : IHandlePipeline<HandleType>
+    public class HandlePipeline<HandleType> : IHandlePipeline<HandleType>
     {
         protected List<IPipelineHandler<HandleType>> handlers = new List<IPipelineHandler<HandleType>>();
 

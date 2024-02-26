@@ -6,7 +6,7 @@ namespace Microcoin.Network.NodeNet.ReceiveMiddleware
 {
     // Message sing verification middleware
     // If message sing isn't correct than next middlewares will not be called
-    internal class SignVerificationMiddleware : IReceiveMiddleware
+    public class SignVerificationMiddleware : IReceiveMiddleware
     {
         public IReceiveMiddleware Next { get; protected set; } = null;
         public IMessageValidator MessageValidator { get; protected set; }

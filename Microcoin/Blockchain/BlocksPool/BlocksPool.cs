@@ -3,7 +3,7 @@ using Microcoin.Blockchain.Block;
 
 namespace Microcoin.Blockchain.BlocksPool
 {
-    internal class BlocksPool
+    public class BlocksPool
     {
         public event Action<BlocksPool, Block.Block>? OnBlockReceived;
         public IHandlePipeline<Block.Block> HandlePipeline { get; set; } = new EmptyPipeline<Block.Block>();

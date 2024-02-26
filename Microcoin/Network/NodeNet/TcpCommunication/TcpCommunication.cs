@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.TcpCommunication
 {
-    internal class TcpCommunication : INodeConnections
+    public class TcpCommunication : INodeConnections
     {
         List<INodeConnection> nodeHttpConnections = new List<INodeConnection>();
 

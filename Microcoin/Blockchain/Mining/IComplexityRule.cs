@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Mining
 {
-    internal interface IComplexityRule
+    public interface IComplexityRule
     {
         public Task<bool> Verify(IChain contextChain, Block.Block block);
         public decimal Calculate(IChain contextChain, Block.Block block);

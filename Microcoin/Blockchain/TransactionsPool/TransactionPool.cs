@@ -2,7 +2,7 @@
 
 namespace Microcoin.Blockchain.TransactionsPool
 {
-    internal class TransactionsPool
+    public class TransactionsPool
     {
         public event Action<TransactionsPool> OnTransactionReceived;
         public List<Transaction.Transaction> Pool { get; protected set; } = new List<Transaction.Transaction>();

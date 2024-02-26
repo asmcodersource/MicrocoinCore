@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.MessageAcceptors
 {
-    internal class BlocksAcceptor : IAcceptor
+    public class BlocksAcceptor : IAcceptor
     {
         public event Action<Blockchain.Block.Block> BlockReceived;
 

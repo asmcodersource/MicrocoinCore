@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Block
 {
-    internal class VerifyBlockFields : IPipelineHandler<Block>
+    public class VerifyBlockFields : IPipelineHandler<Block>
     {
         public async Task<bool> Handle(Block block)
         {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.Communication
 {
-    internal interface INodeListener
+    public interface INodeListener
     {
         public event Action<INodeConnection> ConnectionOpened;
         public string GetConnectionAddress();

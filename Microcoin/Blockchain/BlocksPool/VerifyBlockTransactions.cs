@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Block
 {
-    internal class VerifyBlockTransactions : IPipelineHandler<Block>
+    public class VerifyBlockTransactions : IPipelineHandler<Block>
     {
         protected readonly IHandlePipeline<Transaction.Transaction> transactionVerifyPipeline;
 

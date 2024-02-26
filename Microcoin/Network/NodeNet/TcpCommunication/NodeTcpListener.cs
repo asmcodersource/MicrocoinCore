@@ -11,7 +11,7 @@ using Microcoin.Network.NodeNet.NodeActions;
 
 namespace Microcoin.Network.NodeNet.TcpCommunication
 {
-    internal class NodeTcpListener : INodeListener, ITcpAddressProvider
+    public class NodeTcpListener : INodeListener, ITcpAddressProvider
     {
         public bool IsListening { get; set; } = false;
         public int ListenPort { get; set; } = 8080;

@@ -6,7 +6,7 @@ using Microcoin.PipelineHandling;
 
 namespace Microcoin
 {
-    internal class Peer
+    public class Peer
     {
         public BlocksPool BlocksPool { get; protected set; } = new BlocksPool();
         public TransactionsPool TransactionsPool { get; protected set; } = new TransactionsPool();

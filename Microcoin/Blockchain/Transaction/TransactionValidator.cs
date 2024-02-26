@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Transaction
 {
-    internal class TransactionValidator : ITransactionValidator
+    public class TransactionValidator : ITransactionValidator
     {
         public ReceiverSignOptions ValidateOptions { get; protected set; }
 

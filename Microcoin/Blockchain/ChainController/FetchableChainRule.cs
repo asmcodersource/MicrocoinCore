@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.ChainController
 {
-    internal class FetchableChainRule : IFetchableChainRule
+    public class FetchableChainRule : IFetchableChainRule
     {
         public bool IsPossibleChainUpgrade(IChain chain, Block.Block block)
         {

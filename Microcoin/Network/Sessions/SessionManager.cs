@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.Sessions
 {
-    internal class SessionManager
+    public class SessionManager
     {
     }
 }

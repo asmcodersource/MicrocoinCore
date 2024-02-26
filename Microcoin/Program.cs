@@ -1,5 +1,8 @@
 ﻿using Microcoin;
 using Microcoin.Blockchain.Transaction;
+using Microcoin.Network.NodeNet;
+using Microcoin.RSAEncryptions;
+
 
 Peer peer = new Peer();
 Console.Write("Read or creating wallet keys...");
@@ -11,4 +14,3 @@ Console.WriteLine("Ok");
 Console.Write("Initialize network system, and execute NetworkExplore procedure...");
 peer.InitializeNetworking();
 Console.WriteLine("Ok");
-

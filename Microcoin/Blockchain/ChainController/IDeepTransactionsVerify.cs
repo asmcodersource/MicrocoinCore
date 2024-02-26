@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.ChainController
 {
-    internal interface IDeepTransactionsVerify
+    public interface IDeepTransactionsVerify
     {
         public Task<bool> Verify(IChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken);
     }

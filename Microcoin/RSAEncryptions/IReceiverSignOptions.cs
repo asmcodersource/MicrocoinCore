@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.RSAEncryptions
 {
-    internal interface IReceiverSignOptions
+    public interface IReceiverSignOptions
     {
         public string PublicKey { get; protected set; }
     }

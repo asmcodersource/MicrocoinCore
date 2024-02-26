@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microcoin.Network.MessageAcceptors
 {
-    internal class TransactionsAcceptor : IAcceptor
+    public class TransactionsAcceptor : IAcceptor
     {
         public event Action<Transaction> TransactionReceived;
 

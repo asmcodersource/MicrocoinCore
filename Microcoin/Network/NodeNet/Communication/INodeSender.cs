@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.Communication
 {
-    internal interface INodeSender
+    public interface INodeSender
     {
         public void SendMessage(Message.Message message);
     }

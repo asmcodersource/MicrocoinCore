@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.NetworkExplorer
 {
-    internal record RecentNodeConnection
+    public record RecentNodeConnection
     {
         public string Address { get; set; }
         public DateTime LastConnectionTime { get; set; }

@@ -2,7 +2,7 @@
 
 namespace Microcoin.Network.NodeNet.Message
 {
-    internal interface IMessageSigner
+    public interface IMessageSigner
     {
         void SetSignOptions(ISenderSignOptions options);
         void Sign(Message message);

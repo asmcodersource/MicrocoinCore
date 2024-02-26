@@ -12,7 +12,7 @@ using Microcoin.Network.NodeNet;
 
 namespace Microcoin.Network.NodeNet.NetworkExplorer
 {
-    internal class NetworkExplorerMiddleware : IReceiveMiddleware
+    public class NetworkExplorerMiddleware : IReceiveMiddleware
     {
         public NetworkExplorer Explorer { get; protected set; }
         public Node Node { get; protected set; }

@@ -5,7 +5,7 @@ using Microcoin.RSAEncryptions;
 
 namespace Microcoin
 {
-    internal class PeerNetworking
+    public class PeerNetworking
     {
         public Node NetworkNode { get; protected set; }
         public IAcceptor EntryAcceptor { get; protected set; }

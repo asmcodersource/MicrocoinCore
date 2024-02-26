@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.Communication
 {
-    internal interface INodeConnections
+    public interface INodeConnections
     {
         public List<INodeConnection> Connections();
         public void AddConnection(INodeConnection connection);

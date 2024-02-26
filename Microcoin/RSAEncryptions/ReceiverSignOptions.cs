@@ -2,7 +2,7 @@
 
 namespace Microcoin.RSAEncryptions
 {
-    internal class ReceiverSignOptions : IReceiverSignOptions
+    public class ReceiverSignOptions : IReceiverSignOptions
     {
         public string PublicKey { get; set; }
 

@@ -13,7 +13,7 @@ namespace Microcoin.Blockchain
     /// Chain defined by two blocks on start and end of loading part
     /// Loading allowen only by direct peer to peer connection
     /// </summary>
-    internal class ChainLoader
+    public class ChainLoader
     {
         public event Action<IChain> ChainFetched;
 

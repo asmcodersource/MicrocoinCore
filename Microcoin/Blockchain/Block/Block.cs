@@ -4,7 +4,7 @@ using Microcoin.Blockchain.Mining;
 
 namespace Microcoin.Blockchain.Block
 {
-    internal class Block
+    public class Block
     {
         public List<Transaction.Transaction> Transactions { get; set; } = new List<Transaction.Transaction>();
         public MiningBlockInfo MiningBlockInfo { get; set; } = new MiningBlockInfo();

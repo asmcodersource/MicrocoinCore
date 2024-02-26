@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 
 namespace Microcoin
 {
-    internal class PeerWalletKeys
+    public class PeerWalletKeys
     {
         protected TransactionSigner? transactionSigner;
 

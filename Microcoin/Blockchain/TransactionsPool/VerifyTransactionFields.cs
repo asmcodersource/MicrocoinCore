@@ -7,7 +7,7 @@ using Microcoin.PipelineHandling;
 
 namespace Microcoin.Blockchain.TransactionsPool
 {
-    internal class VerifyTransactionFields : IPipelineHandler<Transaction.Transaction>
+    public class VerifyTransactionFields : IPipelineHandler<Transaction.Transaction>
     {
         public async Task<bool> Handle(Transaction.Transaction transaction)
         {

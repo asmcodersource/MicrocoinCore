@@ -12,7 +12,7 @@ namespace Microcoin.Network.Sessions
     /// Implements communication across different sessions on top of one communication stream. 
     /// Allows you to conduct multiple threads of communication simultaneously.
     /// </summary>
-    internal class Session
+    public class Session
     {
         protected Queue<MessageContext> MessageContexts = new Queue<MessageContext>();
         protected event Action<MessageContext> onMessageContextReceive = null;

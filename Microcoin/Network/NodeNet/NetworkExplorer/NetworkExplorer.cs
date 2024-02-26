@@ -15,7 +15,7 @@ namespace Microcoin.Network.NodeNet.NetworkExplorer
     /// Provide methods of network explore requests
     /// Used to store and remember nodes address
     /// </summary>
-    internal class NetworkExplorer
+    public class NetworkExplorer
     {
         public Node Node { get; protected set; }
         public List<RecentNodeConnection> recentNodeConnections { get; protected set; } = new List<RecentNodeConnection>();

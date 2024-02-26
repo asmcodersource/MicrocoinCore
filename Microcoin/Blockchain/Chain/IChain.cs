@@ -11,7 +11,7 @@ namespace Microcoin.Blockchain.Chain
     /// A chain can be connected to the end of another chain. 
     /// A chain acting as a parent for another must be immutable
     /// </summary>
-    internal interface IChain
+    public interface IChain
     {
         public Dictionary<string, decimal> WalletsCoins { get; }
         public ImmutableChain? PreviousChain { get; }

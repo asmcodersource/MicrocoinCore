@@ -3,7 +3,7 @@
     // Mean one full received message
     // Can be broadcast, or personal
     [Serializable]
-    internal class Message
+    public class Message
     {
         public MessageInfo Info { get; protected set; }
         public string Data { get; protected set; } = "";

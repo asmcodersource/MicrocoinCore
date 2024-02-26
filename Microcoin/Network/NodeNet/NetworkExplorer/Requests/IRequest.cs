@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.NetworkExplorer.Requests
 {
-    internal abstract class IRequest
+    public abstract class IRequest
     {
     }
 }

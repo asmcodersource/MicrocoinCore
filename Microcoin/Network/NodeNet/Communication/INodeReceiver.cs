@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.Communication
 {
-    internal interface INodeReceiver
+    public interface INodeReceiver
     {
         Message.Message? GetLastMessage();
         List<Message.Message> GetMessageList();

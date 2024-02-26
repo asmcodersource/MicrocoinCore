@@ -10,7 +10,7 @@ using static System.Net.Mime.MediaTypeNames;
 namespace Microcoin.Network.NodeNet.ReceiveMiddleware
 {
 
-    internal class FloodProtectorMiddleware : IReceiveMiddleware
+    public class FloodProtectorMiddleware : IReceiveMiddleware
     {
         protected Dictionary<INodeConnection, ulong> dataPerConnection = new Dictionary<INodeConnection, ulong>();
         protected Queue<ReceivedDataInfo> receiveDataQueue = new Queue<ReceivedDataInfo>();
@@ -55,7 +55,7 @@ namespace Microcoin.Network.NodeNet.ReceiveMiddleware
         }
     }
 
-    internal class ReceivedDataInfo
+    public class ReceivedDataInfo
     {
         public ulong ReceivedDataScore { get; protected set; }
         public INodeConnection Connection { get; protected set; }

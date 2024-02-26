@@ -9,7 +9,7 @@ namespace Microcoin.Network.NodeNet.Message
     // Main information about message
     // This part of message is signing by sender, and can't be change
     [Serializable]
-    internal class MessageInfo
+    public class MessageInfo
     {
         public string SenderPublicKey { get; set; }
         public string ReceiverPublicKey { get; set; } = string.Empty; // Empty means broadcast

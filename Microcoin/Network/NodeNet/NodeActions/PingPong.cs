@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.NodeActions
 {
-    internal class PingPong
+    public class PingPong
     {
         protected const string PingData = "NodeNetPingMessage";
         protected const string PongData = "NodeNetPongMessage";

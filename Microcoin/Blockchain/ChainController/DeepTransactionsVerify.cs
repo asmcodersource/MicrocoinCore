@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.ChainController
 {
-    internal class DeepTransactionsVerify: IDeepTransactionsVerify
+    public class DeepTransactionsVerify: IDeepTransactionsVerify
     {
         //  Since this is a long operation, I use a cancel token in case it is no longer needed between complex operations.
         //  cancellationToken.ThrowIfCancellationRequested();

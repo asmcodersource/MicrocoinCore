@@ -10,7 +10,7 @@ namespace Microcoin.Blockchain.Chain
     /// To attach a block, you need to determine whether this block can be a continuation of the chain. 
     /// This interface defines the class contract that implements this rule
     /// </summary>
-    internal interface INextBlockRule
+    public interface INextBlockRule
     {
         public bool IsBlockNextToChain(Block.Block block, IChain chain);
     }

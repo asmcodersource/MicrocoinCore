@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Mining
 {
-    internal class MiningRules
+    public class MiningRules
     {
         public IComplexityRule ComplexityRule { get; set; }
         public IRewardRule RewardRule { get; set; }

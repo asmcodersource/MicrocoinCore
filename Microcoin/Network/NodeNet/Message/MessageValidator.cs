@@ -4,7 +4,7 @@ using Microcoin.RSAEncryptions;
 
 namespace Microcoin.Network.NodeNet.Message
 {
-    internal class MessageValidator : IMessageValidator
+    public class MessageValidator : IMessageValidator
     {
         public ReceiverSignOptions ValidateOptions { get; protected set; }
 

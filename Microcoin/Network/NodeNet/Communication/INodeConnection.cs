@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Network.NodeNet.Communication
 {
-    internal interface INodeConnection : INodeSender, INodeReceiver
+    public interface INodeConnection : INodeSender, INodeReceiver
     {
         public event Action<INodeConnection> MessageReceived;
         public event Action<INodeConnection> ConnectionClosed;

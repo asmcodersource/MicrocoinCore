@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Chain
 {
-    internal class ImmutableChain : IChain
+    public class ImmutableChain : IChain
     {
         public HashSet<Transaction.Transaction> TransactionsSet { get;}
         public Dictionary<string, decimal> WalletsCoins { get; }

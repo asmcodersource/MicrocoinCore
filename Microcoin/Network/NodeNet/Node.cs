@@ -7,7 +7,7 @@ using Microcoin.RSAEncryptions;
 
 namespace Microcoin.Network.NodeNet
 {
-    internal class Node : ITcpAddressProvider
+    public class Node : ITcpAddressProvider
     {
         public IMessageSigner? MessageSigner { get; protected set; } = null;
         public IMessageValidator? MessageValidator { get; protected set; } = null;

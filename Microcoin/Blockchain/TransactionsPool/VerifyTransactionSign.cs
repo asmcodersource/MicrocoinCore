@@ -5,7 +5,7 @@ using Microcoin.RSAEncryptions;
 
 namespace Microcoin.Blockchain.TransactionsPool
 {
-    internal class VerifyTransactionSign : IPipelineHandler<Transaction.Transaction>
+    public class VerifyTransactionSign : IPipelineHandler<Transaction.Transaction>
     {
         public async Task<bool> Handle(Transaction.Transaction transaction)
         {
