@@ -130,11 +130,13 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
 
         protected void FindAndParseJsonMessages(StringBuilder receiveStringBuilder)
         {
+            StringBuilder internalBuffer = new StringBuilder();
             for( int i = 0; i < receiveStringBuilder.Length; i++)
             {
+                internalBuffer.Append(receiveStringBuilder[i]);
                 if (receiveStringBuilder[i] != '}')
                     continue;
-                var part = receiveStringBuilder.ToString().Substring(0, i + 1);
+                var part = internalBuffer.ToString();
                 Message.Message? message = null;
                 try
                 {
@@ -146,8 +148,8 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
                     // TODO: think about this case
                 }
                 receiveStringBuilder.Remove(0, i + 1);
+                internalBuffer.Clear();
                 AddMessageToQueue(message);
-                MessageReceived?.Invoke(this);
                 // start cycle again, because receiveStringBuilder have changed
                 i = -1;
             }

@@ -87,7 +87,7 @@ namespace Tests
             int received_summary = 0;
             int sending_summary = 0;
             second_node.MessageReceived += (msgcontext) => { lock (this) { received_summary += Convert.ToInt32(msgcontext.Message.Data); }  };
-            for (int i = 0; i < 1024; i++)
+            for (int i = 0; i < 1024*16; i++)
             {
                 sending_summary += i;
                 first_node.SendMessage(i.ToString());
