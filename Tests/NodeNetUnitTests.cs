@@ -93,7 +93,7 @@ namespace Tests
                         first_node.SendMessage(i.ToString());
                     }
 
-                    Thread.Sleep(1000);
+                    Thread.Sleep(10);
                     Assert.Equal(sending_summary, received_summary);
                 }
             }
