@@ -13,18 +13,24 @@ namespace Microcoin
         public PeerNetworking PeerNetworking { get; protected set; } 
         public PeerWalletKeys PeerWalletKeys { get; protected set; }
 
-        public void SendCoins(String receiverPublicKey, decimal coinsCount )
+        public Transaction CreateTransaction(String receiverPublicKey, decimal coinsCount)
+        {
+            Transaction transaction = new Transaction();
+            transaction.ReceiverPublicKey = receiverPublicKey;
+            transaction.TransferAmount = coinsCount;
+            PeerWalletKeys.SignTransaction(transaction);
+            return transaction;
+        }
+
+        public  Transaction SendCoins(String receiverPublicKey, decimal coinsCount )
         {
             if (PeerNetworking == null || PeerWalletKeys == null)
                 throw new NullReferenceException("Peer is not initialized");
 
-            Transaction transaction = new Transaction();
-            transaction.ReceiverPublicKey = receiverPublicKey;
-            transaction.TransferAmount = coinsCount;
-            PeerWalletKeys.SignTransaction( transaction );
-
+            var transaction = CreateTransaction(receiverPublicKey, coinsCount);
             var transactionBroadcast = JsonConvert.SerializeObject( transaction );
             PeerNetworking.NetworkNode.SendMessage(transactionBroadcast);
+            return transaction;
         }
 
         public void InitializeAcceptancePools()

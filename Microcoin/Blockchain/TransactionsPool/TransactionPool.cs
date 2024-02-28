@@ -24,14 +24,15 @@ namespace Microcoin.Blockchain.TransactionsPool
                 RemoveTransaction(transaction);
         }
 
-        public async Task HandleTransaction(Transaction.Transaction transaction)
+        public async Task<bool> HandleTransaction(Transaction.Transaction transaction)
         {
             // Handle transaction on verifing pipeline
             var handleResult = await Task.Run(() => HandlePipeline.Handle(transaction));
             if (handleResult.IsHandleSuccesful is not true)
-                return;
+                return false;
             // If transaction succesfully pass pipeline, add it to pool
             AddTransaction(transaction);
+            return true;
         }
 
         public void InitializeHandlerPipeline()

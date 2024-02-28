@@ -43,7 +43,7 @@ namespace Tests
         static object wallLock = new object();
 
         [Fact]
-        public void NodeNet_Communications_Messaging_Single_Test()
+        public void NodeNet_Communications_Messaging_SingleMessage_Test()
         {
             lock (wallLock)
             {
@@ -76,7 +76,7 @@ namespace Tests
 
 
         [Fact]
-        public void NodeNet_Communications_Messaging_Normal_Test()
+        public void NodeNet_Communications_Messaging_MultipleMessage_Test()
         {
             lock(wallLock) 
             {

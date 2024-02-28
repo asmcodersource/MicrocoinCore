@@ -6,13 +6,13 @@ namespace Microcoin
 {
     public class PeerWalletKeys
     {
-        protected TransactionSigner? transactionSigner;
+        public TransactionSigner? TransactionSigner { get; set; }
 
         public void CreateKeys()
         {
             var signOptions = RSAEncryptions.RSAEncryption.CreateSignOptions();
-            transactionSigner = new TransactionSigner();
-            transactionSigner.SetSignOptions(signOptions);
+            TransactionSigner = new TransactionSigner();
+            TransactionSigner.SetSignOptions(signOptions);
         }
 
         public void SaveKeys(string filePath)
@@ -22,7 +22,7 @@ namespace Microcoin
                 using (FileStream fs = new FileStream(filePath, FileMode.Create))
                 {
                     XmlSerializer xSer = new XmlSerializer(typeof(TransactionSigner));
-                    xSer.Serialize(fs, transactionSigner);
+                    xSer.Serialize(fs, TransactionSigner);
                 }
             } catch (Exception ex)
             {
@@ -37,15 +37,15 @@ namespace Microcoin
             using (FileStream fs = new FileStream(filePath, FileMode.Open))
             {
                 XmlSerializer xSer = new XmlSerializer(typeof(TransactionSigner));
-                transactionSigner = xSer.Deserialize(fs) as TransactionSigner;
+                TransactionSigner = xSer.Deserialize(fs) as TransactionSigner;
             }
         }
         
         public void SignTransaction(Transaction transaction)
         {
-            if (transactionSigner == null)
+            if (TransactionSigner == null)
                 throw new NullReferenceException("Keys is not initialized");
-            transactionSigner.Sign(transaction);
+            TransactionSigner.Sign(transaction);
         }
     }
 }

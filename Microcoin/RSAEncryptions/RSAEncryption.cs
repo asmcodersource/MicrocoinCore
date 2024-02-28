@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Xml;
 using Microcoin.RSAEncryptions;
 
 namespace Microcoin.RSAEncryptions
@@ -26,11 +27,15 @@ namespace Microcoin.RSAEncryptions
         }
 
         public static bool VerifySign(byte[] data, string sign, ReceiverSignOptions options)
-        {   
-            var signBytes = Convert.FromBase64String(sign);
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-            rsa.FromXmlString(options.PublicKey);
-            return rsa.VerifyData(data, SHA256.Create(), signBytes);
+        {
+            try
+            {
+                var signBytes = Convert.FromBase64String(sign);
+                RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+                rsa.FromXmlString(options.PublicKey);
+                return rsa.VerifyData(data, SHA256.Create(), signBytes);
+            }
+            catch { return false; }
         }
     }
 }
