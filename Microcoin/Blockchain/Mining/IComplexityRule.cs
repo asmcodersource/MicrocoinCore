@@ -10,6 +10,6 @@ namespace Microcoin.Blockchain.Mining
     public interface IComplexityRule
     {
         public Task<bool> Verify(IChain contextChain, Block.Block block);
-        public decimal Calculate(IChain contextChain, Block.Block block);
+        public double Calculate(IChain contextChain, Block.Block block);
     }
 }

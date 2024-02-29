@@ -68,7 +68,7 @@ namespace Tests
                     first_node.SendMessage(message);
                     second_node.SendMessage(message);
 
-                    Thread.Sleep(500);
+                    Thread.Sleep(10);
                     Assert.Equal(2, receivedMessagesCount);
                 }
             }
@@ -84,17 +84,20 @@ namespace Tests
                 {
                     Node first_node = connections.first_node;
                     Node second_node = connections.second_node;
-                    int received_summary = 0;
+                    int first_received_summary = 0;
+                    int second_received_summary = 0;
                     int sending_summary = 0;
-                    second_node.MessageReceived += (msgcontext) => { received_summary += Convert.ToInt32(msgcontext.Message.Data); };
+                    first_node.MessageReceived += (msgcontext) => { first_received_summary += Convert.ToInt32(msgcontext.Message.Data); };
+                    second_node.MessageReceived += (msgcontext) => { second_received_summary += Convert.ToInt32(msgcontext.Message.Data); };
                     for (int i = 0; i < 1024; i++)
                     {
                         sending_summary += i;
                         first_node.SendMessage(i.ToString());
+                        second_node.SendMessage((1023-i).ToString());
                     }
 
-                    Thread.Sleep(10);
-                    Assert.Equal(sending_summary, received_summary);
+                    Assert.Equal(sending_summary, first_received_summary);
+                    Assert.Equal(sending_summary, second_received_summary);
                 }
             }
         }

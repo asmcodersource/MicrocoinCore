@@ -14,17 +14,18 @@ namespace Microcoin.Blockchain.ChainController
         protected CancellationTokenSource currentChainOperationsCTS;
         public ChainLoader ChainLoader { get; protected set; }
         public Chain.Chain ChainTail { get; protected set; }
-        public MiningRules MiningRules { get; protected set; }
+        public IMiner Miner { get; protected set; }
         public INextBlockRule NextBlockRule { get; protected set; }
         public IDeepTransactionsVerify DeepTransactionsVerify { get; protected set; }
         public IFetchableChainRule FetchableChainRule { get; protected set; }
 
-        public ChainController(Chain.Chain chainTail, ChainLoader chainLoader = null)
+        public ChainController(Chain.Chain chainTail, IMiner miner, ChainLoader chainLoader = null)
         {
             // ChainControllers without chainLoader can't load chain from network
             // This is done to avoid loading threads inside loading threads.
             ChainTail = chainTail;
             ChainLoader = chainLoader;
+            Miner = miner;
             currentChainOperationsCTS = new CancellationTokenSource();
         }
 
@@ -80,13 +81,15 @@ namespace Microcoin.Blockchain.ChainController
 
         protected async Task<bool> ShortBlockVerify(Block.Block block, IChain chainTail, CancellationToken cancellationToken)
         {
-            var isBlockRewardCorrect = await MiningRules.RewardRule.Verify(ChainTail, block);
-            if (isBlockRewardCorrect is not true)
-                return false;
-            var isBlockComplexityCorrect = await MiningRules.ComplexityRule.Verify(ChainTail, block);
-            if (isBlockComplexityCorrect is not true)
-                return false;
-            return true;
+            lock (ChainTail)
+            {
+                // It would work, and prevent change of chain while miner working,
+                // but it take to much time, and memory space
+                // TODO: Think about non immutable chain, or one non immutable chain for all handled blocks 
+                cancellationToken.ThrowIfCancellationRequested();
+                var immutalbeChain = new ImmutableChain(ChainTail);
+                return Miner.VerifyBlockMining(chainTail, block).Result;
+            }
         }
 
         // Any actions that start for some Chain valid only for this chain

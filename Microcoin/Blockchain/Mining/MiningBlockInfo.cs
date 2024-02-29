@@ -9,9 +9,11 @@ namespace Microcoin.Blockchain.Mining
     public class MiningBlockInfo
     {
         public int BlockId { get; set; } = -1;
+        public Int64 MinedValue { get; set; }
         public string PreviousBlockHash { get; set; } = "";
         public string MinerPublicKey { get; set; } = "";
         public decimal MinerReward { get; set; } = 0;
         public double Complexity { get; set; } = 0;
+        public DateTime CreateTime { get; set; } = DateTime.UtcNow;
     }
 }
