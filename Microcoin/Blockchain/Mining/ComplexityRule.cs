@@ -12,7 +12,7 @@ namespace Microcoin.Blockchain.Mining
     /// </summary>
     public class ComplexityRule : IComplexityRule
     {
-        protected int defaultComplexity = 4;
+        protected int defaultComplexity = 8;
         protected int targetTime = 10;
         protected int allowedTimeDivitation = 3;
         protected int avgWindow = 2048;
@@ -21,7 +21,7 @@ namespace Microcoin.Blockchain.Mining
         {
             var windowFirstBlock = contextChain.GetBlockFromTail(2048);
             var windowLastBlock = contextChain.GetBlockFromTail(0);
-            if (windowFirstBlock != null)
+            if (windowFirstBlock is null)
                 return defaultComplexity;
             var durationWindow = windowFirstBlock.MiningBlockInfo.CreateTime - windowLastBlock.MiningBlockInfo.CreateTime;
             var duration = durationWindow / 2048;
@@ -43,7 +43,7 @@ namespace Microcoin.Blockchain.Mining
             var complexity = Calculate(contextChain, block);
             if (block.MiningBlockInfo.Complexity < complexity)
                 return false;
-            if( Block.Block.GetHashComplexity(block.Hash) != complexity )
+            if( Block.Block.GetHashComplexity(block.Hash) < complexity )
                 return false;
             return true;
         }

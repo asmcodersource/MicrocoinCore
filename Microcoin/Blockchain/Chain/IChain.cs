@@ -22,6 +22,8 @@ namespace Microcoin.Blockchain.Chain
 
         public Block.Block? GetBlockFromTail(int blockIdFromTail)
         {
+            if (GetLastBlock() == null)
+                return null;
             int lastBlockId = GetLastBlock().MiningBlockInfo.BlockId;
             return GetBlock(lastBlockId - blockIdFromTail);
         }
@@ -45,11 +47,11 @@ namespace Microcoin.Blockchain.Chain
         public decimal GetWalletCoins(string walletPublicKey)
             => WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;
 
-        public Block.Block GetFirstBlock()
-            => BlocksList.First();
+        public Block.Block? GetFirstBlock()
+            => BlocksList.Count() == 0 ? null : BlocksList.First();
 
-        public Block.Block GetLastBlock() 
-            => BlocksList.Last();
+        public Block.Block? GetLastBlock() 
+            => BlocksList.Count() == 0 ? null : BlocksList.Last();
 
     }
 }

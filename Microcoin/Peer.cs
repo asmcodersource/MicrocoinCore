@@ -13,6 +13,8 @@ namespace Microcoin
         public PeerNetworking PeerNetworking { get; protected set; } 
         public PeerWalletKeys PeerWalletKeys { get; protected set; }
 
+        public string WalletPublicKey { get { return PeerWalletKeys.TransactionSigner.SignOptions.PublicKey; } }
+
         public Transaction CreateTransaction(String receiverPublicKey, decimal coinsCount)
         {
             Transaction transaction = new Transaction();

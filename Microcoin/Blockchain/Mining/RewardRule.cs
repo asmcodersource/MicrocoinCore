@@ -24,7 +24,7 @@ namespace Microcoin.Blockchain.Mining
 
         protected decimal CalculateRewardOfBlock(Block.Block block)
         {
-            return Convert.ToDecimal(block.MiningBlockInfo.Complexity * (1.0 / Convert.ToDouble(block.MiningBlockInfo.BlockId)));
+            return Convert.ToDecimal(block.MiningBlockInfo.Complexity * (1.0 / Convert.ToDouble(block.MiningBlockInfo.BlockId + 1)));
         }
     }
 }

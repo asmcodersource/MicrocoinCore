@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Blockchain.Mining
 {
+    [Serializable]
     public class MiningBlockInfo
     {
         public int BlockId { get; set; } = -1;

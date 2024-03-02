@@ -9,10 +9,10 @@ namespace Microcoin.Blockchain.Mining
 {
     public interface IMiner
     {
-        public event Action<Block.Block> BlockMined;
+        public event Action<Block.Block, string> BlockMined;
         public MiningRules MiningRules { get; }
        
-        public Task StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken);
+        public Task<string> StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken);
         public bool VerifyBlockMining(IChain chain, Block.Block block);
     }
 }

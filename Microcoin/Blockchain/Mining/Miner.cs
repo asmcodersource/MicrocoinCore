@@ -1,4 +1,6 @@
 ﻿using Microcoin.Blockchain.Chain;
+using Microcoin.Network.NodeNet;
+using System.Threading;
 
 
 namespace Microcoin.Blockchain.Mining
@@ -7,23 +9,38 @@ namespace Microcoin.Blockchain.Mining
     {
         public MiningRules MiningRules { get; protected set; }
 
-        public event Action<Block.Block> BlockMined;
+        public event Action<Block.Block, string> BlockMined;
 
-        public async Task StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken)
+        public void SetRules(MiningRules rules)
+        {
+            MiningRules = rules;
+        }
+
+        /// <summary>
+        /// This is single-threaded, processor-based, not fast code.Since the project is educational, 
+        /// this implementation will most likely be left, it shows a general example of how the blockchain works, 
+        /// but provides an obvious way to perform a 50.1% network power attack.
+        /// A person who implements a multi-threaded fast code will get a higher speed of hash generation and verification, 
+        /// which will give him a huge increase in power against the background of other network members.
+        /// Well, let's assume that everyone uses this version of the miner.
+        /// </summary>
+        public async Task<string> StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
             bool isBlockAlreadyMined = false;
             block.MiningBlockInfo.MinerPublicKey = minerWallet;
+            Random random = new Random();
             while (cancellationToken.IsCancellationRequested is not true && isBlockAlreadyMined is not true )
             {
+                int miningComplexity = MiningRules.ComplexityRule.Calculate(chain, block);
+                block.MiningBlockInfo.Complexity = miningComplexity;
                 decimal miningReward = MiningRules.RewardRule.Calculate(chain, block);
-                int miningComplexiy = MiningRules.ComplexityRule.Calculate(chain, block);
                 block.MiningBlockInfo.MinerReward = miningReward;
-                block.MiningBlockInfo.Complexity = miningComplexiy;
                 // To reduce count of complexity and reward recalculations
                 for (int i = 0; i < 1024 * 16; i++)
                 {
-                    block.MiningBlockInfo.MinedValue = Random.Shared.NextInt64();
+                    block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
                     var hash = block.GetMiningBlockHash();
+                    block.Hash = hash;
                     var isHashCorrect = MiningRules.ComplexityRule.Verify(chain, block);
                     if (isHashCorrect is not true)
                         continue;
@@ -33,11 +50,13 @@ namespace Microcoin.Blockchain.Mining
                             break;
                         isBlockAlreadyMined = true;
                         cancellationToken.ThrowIfCancellationRequested();
-                        block.Hash = hash;
-                        BlockMined.Invoke(block);
+                        BlockMined?.Invoke(block, hash);
+                        return hash;
                     }
                 }
             }
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new Exception("Something wen't wrong");
         }
 
         public bool VerifyBlockMining(IChain chain, Block.Block block)

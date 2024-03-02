@@ -7,6 +7,7 @@ using System.Numerics;
 
 namespace Microcoin.Blockchain.Block
 {
+    [Serializable]
     public class Block
     {
         public List<Transaction.Transaction> Transactions { get; set; } = new List<Transaction.Transaction>();
@@ -23,7 +24,7 @@ namespace Microcoin.Blockchain.Block
                 IFormatter formatter = new BinaryFormatter();
                 formatter.Serialize(objectToHashStream, MiningBlockInfo);
                 formatter.Serialize(objectToHashStream, Transactions);
-                byte[] hash = sha256Hash.ComputeHash(objectToHashStream);
+                byte[] hash = sha256Hash.ComputeHash(objectToHashStream.ToArray());
                 return Convert.ToBase64String(hash);
             }
         }
@@ -35,8 +36,8 @@ namespace Microcoin.Blockchain.Block
             {
                 byte b = hashBytes[i];
                 for (int j = 0; j < 8; j++)
-                    if (((b >> 1) & 1) == 1)
-                        return i * 8 + b;
+                    if (((b >> j) & 1) == 1)
+                        return i * 8 + j;
             }
             return hashBytes.Length * 8;
         }
