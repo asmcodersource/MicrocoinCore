@@ -12,7 +12,7 @@ namespace Microcoin.Blockchain.Mining
         public event Action<Block.Block> BlockMined;
         public MiningRules MiningRules { get; }
        
-        public Task StartBlockMining(IChain chain, Block.Block block, CancellationToken cancellationToken);
+        public Task StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken);
         public Task<bool> VerifyBlockMining(IChain chain, Block.Block block);
     }
 }

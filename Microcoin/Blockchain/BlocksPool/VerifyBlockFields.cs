@@ -13,7 +13,7 @@ namespace Microcoin.Blockchain.Block
         {
             if (block.Transactions == null || block.Transactions.Count == 0)
                 return false;
-            if ( block.CreateTime < new DateTime(2024, 1, 1) && block.CreateTime > DateTime.UtcNow.AddMinutes(1) )
+            if ( block.MiningBlockInfo.CreateTime < new DateTime(2024, 1, 1) && block.MiningBlockInfo.CreateTime > DateTime.UtcNow.AddMinutes(1) )
                 return false;
             if (block.MiningBlockInfo == null)
                 return false;
