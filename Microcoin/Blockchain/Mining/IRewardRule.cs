@@ -9,7 +9,7 @@ namespace Microcoin.Blockchain.Mining
 {
     public interface IRewardRule
     {
-        public Task<bool> Verify(IChain contextChain, Block.Block block);
+        public bool Verify(IChain contextChain, Block.Block block);
         public decimal Calculate(IChain contextChain, Block.Block block);
     }
 }

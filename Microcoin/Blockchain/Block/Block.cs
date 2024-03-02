@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microcoin.Blockchain.Mining;
+using System.Numerics;
 
 namespace Microcoin.Blockchain.Block
 {
@@ -25,6 +26,19 @@ namespace Microcoin.Blockchain.Block
                 byte[] hash = sha256Hash.ComputeHash(objectToHashStream);
                 return Convert.ToBase64String(hash);
             }
+        }
+
+        public static int GetHashComplexity(string hash)
+        {
+            byte[] hashBytes = Convert.FromBase64String(hash);
+            for( int i = 0; i < hashBytes.Length; i++)
+            {
+                byte b = hashBytes[i];
+                for (int j = 0; j < 8; j++)
+                    if (((b >> 1) & 1) == 1)
+                        return i * 8 + b;
+            }
+            return hashBytes.Length * 8;
         }
 
         public static Block? ParseBlockFromJson(string blockJson)

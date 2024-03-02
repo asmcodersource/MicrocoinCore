@@ -69,7 +69,7 @@ namespace Microcoin.Blockchain.ChainController
         protected async Task<bool> DeepBlockVerify(Block.Block block, IChain chainTail, CancellationToken cancellationToken)
         {
             // verify block is corret itself
-            var isShortBlockValid = await ShortBlockVerify(block, chainTail, cancellationToken);
+            var isShortBlockValid = ShortBlockVerify(block, chainTail, cancellationToken);
             if (isShortBlockValid is not true)
                 return false;
             // Verify each transactions to have correct count of coins
@@ -79,7 +79,7 @@ namespace Microcoin.Blockchain.ChainController
             return true;
         } 
 
-        protected async Task<bool> ShortBlockVerify(Block.Block block, IChain chainTail, CancellationToken cancellationToken)
+        protected bool ShortBlockVerify(Block.Block block, IChain chainTail, CancellationToken cancellationToken)
         {
             lock (ChainTail)
             {
@@ -88,7 +88,7 @@ namespace Microcoin.Blockchain.ChainController
                 // TODO: Think about non immutable chain, or one non immutable chain for all handled blocks 
                 cancellationToken.ThrowIfCancellationRequested();
                 var immutalbeChain = new ImmutableChain(ChainTail);
-                return Miner.VerifyBlockMining(chainTail, block).Result;
+                return Miner.VerifyBlockMining(chainTail, block);
             }
         }
 

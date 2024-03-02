@@ -13,6 +13,6 @@ namespace Microcoin.Blockchain.Mining
         public MiningRules MiningRules { get; }
        
         public Task StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken);
-        public Task<bool> VerifyBlockMining(IChain chain, Block.Block block);
+        public bool VerifyBlockMining(IChain chain, Block.Block block);
     }
 }

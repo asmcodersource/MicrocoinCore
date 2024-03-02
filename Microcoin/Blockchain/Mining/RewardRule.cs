@@ -11,12 +11,20 @@ namespace Microcoin.Blockchain.Mining
     {
         public decimal Calculate(IChain contextChain, Block.Block block)
         {
-            throw new NotImplementedException();
+            return CalculateRewardOfBlock(block);
         }
 
-        public Task<bool> Verify(IChain contextChain, Block.Block block)
+        public bool Verify(IChain contextChain, Block.Block block)
         {
-            throw new NotImplementedException();
+            decimal reward = CalculateRewardOfBlock(block);
+            if (block.MiningBlockInfo.MinerReward != reward)
+                return false;
+            return true;
+        }
+
+        protected decimal CalculateRewardOfBlock(Block.Block block)
+        {
+            return Convert.ToDecimal(block.MiningBlockInfo.Complexity * (1.0 / Convert.ToDouble(block.MiningBlockInfo.BlockId)));
         }
     }
 }

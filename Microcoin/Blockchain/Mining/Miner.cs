@@ -16,7 +16,7 @@ namespace Microcoin.Blockchain.Mining
             while (cancellationToken.IsCancellationRequested is not true && isBlockAlreadyMined is not true )
             {
                 decimal miningReward = MiningRules.RewardRule.Calculate(chain, block);
-                double miningComplexiy = MiningRules.ComplexityRule.Calculate(chain, block);
+                int miningComplexiy = MiningRules.ComplexityRule.Calculate(chain, block);
                 block.MiningBlockInfo.MinerReward = miningReward;
                 block.MiningBlockInfo.Complexity = miningComplexiy;
                 // To reduce count of complexity and reward recalculations
@@ -24,7 +24,7 @@ namespace Microcoin.Blockchain.Mining
                 {
                     block.MiningBlockInfo.MinedValue = Random.Shared.NextInt64();
                     var hash = block.GetMiningBlockHash();
-                    var isHashCorrect = await MiningRules.ComplexityRule.Verify(chain, block);
+                    var isHashCorrect = MiningRules.ComplexityRule.Verify(chain, block);
                     if (isHashCorrect is not true)
                         continue;
                     lock (this)
@@ -40,12 +40,12 @@ namespace Microcoin.Blockchain.Mining
             }
         }
 
-        public async Task<bool> VerifyBlockMining(IChain chain, Block.Block block)
+        public bool VerifyBlockMining(IChain chain, Block.Block block)
         {
-            var isBlockRewardCorrect = await MiningRules.RewardRule.Verify(chain, block);
+            var isBlockRewardCorrect = MiningRules.RewardRule.Verify(chain, block);
             if (isBlockRewardCorrect is not true)
                 return false;
-            var isBlockComplexityCorrect = await MiningRules.ComplexityRule.Verify(chain, block);
+            var isBlockComplexityCorrect = MiningRules.ComplexityRule.Verify(chain, block);
             if (isBlockComplexityCorrect is not true)
                 return false;
             var computedHash = block.GetMiningBlockHash();
