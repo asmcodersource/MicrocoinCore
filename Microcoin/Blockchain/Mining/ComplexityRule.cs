@@ -12,10 +12,10 @@ namespace Microcoin.Blockchain.Mining
     /// </summary>
     public class ComplexityRule : IComplexityRule
     {
-        protected int defaultComplexity = 8;
+        protected int defaultComplexity = 4;
         protected int targetTime = 10;
         protected int allowedTimeDivitation = 3;
-        protected int avgWindow = 2048;
+        protected int avgWindow = 10;
         
         public int Calculate(IChain contextChain, Block.Block block)
         {
@@ -42,8 +42,6 @@ namespace Microcoin.Blockchain.Mining
         {
             var complexity = Calculate(contextChain, block);
             if (block.MiningBlockInfo.Complexity < complexity)
-                return false;
-            if( Block.Block.GetHashComplexity(block.Hash) < complexity )
                 return false;
             return true;
         }

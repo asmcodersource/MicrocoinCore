@@ -44,7 +44,7 @@ namespace Microcoin.Blockchain.ChainController
             cancellationToken.ThrowIfCancellationRequested();
             // Any wallet can't have less than zero coint after transaction
             foreach (var walletCoinsPair in tempCoinsCount)
-                if (chain.GetWalletCoins(walletCoinsPair.Key) + tempCoinsCount[walletCoinsPair.Key] < 0)
+                if ((chain.GetWalletCoins(walletCoinsPair.Key) + tempCoinsCount[walletCoinsPair.Key]) < 0)
                     return false;
             // anything is okay
             return true;

@@ -11,7 +11,18 @@ namespace Microcoin.Blockchain.Mining
     {
         public event Action<Block.Block, string> BlockMined;
         public MiningRules MiningRules { get; }
-       
+        
+        public static void LinkBlockToChain(IChain chain, Block.Block block)
+        {
+            var tailBlock = chain.GetLastBlock();
+            if (tailBlock is not null)
+            {
+                block.MiningBlockInfo.BlockId = tailBlock.MiningBlockInfo.BlockId + 1;
+                block.MiningBlockInfo.PreviousBlockHash = tailBlock.Hash;
+            }
+            else throw new Exception("Can't link to empty chain");
+        }
+
         public Task<string> StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken);
         public bool VerifyBlockMining(IChain chain, Block.Block block);
     }

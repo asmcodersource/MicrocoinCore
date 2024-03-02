@@ -29,7 +29,14 @@ namespace Microcoin.Blockchain.ChainController
             currentChainOperationsCTS = new CancellationTokenSource();
         }
 
-        public async Task AcceptBlock(Block.Block block)
+        public void DefaultInitialize()
+        {
+            NextBlockRule = new NextBlockRule();
+            DeepTransactionsVerify = new DeepTransactionsVerify();
+            FetchableChainRule = new FetchableChainRule();
+        }
+
+        public async Task<bool> AcceptBlock(Block.Block block)
         {
             CancellationToken cancellationToken = GetChainOperationCancellationToken();
             if (NextBlockRule.IsBlockNextToChain(block, ChainTail))
@@ -38,10 +45,10 @@ namespace Microcoin.Blockchain.ChainController
                 {
                     var isBlockValid = await DeepBlockVerify(block, ChainTail, cancellationToken);
                     if (isBlockValid is not true)
-                        return; 
-                    AddBlockToTail(block);  // this block valid as new tail of current blockchain, try to set it as tail
+                        return false; 
+                    return AddBlockToTail(block);  // this block valid as new tail of current blockchain, try to set it as tail
                 }
-                catch (TaskCanceledException) { /* This block did not have time to pass the inspection, most likely another block was accepted as the final one. */ }
+                catch (TaskCanceledException) { return false; /* This block did not have time to pass the inspection, most likely another block was accepted as the final one. */ }
             }
             else if (ChainLoader != null && FetchableChainRule.IsPossibleChainUpgrade(ChainTail, block))
             {
@@ -49,9 +56,10 @@ namespace Microcoin.Blockchain.ChainController
                 // We don't care about everything else inside the chain.
                 ChainLoader.RequestChainFetch(block);
             }
+            return false;
         }
 
-        public void AddBlockToTail(Block.Block block)
+        protected bool AddBlockToTail(Block.Block block)
         {
             // lock used to avoid thread running
             // Only one block can be added as tail of chain
@@ -59,10 +67,11 @@ namespace Microcoin.Blockchain.ChainController
             {
                 // is block still continues to this chain?
                 if (NextBlockRule.IsBlockNextToChain(block, ChainTail) is not true)
-                    return;
+                    return false;
                 ChainTail.AddTailBlock(block);
                 currentChainOperationsCTS.Cancel();
                 currentChainOperationsCTS = new CancellationTokenSource();
+                return true;
             }
         }
 
@@ -87,7 +96,6 @@ namespace Microcoin.Blockchain.ChainController
                 // but it take to much time, and memory space
                 // TODO: Think about non immutable chain, or one non immutable chain for all handled blocks 
                 cancellationToken.ThrowIfCancellationRequested();
-                var immutalbeChain = new ImmutableChain(ChainTail);
                 return Miner.VerifyBlockMining(chainTail, block);
             }
         }

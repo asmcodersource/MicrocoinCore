@@ -40,9 +40,7 @@ namespace Microcoin.Blockchain.Mining
                 {
                     block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
                     var hash = block.GetMiningBlockHash();
-                    block.Hash = hash;
-                    var isHashCorrect = MiningRules.ComplexityRule.Verify(chain, block);
-                    if (isHashCorrect is not true)
+                    if (Block.Block.GetHashComplexity(hash) < block.MiningBlockInfo.Complexity)
                         continue;
                     lock (this)
                     {
@@ -69,6 +67,8 @@ namespace Microcoin.Blockchain.Mining
                 return false;
             var computedHash = block.GetMiningBlockHash();
             if( computedHash != block.Hash)
+                return false;
+            if (Block.Block.GetHashComplexity(block.Hash) < block.MiningBlockInfo.Complexity)
                 return false;
             return true;
         }

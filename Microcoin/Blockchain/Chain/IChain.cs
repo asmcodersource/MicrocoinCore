@@ -22,15 +22,19 @@ namespace Microcoin.Blockchain.Chain
 
         public Block.Block? GetBlockFromTail(int blockIdFromTail)
         {
-            if (GetLastBlock() == null)
-                return null;
-            int lastBlockId = GetLastBlock().MiningBlockInfo.BlockId;
-            return GetBlock(lastBlockId - blockIdFromTail);
+            if (GetLastBlock() is Block.Block tailBlock)
+            {
+                int lastBlockId = tailBlock.MiningBlockInfo.BlockId;
+                return GetBlock(lastBlockId - blockIdFromTail);
+            }
+            return null;
         }
 
         public Block.Block? GetBlock(int blockId)
         {
             var currentChain = this;
+            if (currentChain.BlocksList.Count == 0)
+                return null;
             while (currentChain is not null)
             {
                 if (currentChain.GetLastBlock().MiningBlockInfo.BlockId > blockId)

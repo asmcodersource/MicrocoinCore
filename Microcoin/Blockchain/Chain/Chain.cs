@@ -17,7 +17,14 @@ namespace Microcoin.Blockchain.Chain
                 BlocksList.Add(block);
                 BlocksDictionary.Add(block.Hash, block);
                 CountTransactionsTransfers(block.Transactions);
+                CountMinerReward(block);
             }
+        }
+
+        protected void CountMinerReward(Block.Block block)
+        {
+            if (WalletsCoins.TryAdd(block.MiningBlockInfo.MinerPublicKey, block.MiningBlockInfo.MinerReward) is not true)
+                WalletsCoins[block.MiningBlockInfo.MinerPublicKey] += block.MiningBlockInfo.MinerReward;
         }
 
         protected void CountTransactionsTransfers(List<Transaction.Transaction> transactions)
