@@ -26,15 +26,24 @@ namespace Microcoin.Blockchain.Mining
         /// </summary>
         public async Task<string> StartBlockMining(IChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
+            // Get chain complexity, used to calculate chain complexity for new tail block
+            int chainComplexity = 0;
+            Block.Block tailBlock = chain.GetLastBlock();
+            if (tailBlock != null)
+                chainComplexity = tailBlock.MiningBlockInfo.ChainComplexity;
+
+            // Prepare to mining
             bool isBlockAlreadyMined = false;
             block.MiningBlockInfo.MinerPublicKey = minerWallet;
             Random random = new Random();
             while (cancellationToken.IsCancellationRequested is not true && isBlockAlreadyMined is not true )
             {
+                // Calculate block values by rules
                 int miningComplexity = MiningRules.ComplexityRule.Calculate(chain, block);
                 block.MiningBlockInfo.Complexity = miningComplexity;
                 decimal miningReward = MiningRules.RewardRule.Calculate(chain, block);
                 block.MiningBlockInfo.MinerReward = miningReward;
+                block.MiningBlockInfo.ChainComplexity = miningComplexity + chainComplexity;
                 // To reduce count of complexity and reward recalculations
                 for (int i = 0; i < 1024 * 16; i++)
                 {

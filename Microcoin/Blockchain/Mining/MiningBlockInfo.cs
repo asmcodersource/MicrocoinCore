@@ -14,6 +14,7 @@ namespace Microcoin.Blockchain.Mining
         public string PreviousBlockHash { get; set; } = "";
         public string MinerPublicKey { get; set; } = "";
         public decimal MinerReward { get; set; } = 0;
+        public int ChainComplexity { get; set; } = 0;
         public int Complexity { get; set; } = 0;
         public DateTime CreateTime { get; set; } = DateTime.UtcNow;
     }
