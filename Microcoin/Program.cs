@@ -1,7 +1,4 @@
 ﻿using Microcoin;
-using Microcoin.Blockchain.Transaction;
-using Microcoin.Network.NodeNet;
-using Microcoin.RSAEncryptions;
 
 
 Peer peer = new Peer();

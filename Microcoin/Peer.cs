@@ -2,16 +2,21 @@
 using Microcoin.Blockchain.Transaction;
 using Newtonsoft.Json;
 using Microcoin.Blockchain.BlocksPool;
-using Microcoin.PipelineHandling;
+using Microcoin.Blockchain.Mining;
+using Microcoin.Blockchain.Block;
+using Microcoin.Blockchain.ChainController;
 
 namespace Microcoin
 {
     public class Peer
     {
         public BlocksPool BlocksPool { get; protected set; } = new BlocksPool();
+        public ChainController ChainController { get; protected set; } 
         public TransactionsPool TransactionsPool { get; protected set; } = new TransactionsPool();
         public PeerNetworking PeerNetworking { get; protected set; } 
         public PeerWalletKeys PeerWalletKeys { get; protected set; }
+        public PeerMining PeerMining { get; protected set; }
+
 
         public string WalletPublicKey { get { return PeerWalletKeys.TransactionSigner.SignOptions.PublicKey; } }
 
@@ -32,6 +37,7 @@ namespace Microcoin
             var transaction = CreateTransaction(receiverPublicKey, coinsCount);
             var transactionBroadcast = JsonConvert.SerializeObject( transaction );
             PeerNetworking.NetworkNode.SendMessage(transactionBroadcast);
+            TransactionsPool.HandleTransaction(transaction).Wait();
             return transaction;
         }
 
@@ -39,6 +45,23 @@ namespace Microcoin
         {
             TransactionsPool.InitializeHandlerPipeline();
             BlocksPool.InitializeHandlerPipeline(TransactionsPool.HandlePipeline);
+        }
+
+        public void InitializeMining(bool miningEnable = true)
+        {
+            var complexityRule = new ComplexityRule();
+            var rewardRule = new RewardRule();
+            var miningRules = new MiningRules(complexityRule, rewardRule);
+            Miner miner = new Miner();
+            miner.SetRules(miningRules);
+            PeerMining = new PeerMining();
+            PeerMining.InizializeMiner(miner, WalletPublicKey, TransactionsPool);
+            PeerMining.BlockMined += BlockMinedHandler;
+            if( miningEnable )
+                PeerMining.StartMining();
+
+            TransactionsPool.OnTransactionReceived += (transaction)
+                => PeerMining.TryStartMineBlock(ChainController.ChainTail, new DeepTransactionsVerify(), CancellationToken.None); 
         }
 
         public void InitializeNetworking()
@@ -63,6 +86,12 @@ namespace Microcoin
                 PeerWalletKeys.CreateKeys();
                 PeerWalletKeys.SaveKeys(filePath);
             }
+        }
+
+        protected void BlockMinedHandler(Block block)
+        {
+            BlocksPool.HandleBlock(block).Wait();
+            // TODO: send mined block to network
         }
     }
 }

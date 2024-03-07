@@ -12,7 +12,7 @@ namespace Microcoin.Blockchain.Mining
         public event Action<Block.Block, string> BlockMined;
         public MiningRules MiningRules { get; }
         
-        public static void LinkBlockToChain(IChain chain, Block.Block block)
+        public void LinkBlockToChain(IChain chain, Block.Block block)
         {
             var tailBlock = chain.GetLastBlock();
             if (tailBlock is not null)
