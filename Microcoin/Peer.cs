@@ -35,8 +35,6 @@ namespace Microcoin
                 throw new NullReferenceException("Peer is not initialized");
 
             var transaction = CreateTransaction(receiverPublicKey, coinsCount);
-            var transactionBroadcast = JsonConvert.SerializeObject( transaction );
-            PeerNetworking.NetworkNode.SendMessage(transactionBroadcast);
             TransactionsPool.HandleTransaction(transaction).Wait();
             return transaction;
         }
@@ -61,7 +59,7 @@ namespace Microcoin
                 PeerMining.StartMining();
 
             TransactionsPool.OnTransactionReceived += (transaction)
-                => PeerMining.TryStartMineBlock(ChainController.ChainTail, new DeepTransactionsVerify(), CancellationToken.None); 
+                => PeerMining.TryStartMineBlock(ChainController.ChainTail, new DeepTransactionsVerify()); 
         }
 
         public void InitializeNetworking()
@@ -91,7 +89,9 @@ namespace Microcoin
         protected void BlockMinedHandler(Block block)
         {
             BlocksPool.HandleBlock(block).Wait();
-            // TODO: send mined block to network
+            PeerNetworking.SendBlockToNetwork(block);
+            PeerMining.StopMining();
+            PeerMining.TryStartMineBlock(ChainController.ChainTail, new DeepTransactionsVerify());
         }
     }
 }

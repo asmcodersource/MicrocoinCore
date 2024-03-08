@@ -1,7 +1,9 @@
 ﻿using Microcoin.Network.MessageAcceptors;
 using Microcoin.Network.NodeNet.TcpCommunication;
 using Microcoin.Network.NodeNet;
+using Microcoin.Blockchain.Block;
 using Microcoin.RSAEncryptions;
+using Microcoin.Blockchain.Transaction;
 
 namespace Microcoin
 {
@@ -28,7 +30,7 @@ namespace Microcoin
         public virtual void CreateDefaultNode()
         {
             var senderEncryptionOptions = RSAEncryption.CreateSignOptions();
-            var senderTcpOptions = new TcpListenerOptions(1300);
+            var senderTcpOptions = new TcpListenerOptions(0);
             NetworkNode = Node.CreateRSAHttpNode(senderEncryptionOptions, senderTcpOptions);
             NetworkNode.NetworkExplorer.LoadRecentConnectionsFromFile("knownPeers.json");
         }
@@ -39,6 +41,28 @@ namespace Microcoin
             // Wait until node speaks with network for first time
             Thread.Sleep(5000);
             NetworkNode.NetworkExplorer.SaveRecentConnectionsToFile("knownPeers.json");
-        } 
+        }
+
+        public void SendTransactionToNetwork(Transaction transaction)
+        {
+            var messageDTO = new
+            {
+                transaction = transaction,
+                type = "WalletTransaction"
+            };
+            var messageJson = Newtonsoft.Json.JsonConvert.SerializeObject(messageDTO);
+            NetworkNode.SendMessage(messageJson);
+        }
+
+        public void SendBlockToNetwork(Block block)
+        {
+            var messageDTO = new
+            {
+                block = block,
+                type = "ChainBlock"
+            };
+            var messageJson = Newtonsoft.Json.JsonConvert.SerializeObject(messageDTO);
+            NetworkNode.SendMessage(messageJson);
+        }
     }
 }

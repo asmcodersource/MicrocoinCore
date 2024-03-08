@@ -12,6 +12,7 @@ namespace Microcoin.Blockchain.ChainController
     public class ChainController
     {   
         protected CancellationTokenSource currentChainOperationsCTS;
+        public event Action<Block.Block> ChainGetNextBlock;
         public ChainLoader ChainLoader { get; protected set; }
         public Chain.Chain ChainTail { get; protected set; }
         public IMiner Miner { get; protected set; }
@@ -71,6 +72,7 @@ namespace Microcoin.Blockchain.ChainController
                 ChainTail.AddTailBlock(block);
                 currentChainOperationsCTS.Cancel();
                 currentChainOperationsCTS = new CancellationTokenSource();
+                ChainGetNextBlock?.Invoke(block);
                 return true;
             }
         }

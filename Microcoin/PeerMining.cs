@@ -10,12 +10,12 @@ namespace Microcoin
     public class PeerMining
     {
         public event Action<Block> BlockMined;
-        
+        protected Task? MiningTask;
+        protected CancellationTokenSource? MiningCancellationTokenSource;
         public int MaxTransactionsPerBlock { get; set; } = 512;
         public IMiner Miner { get; protected set; } 
         public TransactionsPool LinkedTransactionsPool { get; protected set; }
         public bool IsMiningEnabled { get; protected set; } = false;
-        public bool IsMiningRunning { get; protected set; } = false;
         public string MinerWaller { get; set; }
 
         public void InizializeMiner(IMiner miner, string minerWallet, TransactionsPool transactionsPool)
@@ -33,12 +33,37 @@ namespace Microcoin
         public void StopMining()
         {
             IsMiningEnabled = false;
+            CancelCurrentMiningProcess();
         }
 
-        public void TryStartMineBlock(IChain tailChain, IDeepTransactionsVerify deepTransactionsVerify, CancellationToken cancellationToken)
+        /// <returns>true if some mining process was cancelled</returns>
+        public bool CancelCurrentMiningProcess()
         {
-            if (IsMiningEnabled && IsMiningRunning )
-                StartMineBlock(tailChain, deepTransactionsVerify, cancellationToken);
+            lock (this)
+            {
+                if (MiningCancellationTokenSource is not null)
+                {
+                    MiningCancellationTokenSource?.Cancel();
+                    MiningTask?.Wait();
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        public void TryStartMineBlock(IChain tailChain, IDeepTransactionsVerify deepTransactionsVerify)
+        {
+            lock (this)
+            {
+                if (MiningTask is not null && MiningTask.IsCompleted is not true)
+                    throw new Exception("Only one mining proccess allowed");
+
+                if (IsMiningEnabled)
+                {
+                    MiningCancellationTokenSource = new CancellationTokenSource();
+                    StartMineBlock(tailChain, deepTransactionsVerify, MiningCancellationTokenSource.Token);
+                }
+            }
         }
         
         public void StartMineBlock(IChain tailChain, IDeepTransactionsVerify deepTransactionsVerify, CancellationToken cancellationToken)
@@ -51,7 +76,7 @@ namespace Microcoin
             block.Transactions = transactions;
             Miner.LinkBlockToChain(tailChain, block);
             // TODO: verify this line
-            Task.Run(() => MineBlock(tailChain, block, deepTransactionsVerify, cancellationToken));
+            MiningTask = Task.Run(() => MineBlock(tailChain, block, deepTransactionsVerify, cancellationToken));
         }
  
 
@@ -59,12 +84,10 @@ namespace Microcoin
         {
             try
             {
-                IsMiningRunning = true;
                 block.Hash = await Miner.StartBlockMining(tailChain, block, MinerWaller, cancellationToken);
                 BlockMined.Invoke(block);
             }
             catch (OperationCanceledException) { }
-            finally { IsMiningRunning = false; }
         }
     }
 }
