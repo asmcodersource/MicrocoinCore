@@ -11,13 +11,14 @@ namespace Microcoin.Blockchain.Chain
     /// A chain can be connected to the end of another chain. 
     /// A chain acting as a parent for another must be immutable
     /// </summary>
-    public interface IChain
+    [Serializable]
+    public abstract class AbstractChain
     {
-        public Dictionary<string, decimal> WalletsCoins { get; }
-        public ImmutableChain? PreviousChain { get; }
-        public List<Block.Block> BlocksList { get; }
-        public HashSet<Transaction.Transaction> TransactionsSet {  get; }
-        public Dictionary<string, Block.Block> BlocksDictionary { get; }
+        public Dictionary<string, decimal> WalletsCoins { get; protected set; }
+        public ImmutableChain? PreviousChain { get; protected set; }
+        public List<Block.Block> BlocksList { get; protected set; }
+        public HashSet<Transaction.Transaction> TransactionsSet { get; protected set; }
+        public Dictionary<string, Block.Block> BlocksDictionary { get; protected set; }
 
 
         public Block.Block? GetBlockFromTail(int blockIdFromTail)
