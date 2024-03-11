@@ -9,12 +9,12 @@ namespace Microcoin.Blockchain.Mining
 {
     public class RewardRule : IRewardRule
     {
-        public decimal Calculate(IChain contextChain, Block.Block block)
+        public decimal Calculate(AbstractChain contextChain, Block.Block block)
         {
             return CalculateRewardOfBlock(block);
         }
 
-        public bool Verify(IChain contextChain, Block.Block block)
+        public bool Verify(AbstractChain contextChain, Block.Block block)
         {
             decimal reward = CalculateRewardOfBlock(block);
             if (block.MiningBlockInfo.MinerReward != reward)
