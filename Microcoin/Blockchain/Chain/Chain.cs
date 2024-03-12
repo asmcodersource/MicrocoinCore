@@ -7,20 +7,22 @@ namespace Microcoin.Blockchain.Chain
     {
         public Chain()
         {
-            BlocksList = new List<Block.Block>();
+            blocksList = new List<Block.Block>();
             BlocksDictionary = new Dictionary<string, Block.Block>();
             TransactionsSet = new HashSet<Transaction.Transaction>();
             WalletsCoins = new Dictionary<string, decimal>();
+            BlocksCount = 0;
         }
 
         public void AddTailBlock(Block.Block block)
         {
             lock (this)
             {
-                BlocksList.Add(block);
+                blocksList.Add(block);
                 BlocksDictionary.Add(block.Hash, block);
                 CountTransactionsTransfers(block.Transactions);
                 CountMinerReward(block);
+                BlocksCount++;
             }
         }
 

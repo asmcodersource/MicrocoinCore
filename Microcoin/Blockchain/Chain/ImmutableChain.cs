@@ -15,8 +15,9 @@ namespace Microcoin.Blockchain.Chain
             TransactionsSet = new HashSet<Transaction.Transaction>(chain.TransactionsSet);
             WalletsCoins = new Dictionary<string, decimal>(chain.WalletsCoins);
             PreviousChain = chain.PreviousChain;
-            BlocksList = new List<Block.Block>(chain.BlocksList);
+            blocksList = new List<Block.Block>(chain.GetBlocksList());
             BlocksDictionary = new Dictionary<string, Block.Block>(chain.BlocksDictionary);
+            BlocksCount = chain.BlocksCount;
         }
     }
 }

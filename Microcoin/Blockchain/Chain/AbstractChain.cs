@@ -16,9 +16,10 @@ namespace Microcoin.Blockchain.Chain
     {
         public Dictionary<string, decimal> WalletsCoins { get; protected set; }
         public ImmutableChain? PreviousChain { get; protected set; }
-        public List<Block.Block> BlocksList { get; protected set; }
         public HashSet<Transaction.Transaction> TransactionsSet { get; protected set; }
         public Dictionary<string, Block.Block> BlocksDictionary { get; protected set; }
+        public Int32 BlocksCount { get; protected set; }
+        protected List<Block.Block> blocksList { get; set; }
 
 
         public Block.Block? GetBlockFromTail(int blockIdFromTail)
@@ -34,17 +35,23 @@ namespace Microcoin.Blockchain.Chain
         public Block.Block? GetBlock(int blockId)
         {
             var currentChain = this;
-            if (currentChain.BlocksList.Count == 0)
+            if (currentChain.blocksList.Count == 0)
                 return null;
             while (currentChain is not null)
             {
                 if (currentChain.GetLastBlock().MiningBlockInfo.BlockId > blockId)
                     if (currentChain.GetFirstBlock().MiningBlockInfo.BlockId <= blockId)
-                        return currentChain.BlocksList[blockId - currentChain.GetFirstBlock().MiningBlockInfo.BlockId];
+                        return currentChain.blocksList[blockId - currentChain.GetFirstBlock().MiningBlockInfo.BlockId];
                 currentChain = currentChain.PreviousChain;
             }
             return null;
         }
+
+        public List<Block.Block> GetBlocksList()
+            => blocksList;
+
+        public void SetBlockList(List<Block.Block> blockList)
+            => this.blocksList = blockList;
 
         public bool IsChainHasTransaction(Transaction.Transaction transaction)
             => TransactionsSet.Contains(transaction);
@@ -53,10 +60,10 @@ namespace Microcoin.Blockchain.Chain
             => WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;
 
         public Block.Block? GetFirstBlock()
-            => BlocksList.Count() == 0 ? null : BlocksList.First();
+            => blocksList.Count() == 0 ? null : blocksList.First();
 
         public Block.Block? GetLastBlock() 
-            => BlocksList.Count() == 0 ? null : BlocksList.Last();
+            => blocksList.Count() == 0 ? null : blocksList.Last();
 
     }
 }

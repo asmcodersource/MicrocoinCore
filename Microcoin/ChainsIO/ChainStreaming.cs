@@ -1,9 +1,6 @@
-﻿using Microcoin.Blockchain.Chain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microcoin.Blockchain.Block;
+using Microcoin.Blockchain.Chain;
+using Microcoin.JsonStreamParser;
 
 namespace Microcoin.ChainsIO
 {
@@ -11,12 +8,28 @@ namespace Microcoin.ChainsIO
     {
         public async Task<AbstractChain> ReadChainFromStream(Stream stream, CancellationToken cancellationToken)
         {
-            return null;
+            var jsonStreamParser = new JsonStreamParser.JsonStreamParser<object>();
+            var chainHeader = await jsonStreamParser.ParseJsonObject(stream, cancellationToken) as AbstractChain;
+            if (chainHeader is null)
+                throw new Exception("Deserialized object has wrong type, must be 'Chain'");
+            var blocksList = new List<Block>();
+            for (int i = 0; i < chainHeader.BlocksCount; i++)
+            {
+                var chainBlock = await jsonStreamParser.ParseJsonObject(stream, cancellationToken) as Block;
+                if (chainBlock is null)
+                    throw new Exception("Deserialized object has wrong type, must be 'Block'");
+                blocksList.Add(chainBlock);
+            }
+            chainHeader.SetBlockList(blocksList);
+            return chainHeader;
         }
 
-        public async Task<bool> WriteChainToStream(Stream stream, AbstractChain chain, CancellationToken cancellationToken) 
+        public async Task WriteChainToStream(Stream stream, AbstractChain chain, CancellationToken cancellationToken) 
         {
-            return false;
+            await ChainSerrialization.SerrilizeChainToStream(chain, stream, cancellationToken);
+            var blocks = chain.GetBlocksList();
+            foreach (var block in blocks)
+                await ChainSerrialization.SerrilizeBlockToStream(block, stream, cancellationToken);
         }
     }
 }
