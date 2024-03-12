@@ -16,25 +16,19 @@ namespace Microcoin.ChainsIO
         public static String SerializeChainHeader(ChainHeader chainHeader)
             => JsonConvert.SerializeObject(chainHeader);
 
-        public static async Task SerilizeChainToStream(AbstractChain chain, Stream stream, CancellationToken cancellationToken)
+        public static async Task SerilizeChainToStream(AbstractChain chain, StreamWriter stream, CancellationToken cancellationToken)
         {
-            StreamWriter streamWriter = new StreamWriter(stream);
-            await streamWriter.WriteAsync(new StringBuilder(SerializeChain(chain)), cancellationToken);
-            await streamWriter.FlushAsync();
+            await stream.WriteAsync(new StringBuilder(SerializeChain(chain)), cancellationToken);
         }
 
-        public static async Task SerializeChainHeaderToStream(ChainHeader chainHeader, Stream stream, CancellationToken cancellationToken)
+        public static async Task SerializeChainHeaderToStream(ChainHeader chainHeader, StreamWriter stream, CancellationToken cancellationToken)
         {
-            StreamWriter streamWriter = new StreamWriter(stream);
-            await streamWriter.WriteAsync(new StringBuilder(SerializeChainHeader(chainHeader)), cancellationToken);
-            await streamWriter.FlushAsync();
+            await stream.WriteAsync(new StringBuilder(SerializeChainHeader(chainHeader)), cancellationToken);
         }
 
-        public static async Task SerilizeBlockToStream(Block block, Stream stream, CancellationToken cancellationToken)
+        public static async Task SerilizeBlockToStream(Block block, StreamWriter stream, CancellationToken cancellationToken)
         {
-            StreamWriter streamWriter = new StreamWriter(stream);
-            await streamWriter.WriteAsync(new StringBuilder(SerializeBlock(block)), cancellationToken);
-            await streamWriter.FlushAsync();
+            await stream.WriteAsync(new StringBuilder(SerializeBlock(block)), cancellationToken);
         }
     }
 }

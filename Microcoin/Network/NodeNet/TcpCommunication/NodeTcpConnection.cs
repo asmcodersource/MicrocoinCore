@@ -18,7 +18,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
         public event Action<INodeConnection> MessageReceived;
         public event Action<INodeConnection> ConnectionClosed;
         protected Task? ListeningTask = null;
-        protected JsonStreamParser.JsonStreamParser<Message.Message> jsonStreamParser = new JsonStreamParser.JsonStreamParser<Message.Message>();
+        protected JsonStreamParser.JsonStreamParser jsonStreamParser = new JsonStreamParser.JsonStreamParser();
         protected Queue<Message.Message> messagesQueue = new Queue<Message.Message>();
 
 
@@ -38,7 +38,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
             string port = addr.Split(":")[1];
             try
             {
-                jsonStreamParser = new JsonStreamParser.JsonStreamParser<Message.Message>();
+                jsonStreamParser = new JsonStreamParser.JsonStreamParser();
                 TcpClient.Connect(ip, Convert.ToInt32(port));
                 return true;
             }
@@ -115,7 +115,8 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
                 while (IsListening)
                 {
                     var parsedObject = await jsonStreamParser.ParseJsonObject(inputStream, CancellationToken.None);
-                    if (parsedObject is Message.Message message)
+                    var messageObject = parsedObject.Deserialize<Message.Message>();
+                    if (messageObject is Message.Message message)
                         AddMessageToQueue(message);
                 }
             }

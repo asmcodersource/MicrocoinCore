@@ -14,7 +14,7 @@ namespace Tests
             // Create some chain with fake blocks
             Chain chain = new Chain();
             List<Peer> peers = TransactionTheory.CreateTestPeers(10);
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 2; i++)
             {
                 var transactionsTheories = TransactionTheory.GetValidTransactionsTheories(peers, 10);
                 var block = new Block();

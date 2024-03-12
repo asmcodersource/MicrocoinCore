@@ -10,10 +10,10 @@ namespace Microcoin.Blockchain.Chain
     public class ChainHeader
     {
         ///public Dictionary<string, decimal> WalletsCoins { get; protected set; }
-        public Int32 BlocksCount { get; protected set; }
+        public Int32 BlocksCount { get; set; }
 
         public ChainHeader()
-        { }
+        { /* For JObject.Parse method */ }
 
         public ChainHeader(AbstractChain chain) 
         {
