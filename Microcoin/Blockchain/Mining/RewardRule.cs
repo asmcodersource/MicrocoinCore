@@ -24,7 +24,7 @@ namespace Microcoin.Blockchain.Mining
 
         protected double CalculateRewardOfBlock(Block.Block block)
         {
-            return block.MiningBlockInfo.Complexity * (1.0 / block.MiningBlockInfo.BlockId + 1);
+            return block.MiningBlockInfo.Complexity * (1.0 / (block.MiningBlockInfo.BlockId + 1));
         }
     }
 }
