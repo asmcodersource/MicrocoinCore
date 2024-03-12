@@ -15,22 +15,42 @@ namespace Microcoin.JsonStreamParser
     /// Should be base for chain storaging, and transfers via network
     public class JsonStreamParser<Type>
     {
-        char[] readBuffer = new char[1024*16];
-        protected List<Type> parsedObjects = null;
+        protected char[] readBuffer;
+        protected Queue<Type> objectsQueue = new Queue<Type>();
         protected StringBuilder dataBuffer = new StringBuilder();
+
+        public JsonStreamParser(int bufferSize = 1024*16)
+        {
+            // bigger array faster parsing, but more space complexity
+            readBuffer = new char[bufferSize];
+        }
 
         public async Task<List<Type>> ParseJsonObjects(Stream jsonStream, CancellationToken cancellationToken)
         {
+            await ParseObjectsFromJsonToQueue(jsonStream, cancellationToken);
+            var objectsList = objectsQueue.ToList();
+            objectsQueue.Clear();
+            return objectsList;
+        }
+
+        public async Task<Type> ParseJsonObject(Stream jsonStream, CancellationToken cancellationToken)
+        {
+            if (objectsQueue.Count() == 0)
+                await ParseObjectsFromJsonToQueue(jsonStream, cancellationToken);
+            return objectsQueue.Dequeue();
+        }
+
+
+        protected async Task ParseObjectsFromJsonToQueue(Stream jsonStream, CancellationToken cancellationToken)
+        {
             StreamReader reader = new StreamReader(jsonStream);
-            parsedObjects = new List<Type>();
-            while ( reader.EndOfStream is not true )
+            while (reader.EndOfStream is not true)
             {
                 var receivedSize = await reader.ReadAsync(readBuffer, cancellationToken);
                 ParsePart(readBuffer, receivedSize);
-                if (parsedObjects.Count() != 0)
+                if (objectsQueue.Count() != 0)
                     break;
             }
-            return parsedObjects;
         }
 
         protected void ParsePart(char[] chars, int length)
@@ -47,7 +67,7 @@ namespace Microcoin.JsonStreamParser
                 {
                     var streamPart = dataBuffer.ToString();
                     var parsedObject = JsonConvert.DeserializeObject<Type>(streamPart);
-                    parsedObjects.Add(parsedObject);
+                    objectsQueue.Enqueue(parsedObject);
                     dataBuffer.Clear();
                 }
                 catch (JsonSerializationException) { /* This part isn't correct json */ }

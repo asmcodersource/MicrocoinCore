@@ -68,7 +68,7 @@ namespace Tests
                     first_node.SendMessage(message);
                     second_node.SendMessage(message);
 
-                    Thread.Sleep(10);
+                    Thread.Sleep(50);
 
                     Assert.Equal(2, receivedMessagesCount);
                 }

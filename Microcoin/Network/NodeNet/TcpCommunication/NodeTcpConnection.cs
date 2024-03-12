@@ -114,10 +114,9 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
             {
                 while (IsListening)
                 {
-                    var parsedObject = await jsonStreamParser.ParseJsonObjects(inputStream, CancellationToken.None);
-                    foreach (var entry in parsedObject)
-                        if (entry is Message.Message message)
-                            AddMessageToQueue(message);
+                    var parsedObject = await jsonStreamParser.ParseJsonObject(inputStream, CancellationToken.None);
+                    if (parsedObject is Message.Message message)
+                        AddMessageToQueue(message);
                 }
             }
             catch (Exception ex)
