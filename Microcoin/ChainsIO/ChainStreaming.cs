@@ -21,9 +21,8 @@ namespace Microcoin.ChainsIO
                 var chainBlock = (await jsonStreamParser.ParseJsonObject(stream, cancellationToken)).Deserialize<Block>();
                 if (chainBlock is null)
                     throw new Exception("Deserialized object has wrong type, must be 'Block'");
-                blocksList.Add(chainBlock);
+                chain.AddTailBlock(chainBlock);
             }
-            chain.SetBlockList(blocksList);
             return chain;
         }
 

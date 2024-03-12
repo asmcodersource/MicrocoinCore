@@ -13,11 +13,10 @@ namespace Microcoin.Blockchain.Chain
         public ImmutableChain(AbstractChain chain)
         {
             TransactionsSet = new HashSet<Transaction.Transaction>(chain.TransactionsSet);
-            WalletsCoins = new Dictionary<string, decimal>(chain.WalletsCoins);
+            WalletsCoins = new Dictionary<string, double>(chain.WalletsCoins);
             PreviousChain = chain.PreviousChain;
             blocksList = new List<Block.Block>(chain.GetBlocksList());
             BlocksDictionary = new Dictionary<string, Block.Block>(chain.BlocksDictionary);
-            BlocksCount = chain.BlocksCount;
         }
     }
 }

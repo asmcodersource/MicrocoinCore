@@ -10,8 +10,7 @@ namespace Microcoin.Blockchain.Chain
             blocksList = new List<Block.Block>();
             BlocksDictionary = new Dictionary<string, Block.Block>();
             TransactionsSet = new HashSet<Transaction.Transaction>();
-            WalletsCoins = new Dictionary<string, decimal>();
-            BlocksCount = 0;
+            WalletsCoins = new Dictionary<string, double>();
         }
 
         public void AddTailBlock(Block.Block block)
@@ -22,7 +21,6 @@ namespace Microcoin.Blockchain.Chain
                 BlocksDictionary.Add(block.Hash, block);
                 CountTransactionsTransfers(block.Transactions);
                 CountMinerReward(block);
-                BlocksCount++;
             }
         }
 

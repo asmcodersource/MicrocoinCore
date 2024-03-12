@@ -9,7 +9,7 @@ namespace Microcoin.Blockchain.Chain
     [Serializable]
     public class ChainHeader
     {
-        ///public Dictionary<string, decimal> WalletsCoins { get; protected set; }
+        public Dictionary<string, double> WalletsCoins { get; protected set; }
         public Int32 BlocksCount { get; set; }
 
         public ChainHeader()
@@ -17,7 +17,7 @@ namespace Microcoin.Blockchain.Chain
 
         public ChainHeader(AbstractChain chain) 
         {
-            //WalletsCoins = new Dictionary<string, decimal>(chain.WalletsCoins);
+            //WalletsCoins = new Dictionary<string, double>(chain.WalletsCoins);
             BlocksCount = chain.GetBlocksList().Count();
         }
     }

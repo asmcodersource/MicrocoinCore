@@ -14,13 +14,18 @@ namespace Microcoin.Blockchain.Chain
     [Serializable]
     public abstract class AbstractChain
     {
-        public Dictionary<string, decimal> WalletsCoins { get; protected set; }
+        public Dictionary<string, double> WalletsCoins { get; protected set; }
         public ImmutableChain? PreviousChain { get; protected set; }
         public HashSet<Transaction.Transaction> TransactionsSet { get; protected set; }
         public Dictionary<string, Block.Block> BlocksDictionary { get; protected set; }
-        public Int32 BlocksCount { get; protected set; }
         protected List<Block.Block> blocksList { get; set; }
 
+        public Block.Block? GetBlockFromBegin(int blockIdFromBegin)
+        {
+            if (blocksList.Count <= blockIdFromBegin)
+                return null;
+            return blocksList[blockIdFromBegin];
+        }
 
         public Block.Block? GetBlockFromTail(int blockIdFromTail)
         {
@@ -35,7 +40,7 @@ namespace Microcoin.Blockchain.Chain
         public Block.Block? GetBlock(int blockId)
         {
             var currentChain = this;
-            if (currentChain.blocksList.Count == 0)
+            if (currentChain.blocksList.Count() == 0)
                 return null;
             while (currentChain is not null)
             {
@@ -56,7 +61,7 @@ namespace Microcoin.Blockchain.Chain
         public bool IsChainHasTransaction(Transaction.Transaction transaction)
             => TransactionsSet.Contains(transaction);
 
-        public decimal GetWalletCoins(string walletPublicKey)
+        public double GetWalletCoins(string walletPublicKey)
             => WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;
 
         public Block.Block? GetFirstBlock()

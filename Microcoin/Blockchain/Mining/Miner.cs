@@ -41,7 +41,7 @@ namespace Microcoin.Blockchain.Mining
                 // Calculate block values by rules
                 int miningComplexity = MiningRules.ComplexityRule.Calculate(chain, block);
                 block.MiningBlockInfo.Complexity = miningComplexity;
-                decimal miningReward = MiningRules.RewardRule.Calculate(chain, block);
+                double miningReward = MiningRules.RewardRule.Calculate(chain, block);
                 block.MiningBlockInfo.MinerReward = miningReward;
                 block.MiningBlockInfo.ChainComplexity = miningComplexity + chainComplexity;
                 // To reduce count of complexity and reward recalculations

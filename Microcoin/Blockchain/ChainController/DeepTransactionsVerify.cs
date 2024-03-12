@@ -33,7 +33,7 @@ namespace Microcoin.Blockchain.ChainController
         {
             // Count summary coins difference after this block
             cancellationToken.ThrowIfCancellationRequested();
-            Dictionary<string, decimal> tempCoinsCount = new Dictionary<string, decimal>();
+            Dictionary<string, double> tempCoinsCount = new Dictionary<string, double>();
             foreach (Transaction.Transaction transaction in transactions)
             {
                 if (tempCoinsCount.TryAdd(transaction.SenderPublicKey, -transaction.TransferAmount) is not true)
