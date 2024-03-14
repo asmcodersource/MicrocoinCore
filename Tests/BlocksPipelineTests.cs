@@ -1,6 +1,5 @@
 ﻿using Microcoin.Blockchain.Block;
-using Microcoin.Microcoin;
-using Microcoin.Microcoin.Blockchain.BlocksPool;
+using Microcoin.Blockchain.BlocksPool;
 
 namespace Tests
 {

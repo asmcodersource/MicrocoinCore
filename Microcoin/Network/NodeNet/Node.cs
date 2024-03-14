@@ -4,6 +4,7 @@ using Microcoin.Network.NodeNet.NodeActions;
 using Microcoin.Network.NodeNet.ReceiveMiddleware;
 using Microcoin.Network.NodeNet.TcpCommunication;
 using Microcoin.RSAEncryptions;
+using System.Xml.Linq;
 
 namespace Microcoin.Network.NodeNet
 {
@@ -14,7 +15,7 @@ namespace Microcoin.Network.NodeNet
         public INodeListener? ConnectionsListener { get; protected set; } = null;
         public INodeConnections? Connections { get; protected set; } = null;
         public ISenderSignOptions? SignOptions { get; protected set; } = null;
-        public IReceiveMiddleware ReceiveMiddlewareHead { get; protected set; }
+        public MiddlewarePipeline MiddlewarePipeline { get; protected set; }
         public NetworkExplorer.NetworkExplorer NetworkExplorer { get; protected set; }
 
         public event Action<MessageContext> MessageReceived;
@@ -32,16 +33,7 @@ namespace Microcoin.Network.NodeNet
             node.MessageSigner = messageSigner;
             node.Connections = new TcpCommunication.TcpCommunication();
             node.NetworkExplorer = new NetworkExplorer.NetworkExplorer(node);
-
-            // Middleware pipeline
-            var signMiddleware = new SignVerificationMiddleware(node, messageValidator);
-            var cacheMiddleware = new MessageCacheMiddleware();
-            var floodProtectorMiddleware = new FloodProtectorMiddleware();
-            signMiddleware.SetNext(floodProtectorMiddleware);
-            floodProtectorMiddleware.SetNext(cacheMiddleware);
-            cacheMiddleware.SetNext(node.NetworkExplorer.Middleware);
-            node.ReceiveMiddlewareHead = signMiddleware;
-            // TODO: add another middlewares in pipeline
+            node.DefaultPipelineInitialize();
 
             var listener = new NodeTcpListener();
             listener.Options = listenerOptions;
@@ -94,6 +86,19 @@ namespace Microcoin.Network.NodeNet
                 connection.CloseConnection();
         }
 
+        public void DefaultPipelineInitialize()
+        {
+            // Create pipeline handlers
+            var signMiddleware = new SignVerificationMiddleware(this, this.MessageValidator);
+            var cacheMiddleware = new MessageCacheMiddleware();
+            var floodProtectorMiddleware = new FloodProtectorMiddleware();
+            // add them to pipeline
+            MiddlewarePipeline = new MiddlewarePipeline();
+            MiddlewarePipeline.AddHandler(signMiddleware);
+            MiddlewarePipeline.AddHandler(cacheMiddleware);
+            MiddlewarePipeline.AddHandler(floodProtectorMiddleware);
+        }
+
         protected void NewConnectionHandler(INodeConnection nodeConnection)
         {
 
@@ -110,7 +115,7 @@ namespace Microcoin.Network.NodeNet
             if (message == null)
                 return;
             var msgContext = new MessageContext(message, nodeConnection);
-            var msgPassMiddleware = ReceiveMiddlewareHead.Invoke(msgContext);
+            var msgPassMiddleware = MiddlewarePipeline.Handle(msgContext);
             if (msgPassMiddleware)
                 MessageReceived?.Invoke(msgContext);
         }

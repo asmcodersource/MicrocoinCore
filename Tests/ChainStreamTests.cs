@@ -1,7 +1,6 @@
 ﻿using Microcoin.Blockchain.Block;
-using Microcoin.Microcoin;
-using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.ChainsIO;
+using Microcoin.Blockchain.Chain;
+using Microcoin.ChainsIO;
 
 namespace Tests
 {

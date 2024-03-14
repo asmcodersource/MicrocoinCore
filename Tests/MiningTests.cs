@@ -1,9 +1,7 @@
 ﻿using Microcoin.Blockchain.Mining;
-using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.Blockchain.ChainController;
-using Microcoin.Microcoin.Blockchain.Mining;
-using Microcoin.Microcoin;
+using Microcoin.Blockchain.ChainController;
+using Microcoin.Blockchain.Block;
+using Microcoin.Blockchain.Chain;
 
 namespace Tests
 {

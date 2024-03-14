@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microcoin.Microcoin;
-using Microcoin.Microcoin.Blockchain.Transaction;
-using Microcoin.Microcoin.Blockchain.TransactionsPool;
+﻿using System.Text;
+using Microcoin.Blockchain.Transaction;
+using Microcoin.Blockchain.TransactionsPool;
 
 namespace Tests
 {
