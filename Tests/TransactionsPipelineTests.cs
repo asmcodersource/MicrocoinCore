@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using Microcoin.Blockchain.Transaction;
-using Microcoin.Blockchain.TransactionsPool;
 
 namespace Tests
 {
@@ -15,10 +13,10 @@ namespace Tests
     public class TransactionTheory
     {
         public string WrongType { get; set; } = "None";
-        public readonly Transaction Transaction;
+        public readonly Transaction.Transaction Transaction;
         public readonly bool IsTransactionValid;
 
-        public TransactionTheory(Transaction transaction, bool isTransactionValid)
+        public TransactionTheory(Transaction.Transaction transaction, bool isTransactionValid)
         {
             Transaction = transaction;
             IsTransactionValid = isTransactionValid;
@@ -123,10 +121,10 @@ namespace Tests
 
         
 
-        private TransactionsPool CreateDefaultTransactionsPool()
+        private TransactionsPool.TransactionsPool CreateDefaultTransactionsPool()
         {
             // Create default transactions pool
-            TransactionsPool transactionsPool = new TransactionsPool();
+            TransactionsPool.TransactionsPool transactionsPool = new TransactionsPool.TransactionsPool();
             transactionsPool.InitializeHandlerPipeline();
             return transactionsPool;
         }

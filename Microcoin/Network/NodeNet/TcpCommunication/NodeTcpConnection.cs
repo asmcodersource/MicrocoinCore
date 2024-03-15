@@ -63,17 +63,15 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
             Task.Run(() => MessageListener());
         }
 
-        public void SendMessage(Message.Message message)
+        public async Task SendMessage(Message.Message message)
         {
             // Serialization can be performed in parallel, so lock is not needed here.
             var jsonMessage = JsonConvert.SerializeObject(message);
             var segment = new ArraySegment<byte>(Encoding.UTF8.GetBytes(jsonMessage));
             var stream = TcpClient.GetStream();
-            lock (this)
-            {
-                // Only one execution thread can write to a data stream at a time, otherwise it is impossible to interpret the data correctly.
-                stream.Write(segment);
-            }
+
+            // Only one execution thread can write to a data stream at a time, otherwise it is impossible to interpret the data correctly.
+            await stream.WriteAsync(segment); 
         }
 
         public async Task SendRawData(byte[] data, CancellationToken cancellationToken)
