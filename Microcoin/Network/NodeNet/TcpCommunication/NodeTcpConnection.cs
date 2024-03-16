@@ -73,7 +73,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
             var stream = TcpClient.GetStream();
 
             // Only one execution thread can write to a data stream at a time, otherwise it is impossible to interpret the data correctly.
-            stream.WriteAsync(segment); 
+            await stream.WriteAsync(segment); 
         }
 
         public async Task SendRawData(byte[] data, CancellationToken cancellationToken)

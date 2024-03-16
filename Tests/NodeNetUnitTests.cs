@@ -145,9 +145,9 @@ namespace Tests
                         receivedMessagesCount |= 2;
             };
 
-            first_node.SendMessage(message, second_node.SignOptions.PublicKey);
-            second_node.SendMessage(message, first_node.SignOptions.PublicKey);
-            Task.Delay(300).Wait();
+            first_node.SendMessage(message, second_node.SignOptions.PublicKey).Wait();
+            second_node.SendMessage(message, first_node.SignOptions.PublicKey).Wait();
+            Task.Delay(5000).Wait();
             Assert.Equal(3, receivedMessagesCount);
         }
     }
