@@ -16,7 +16,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
         public ITcpAddressProvider TcpAddressProvider { get; set; }
         public event Action<INodeConnection> MessageReceived;
         public event Action<INodeConnection> ConnectionClosed;
-        protected Task? ListeningTask = null;
+        protected Thread ListeningThread = null;
         protected JsonStreamParser.JsonStreamParser jsonStreamParser = new JsonStreamParser.JsonStreamParser();
         protected Queue<Message.Message> messagesQueue = new Queue<Message.Message>();
 
@@ -47,7 +47,8 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
 
         public Message.Message? GetLastMessage()
         {
-            return messagesQueue.Count != 0 ? messagesQueue.Dequeue() : null;
+            lock( this )
+                return messagesQueue.Count != 0 ? messagesQueue.Dequeue() : null;
         }
 
         public List<Message.Message> GetMessageList()
@@ -60,7 +61,8 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
         public void ListenMessages()
         {
             IsListening = true;
-            Task.Run(() => MessageListener());
+            ListeningThread = new Thread(() => MessageListener());
+            ListeningThread.Start();
         }
 
         public async Task SendMessage(Message.Message message)
@@ -71,7 +73,7 @@ namespace Microcoin.Network.NodeNet.TcpCommunication
             var stream = TcpClient.GetStream();
 
             // Only one execution thread can write to a data stream at a time, otherwise it is impossible to interpret the data correctly.
-            await stream.WriteAsync(segment); 
+            stream.WriteAsync(segment); 
         }
 
         public async Task SendRawData(byte[] data, CancellationToken cancellationToken)

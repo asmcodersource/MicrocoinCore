@@ -59,8 +59,13 @@ namespace Microcoin.Network.NodeNet
             var message = new Message.Message(messageInfo, messageContent);
             MessageSigner.Sign(message);
 
-            foreach (var connection in connections)
-                    connection.SendMessage(message);
+            await Task.Run(async () =>
+            {
+                List<Task> tasks = new List<Task>();
+                foreach (var connection in connections)
+                    tasks.Add(connection.SendMessage(message));
+                await Task.WhenAll(tasks);
+            });
         }
 
         public bool Connect(string url)
@@ -114,30 +119,35 @@ namespace Microcoin.Network.NodeNet
             NetworkExplorer.UpdateConnectionInfo(nodeConnection);
         }
 
-        protected void NewMessageHandler(INodeConnection nodeConnection)
+        protected async void NewMessageHandler(INodeConnection nodeConnection)
         {
-            var message = nodeConnection.GetLastMessage();
-            if (message == null)
-                return;
-            var msgContext = new MessageContext(message, nodeConnection);
-            if (msgContext.Message.Info.SenderPublicKey == SignOptions.PublicKey)
-                return;
-            var msgPassMiddleware = MiddlewarePipeline.Handle(msgContext);
-            if (msgPassMiddleware)
+            var thread = new Thread( () =>
             {
-                MessageReceived?.Invoke(msgContext);
-                if ( msgContext.Message.Info.ReceiverPublicKey == SignOptions.PublicKey)
-                    PersonalMessageReceived?.Invoke(msgContext);
-                if (AutoRepeater is true )
+                var message = nodeConnection.GetLastMessage();
+                if (message == null)
+                    return;
+                var msgContext = new MessageContext(message, nodeConnection);
+                if (msgContext.Message.Info.SenderPublicKey == SignOptions.PublicKey)
+                    return;
+                var msgPassMiddleware = MiddlewarePipeline.Handle(msgContext);
+                if (msgPassMiddleware)
                 {
-                    var connections = Connections.Connections();
-                    foreach (var connection in connections)
-                        connection.SendMessage(message);
+                    MessageReceived?.Invoke(msgContext);
+                    if (msgContext.Message.Info.ReceiverPublicKey == SignOptions.PublicKey)
+                        PersonalMessageReceived?.Invoke(msgContext);
+                    if (AutoRepeater is true)
+                    {
+                        var connections = Connections.Connections();
+                        foreach (var connection in connections)
+                            connection.SendMessage(message);
+                    }
                 }
-            } else
-            {
-                InvalidMessageReceived?.Invoke(msgContext);
-            }
+                else
+                {
+                    InvalidMessageReceived?.Invoke(msgContext);
+                }
+            });
+            thread.Start();
         }
 
         public int GetNodeTcpPort()

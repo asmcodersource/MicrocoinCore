@@ -15,7 +15,7 @@ namespace Microcoin.JsonStreamParser
         protected Queue<JsonDocument> objectsQueue = new Queue<JsonDocument>();
         protected StringBuilder dataBuffer = new StringBuilder();
 
-        public JsonStreamParser(int bufferSize = 1024 * 16)
+        public JsonStreamParser(int bufferSize = 1024 * 32)
         {
             // bigger array faster parsing, but more space complexity
             readBuffer = new char[bufferSize];
