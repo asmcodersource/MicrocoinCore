@@ -45,7 +45,7 @@ namespace Microcoin.JsonStreamParser
             {
                 var receivedSize = await reader.ReadAsync(readBuffer, cancellationToken);
                 if (receivedSize == 0)
-                    await Task.Delay(500);
+                    await Task.Delay(100);
                 ParsePart(readBuffer, receivedSize);
                 if (objectsQueue.Count() != 0)
                     break;

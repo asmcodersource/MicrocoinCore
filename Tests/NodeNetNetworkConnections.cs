@@ -33,7 +33,7 @@ namespace Tests.NodeNetNetworkConnections
         {
             // Create for test performing
             NodeNetNetworkConnections nodeNetNetworkConnections = new NodeNetNetworkConnections();
-            nodeNetNetworkConnections.CreateNetworkPeers(50);
+            nodeNetNetworkConnections.CreateNetworkPeers(100);
             nodeNetNetworkConnections.CreateNetworkTree(4);
             nodeNetNetworkConnections.PerformRandomConnections(0);
             Shared = nodeNetNetworkConnections;

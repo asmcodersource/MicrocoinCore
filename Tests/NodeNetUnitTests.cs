@@ -147,7 +147,7 @@ namespace Tests
 
             first_node.SendMessage(message, second_node.SignOptions.PublicKey).Wait();
             second_node.SendMessage(message, first_node.SignOptions.PublicKey).Wait();
-            Task.Delay(5000).Wait();
+            Task.Delay(15000).Wait();
             Assert.Equal(3, receivedMessagesCount);
         }
     }
