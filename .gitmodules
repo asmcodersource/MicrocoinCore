@@ -1,0 +1,3 @@
+[submodule "NodeNet"]
+	path = NodeNet
+	url = https://github.com/asmcodersource/NodeNet.git
