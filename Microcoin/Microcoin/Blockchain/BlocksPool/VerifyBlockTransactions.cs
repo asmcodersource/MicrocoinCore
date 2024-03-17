@@ -1,7 +1,8 @@
-﻿using Microcoin.PipelineHandling;
+﻿using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.PipelineHandling;
 
 
-namespace BlocksPool
+namespace Microcoin.Microcoin.Blockchain.BlocksPool
 {
     public class VerifyBlockTransactions : IPipelineHandler<Block.Block>
     {

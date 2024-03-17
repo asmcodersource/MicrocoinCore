@@ -1,6 +1,6 @@
 ﻿using Microcoin.PipelineHandling;
 
-namespace TransactionsPool
+namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     // Remember: I don't need this verify when receiving trasaction from network
     // because I have condition check before adding new value to list

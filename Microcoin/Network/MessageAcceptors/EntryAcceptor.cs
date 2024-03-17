@@ -1,4 +1,4 @@
-﻿using Microcoin.Network.NodeNet.Message;
+﻿using NodeNet.NodeNet.Message;
 using Newtonsoft.Json.Linq;
 
 namespace Microcoin.Network.MessageAcceptors

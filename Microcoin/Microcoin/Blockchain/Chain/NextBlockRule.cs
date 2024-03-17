@@ -1,4 +1,6 @@
-﻿namespace Chain
+﻿using Microcoin.Microcoin.Blockchain.Block;
+
+namespace Microcoin.Microcoin.Blockchain.Chain
 {
     public class NextBlockRule : INextBlockRule
     {

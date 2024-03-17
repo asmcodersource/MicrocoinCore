@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Transaction
+namespace Microcoin.Microcoin.Blockchain.Transaction
 {
     public class TransactionSigner : ITransactionSigner
     {

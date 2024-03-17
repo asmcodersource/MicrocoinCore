@@ -1,4 +1,6 @@
-﻿namespace Chain
+﻿using Microcoin.Microcoin.Blockchain.Block;
+
+namespace Microcoin.Microcoin.Blockchain.Chain
 {
     /// <summary>
     /// To attach a block, you need to determine whether this block can be a continuation of the chain. 

@@ -1,6 +1,6 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace Mining
+namespace Microcoin.Microcoin.Blockchain.Mining
 {
     public interface IRewardRule
     {

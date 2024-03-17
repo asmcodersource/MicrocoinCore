@@ -1,6 +1,6 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace ChainController
+namespace Microcoin.Microcoin.Blockchain.ChainController
 {
     public interface IDeepTransactionsVerify
     {

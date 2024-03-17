@@ -1,4 +1,4 @@
-﻿using Microcoin.Network.NodeNet;
+﻿using NodeNet.NodeNet;
 using Microcoin.RSAEncryptions;
 
 namespace Tests.NodeNetNetworkConnections
@@ -50,8 +50,8 @@ namespace Tests.NodeNetNetworkConnections
             for (int i = 0; i < peersCount; i++)
             {
                 var peer = Node.CreateRSAHttpNode(
-                    RSAEncryption.CreateSignOptions(),
-                    new Microcoin.Network.NodeNet.TcpCommunication.TcpListenerOptions(portIterator)
+                    NodeNet.NodeNet.RSAEncryptions.RSAEncryption.CreateSignOptions(),
+                    new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(portIterator)
                 );
                 Nodes.Add(peer);
                 portIterator++;

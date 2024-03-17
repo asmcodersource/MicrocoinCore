@@ -1,7 +1,7 @@
-﻿using Transaction;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
+using Microcoin.Microcoin.Blockchain.Transaction;
 
-namespace Microcoin
+namespace Microcoin.Microcoin
 {
     public class PeerWalletKeys
     {
@@ -41,7 +41,7 @@ namespace Microcoin
             }
         }
 
-        public void SignTransaction(Transaction.Transaction transaction)
+        public void SignTransaction(Transaction transaction)
         {
             if (TransactionSigner == null)
                 throw new NullReferenceException("Keys is not initialized");

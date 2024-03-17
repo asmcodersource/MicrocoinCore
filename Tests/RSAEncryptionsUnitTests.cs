@@ -1,6 +1,6 @@
-using Microcoin.Network.NodeNet.Message;
-using Microcoin.RSAEncryptions;
-using Transaction;
+using NodeNet.NodeNet.Message;
+using NodeNet.NodeNet.RSAEncryptions;
+using Microcoin.Microcoin.Blockchain.Transaction;
 
 namespace Tests
 {
@@ -31,9 +31,9 @@ namespace Tests
         public void RSAEncryptions_TransactionEncryption_Test()
         {
             // Create any keys
-            var signOptions = RSAEncryption.CreateSignOptions();
+            var signOptions = Microcoin.RSAEncryptions.RSAEncryption.CreateSignOptions();
             // Sign transaction
-            var transaction = new Transaction.Transaction();
+            var transaction = new Transaction();
             TransactionSigner transactionSigner = new TransactionSigner();
             transactionSigner.SetSignOptions(signOptions);
             transactionSigner.Sign(transaction);

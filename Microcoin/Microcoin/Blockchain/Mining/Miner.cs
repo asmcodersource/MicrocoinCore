@@ -1,13 +1,12 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-
-namespace Mining
+namespace Microcoin.Microcoin.Blockchain.Mining
 {
     public class Miner : IMiner
     {
         public MiningRules MiningRules { get; protected set; }
 
-        public event Action<Block.Block, string> BlockMined;
+        public event Action<Microcoin.Blockchain.Block.Block, string> BlockMined;
 
         public void SetRules(MiningRules rules)
         {
@@ -22,11 +21,11 @@ namespace Mining
         /// which will give him a huge increase in power against the background of other network members.
         /// Well, let's assume that everyone uses this version of the miner.
         /// </summary>
-        public async Task<string> StartBlockMining(AbstractChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken)
+        public async Task<string> StartBlockMining(AbstractChain chain, Microcoin.Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
             // Get chain complexity, used to calculate chain complexity for new tail block
             int chainComplexity = 0;
-            Block.Block tailBlock = chain.GetLastBlock();
+            Microcoin.Blockchain.Block.Block tailBlock = chain.GetLastBlock();
             if (tailBlock != null)
                 chainComplexity = tailBlock.MiningBlockInfo.ChainComplexity;
 
@@ -47,7 +46,7 @@ namespace Mining
                 {
                     block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
                     var hash = block.GetMiningBlockHash();
-                    if (Block.Block.GetHashComplexity(hash) < block.MiningBlockInfo.Complexity)
+                    if (Microcoin.Blockchain.Block.Block.GetHashComplexity(hash) < block.MiningBlockInfo.Complexity)
                         continue;
                     lock (this)
                     {
@@ -64,7 +63,7 @@ namespace Mining
             throw new Exception("Something wen't wrong");
         }
 
-        public bool VerifyBlockMining(AbstractChain chain, Block.Block block)
+        public bool VerifyBlockMining(AbstractChain chain, Microcoin.Blockchain.Block.Block block)
         {
             var isBlockRewardCorrect = MiningRules.RewardRule.Verify(chain, block);
             if (isBlockRewardCorrect is not true)
@@ -75,7 +74,7 @@ namespace Mining
             var computedHash = block.GetMiningBlockHash();
             if (computedHash != block.Hash)
                 return false;
-            if (Block.Block.GetHashComplexity(block.Hash) < block.MiningBlockInfo.Complexity)
+            if (Microcoin.Blockchain.Block.Block.GetHashComplexity(block.Hash) < block.MiningBlockInfo.Complexity)
                 return false;
             return true;
         }

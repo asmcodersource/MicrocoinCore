@@ -1,6 +1,6 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace Mining
+namespace Microcoin.Microcoin.Blockchain.Mining
 {
     /// <summary>
     /// This rule determines the difficulty of the next block. 

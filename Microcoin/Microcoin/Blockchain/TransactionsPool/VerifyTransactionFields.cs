@@ -1,6 +1,6 @@
 ﻿using Microcoin.PipelineHandling;
 
-namespace TransactionsPool
+namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     public class VerifyTransactionFields : IPipelineHandler<Transaction.Transaction>
     {

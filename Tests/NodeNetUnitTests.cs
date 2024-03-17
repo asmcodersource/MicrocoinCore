@@ -1,5 +1,5 @@
-﻿using Microcoin.Network.NodeNet;
-using Microcoin.RSAEncryptions;
+﻿using NodeNet.NodeNet;
+using NodeNet.NodeNet.RSAEncryptions;
 using Tests.NodeNetNetworkConnections;
 
 namespace Tests
@@ -16,11 +16,11 @@ namespace Tests
         {
             first_node = Node.CreateRSAHttpNode(
                 RSAEncryption.CreateSignOptions(),
-                new Microcoin.Network.NodeNet.TcpCommunication.TcpListenerOptions(1333)
+                new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(1333)
             );
             second_node = Node.CreateRSAHttpNode(
                 RSAEncryption.CreateSignOptions(),
-                new Microcoin.Network.NodeNet.TcpCommunication.TcpListenerOptions(1334)
+                new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(1334)
             );
             IsConnectionSuccess = first_node.Connect("127.0.0.1:1334");
         }

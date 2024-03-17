@@ -15,8 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Network\NodeNet\SignOptions\" />
     <Folder Include="Microcoin\Logging\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NodeNet\NodeNet\NodeNet.csproj" />
   </ItemGroup>
 
 </Project>

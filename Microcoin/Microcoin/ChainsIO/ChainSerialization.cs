@@ -1,16 +1,16 @@
-﻿using Block;
-using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
+using Microcoin.Microcoin.Blockchain.Block;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace Microcoin.ChainsIO
+namespace Microcoin.Microcoin.ChainsIO
 {
     public static class ChainSerialization
     {
         public static string SerializeChain(AbstractChain chain)
             => JsonConvert.SerializeObject(chain);
 
-        public static string SerializeBlock(Block.Block block)
+        public static string SerializeBlock(Block block)
             => JsonConvert.SerializeObject(block);
 
         public static string SerializeChainHeader(ChainHeader chainHeader)
@@ -22,7 +22,7 @@ namespace Microcoin.ChainsIO
         public static async Task SerializeChainHeaderToStream(ChainHeader chainHeader, StreamWriter stream, CancellationToken cancellationToken)
             => await stream.WriteAsync(new StringBuilder(SerializeChainHeader(chainHeader)), cancellationToken);
 
-        public static async Task SerilizeBlockToStream(Block.Block block, StreamWriter stream, CancellationToken cancellationToken)
+        public static async Task SerilizeBlockToStream(Block block, StreamWriter stream, CancellationToken cancellationToken)
             => await stream.WriteAsync(new StringBuilder(SerializeBlock(block)), cancellationToken);
     }
 }

@@ -1,6 +1,7 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace Mining
+namespace Microcoin.Microcoin.Blockchain.Mining
 {
     public class RewardRule : IRewardRule
     {

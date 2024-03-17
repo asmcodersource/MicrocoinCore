@@ -1,6 +1,6 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace Microcoin.ChainStorage
+namespace Microcoin.Microcoin.ChainStorage
 {
     class ChainStorage
     {
@@ -9,12 +9,12 @@ namespace Microcoin.ChainStorage
         /// <summary>Suitable for restoring state after peer shutdown</summary>
         /// <returns>Tail chain object with linked pre-chains</returns>
         /// <exception cref="NotImplementedException"></exception>
-        public Chain.Chain LoadMostComprehensiveChain()
+        public Blockchain.Chain.Chain LoadMostComprehensiveChain()
         {
             throw new NotImplementedException();
         }
 
-        public Chain.Chain LoadChain()
+        public Blockchain.Chain.Chain LoadChain()
         {
             throw new NotImplementedException();
         }

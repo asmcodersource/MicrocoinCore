@@ -1,13 +1,13 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace Mining
+namespace Microcoin.Microcoin.Blockchain.Mining
 {
     public interface IMiner
     {
-        public event Action<Block.Block, string> BlockMined;
+        public event Action<Microcoin.Blockchain.Block.Block, string> BlockMined;
         public MiningRules MiningRules { get; }
 
-        public void LinkBlockToChain(AbstractChain chain, Block.Block block)
+        public void LinkBlockToChain(AbstractChain chain, Microcoin.Blockchain.Block.Block block)
         {
             var tailBlock = chain.GetLastBlock();
             if (tailBlock is not null)
@@ -18,7 +18,7 @@ namespace Mining
             else throw new Exception("Can't link to empty chain");
         }
 
-        public Task<string> StartBlockMining(AbstractChain chain, Block.Block block, string minerWallet, CancellationToken cancellationToken);
-        public bool VerifyBlockMining(AbstractChain chain, Block.Block block);
+        public Task<string> StartBlockMining(AbstractChain chain, Microcoin.Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken);
+        public bool VerifyBlockMining(AbstractChain chain, Microcoin.Blockchain.Block.Block block);
     }
 }

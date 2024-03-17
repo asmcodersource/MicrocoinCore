@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Transaction
+namespace Microcoin.Microcoin.Blockchain.Transaction
 {
     [Serializable]
     public class Transaction

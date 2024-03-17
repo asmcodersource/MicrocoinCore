@@ -1,7 +1,7 @@
-﻿using Chain;
-using ChainController;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
+using Microcoin.Microcoin.Blockchain.ChainController;
 
-namespace TransactionsPool
+namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     /// <summary>
     /// To create a new block and start mining it, you need to get the transactions of this block. 

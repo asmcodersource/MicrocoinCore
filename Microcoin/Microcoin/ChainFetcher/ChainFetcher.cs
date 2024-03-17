@@ -1,5 +1,4 @@
-﻿using Chain;
-using Block;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
 namespace Microcoin.Microcoin.ChainFetcher
 {
@@ -12,7 +11,7 @@ namespace Microcoin.Microcoin.ChainFetcher
     {
         public event Action<AbstractChain> ChainFetched;
 
-        public void RequestChainFetch(Block.Block block)
+        public void RequestChainFetch(Microcoin.Blockchain.Block.Block block)
         {
 
         }

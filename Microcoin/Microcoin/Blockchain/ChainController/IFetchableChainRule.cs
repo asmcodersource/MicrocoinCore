@@ -1,6 +1,6 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace ChainController
+namespace Microcoin.Microcoin.Blockchain.ChainController
 {
     /// <summary>
     /// Some blocks may come from processing longer chains than the current one. 
@@ -10,6 +10,6 @@ namespace ChainController
     /// </summary>
     public interface IFetchableChainRule
     {
-        public bool IsPossibleChainUpgrade(AbstractChain chain, Block.Block block);
+        public bool IsPossibleChainUpgrade(AbstractChain chain, Microcoin.Blockchain.Block.Block block);
     }
 }

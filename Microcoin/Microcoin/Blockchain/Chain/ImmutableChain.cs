@@ -1,4 +1,4 @@
-﻿namespace Chain
+﻿namespace Microcoin.Microcoin.Blockchain.Chain
 {
     [Serializable]
     public class ImmutableChain : AbstractChain

@@ -1,11 +1,11 @@
 ﻿using Microcoin.PipelineHandling;
 
-namespace BlocksPool
+namespace Microcoin.Microcoin.Blockchain.BlocksPool
 {
     public class BlocksPool
     {
         public event Action<BlocksPool, Block.Block>? OnBlockReceived;
-        public IHandlePipeline<Block.Block> HandlePipeline { get; set; } = new EmptyPipeline<Block.Block>();
+        public IHandlePipeline<Block.Block> HandlePipeline { get; set; } = new EmptyPipeline<Microcoin.Blockchain.Block.Block>();
         public HashSet<Transaction.Transaction> PresentedTransactions { get; protected set; } = new HashSet<Transaction.Transaction>();
 
         public async Task HandleBlock(Block.Block block)

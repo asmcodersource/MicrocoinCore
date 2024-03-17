@@ -1,6 +1,6 @@
-﻿using Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace Microcoin.Blockchain
+namespace Microcoin.Microcoin.Blockchain
 {
     /// <summary>
     /// Part of blockchain realizations, responsible to loading long chains of blocks

@@ -1,6 +1,7 @@
 ﻿using Microcoin.PipelineHandling;
+using Microcoin.Microcoin.Blockchain.TransactionsPool;
 
-namespace TransactionsPool
+namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     public class TransactionsPool
     {

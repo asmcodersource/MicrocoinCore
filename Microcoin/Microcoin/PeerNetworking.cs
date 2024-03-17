@@ -1,11 +1,11 @@
-﻿using Block;
-using Transaction;
-using Microcoin.Network.MessageAcceptors;
-using Microcoin.Network.NodeNet;
-using Microcoin.Network.NodeNet.TcpCommunication;
-using Microcoin.RSAEncryptions;
+﻿using Microcoin.Network.MessageAcceptors;
+using Microcoin.Microcoin.Blockchain.Transaction;
+using NodeNet.NodeNet;
+using NodeNet.NodeNet.RSAEncryptions;
+using NodeNet.NodeNet.TcpCommunication;
 
-namespace Microcoin
+
+namespace Microcoin.Microcoin
 {
     public class PeerNetworking
     {
@@ -14,8 +14,8 @@ namespace Microcoin
         public BlocksAcceptor BlocksAcceptor { get; protected set; }
         public TransactionsAcceptor TransactionsAcceptor { get; protected set; }
 
-        public event Action<Block.Block> BlockReceived;
-        public event Action<Transaction.Transaction> TransactionReceived;
+        public event Action<Microcoin.Blockchain.Block.Block> BlockReceived;
+        public event Action<Transaction> TransactionReceived;
 
         public virtual void CreateDefaultRouting()
         {
@@ -43,7 +43,7 @@ namespace Microcoin
             NetworkNode.NetworkExplorer.SaveRecentConnectionsToFile("knownPeers.json");
         }
 
-        public void SendTransactionToNetwork(Transaction.Transaction transaction)
+        public void SendTransactionToNetwork(Transaction transaction)
         {
             var messageDTO = new
             {
@@ -55,7 +55,7 @@ namespace Microcoin
             NetworkNode.SendMessage(messageJson);
         }
 
-        public void SendBlockToNetwork(Block.Block block)
+        public void SendBlockToNetwork(Microcoin.Blockchain.Block.Block block)
         {
             var messageDTO = new
             {

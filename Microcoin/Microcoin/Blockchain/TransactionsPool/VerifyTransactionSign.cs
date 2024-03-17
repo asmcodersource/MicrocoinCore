@@ -1,9 +1,8 @@
-﻿using Transaction;
-using Microcoin.PipelineHandling;
+﻿using Microcoin.PipelineHandling;
 using Microcoin.RSAEncryptions;
+using Microcoin.Microcoin.Blockchain.Transaction;
 
-
-namespace TransactionsPool
+namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     public class VerifyTransactionSign : IPipelineHandler<Transaction.Transaction>
     {
