@@ -1,6 +1,15 @@
 ﻿using Microcoin;
-using Microcoin.Network.NodeNet;
-using System.Text;
+using Serilog;
+using Serilog.Core;
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("log.info")
+    .CreateLogger();
+
+
+Log.Logger.Information($"Microcoin started");
 
 Peer peer = new Peer();
 Console.Write("Initialize wallet keys...");

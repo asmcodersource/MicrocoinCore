@@ -111,7 +111,7 @@ namespace Tests
 
                 // Verifies that data passes through the network from sender to recipient
                 List<Task> tasks = new List<Task>();
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 400; i++)
                 {
                     var firstPeer = nodeNetNetworkConnections.GetRandomNode();
                     var secondPeer = nodeNetNetworkConnections.GetRandomNode();
@@ -127,7 +127,7 @@ namespace Tests
             }
         }
 
-        protected void TestBroadcastConnectionBetweenNodes(Node first_node, Node second_node)
+        protected async Task TestBroadcastConnectionBetweenNodes(Node first_node, Node second_node)
         {
             object atomicLock = new object();
             string message = Random.Shared.Next().ToString();
@@ -145,10 +145,13 @@ namespace Tests
                         receivedMessagesCount |= 2;
             };
 
-            first_node.SendMessage(message, second_node.SignOptions.PublicKey).Wait();
-            second_node.SendMessage(message, first_node.SignOptions.PublicKey).Wait();
-            Task.Delay(15000).Wait();
+            await first_node.SendMessage(message, second_node.SignOptions.PublicKey);
+            await second_node.SendMessage(message, first_node.SignOptions.PublicKey);
+            await Task.Delay(80000);
             Assert.Equal(3, receivedMessagesCount);
         }
+
+
+        
     }
 }
