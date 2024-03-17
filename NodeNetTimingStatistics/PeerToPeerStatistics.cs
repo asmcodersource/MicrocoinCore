@@ -1,5 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Microcoin.Network.NodeNet;
+using NodeNet.NodeNet;
 using Microcoin.RSAEncryptions;
 using System.Text;
 using Tests.NodeNetNetworkConnections;
