@@ -10,11 +10,13 @@ namespace Microcoin.Microcoin.ChainStorage
     public class ChainHeader
     {
         public ChainIdentifier ChainIdentifier { get; protected set; }
+        public string ChainFilePath { get; protected set; }
         public string? PreviousChainHeaderPath { get; protected set; }
 
-        public ChainHeader(ChainIdentifier chainIdentifier, string? previousChainHeaderPath = null)
+        public ChainHeader(ChainIdentifier chainIdentifier, string chainFilePath, string? previousChainHeaderPath = null)
         {
             ChainIdentifier = chainIdentifier;
+            ChainFilePath = chainFilePath;
             PreviousChainHeaderPath = previousChainHeaderPath;
         }
 

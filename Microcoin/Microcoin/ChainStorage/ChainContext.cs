@@ -7,16 +7,14 @@ namespace Microcoin.Microcoin.ChainStorage
 {
     public class ChainContext
     {
-        public string ChainFilePath { get; protected set; }
         public string HeaderFilePath { get; protected set; }
         public Chain? Chain { get; protected set; } = null;
 
         protected ChainHeader? chainHeader = null;
 
 
-        public ChainContext(string blocksFilePath, string headerFilePath)
+        public ChainContext(string headerFilePath)
         {
-            ChainFilePath = blocksFilePath;
             HeaderFilePath = headerFilePath;
         }
 
@@ -33,7 +31,7 @@ namespace Microcoin.Microcoin.ChainStorage
             try
             {
                 chainHeader = ChainHeader.LoadFromFile(HeaderFilePath);
-                Chain = FetchChainFromFile(ChainFilePath);
+                Chain = FetchChainFromFile(chainHeader.ChainFilePath);
             } finally
             {
                 chainHeader = null;
@@ -48,7 +46,7 @@ namespace Microcoin.Microcoin.ChainStorage
 
             UpdateChainHeader();
             chainHeader.StoreToFile(HeaderFilePath);
-            PushChainToFile(ChainFilePath);
+            PushChainToFile(chainHeader.ChainFilePath);
         }
 
         protected void PushChainToFile(string chainFilePath)
