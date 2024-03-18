@@ -6,15 +6,15 @@ namespace Microcoin.Microcoin.ChainStorage
     {
         public string WorkingDirectory { get; protected set; } = "ChainsStorage";
 
+
         /// <summary>Suitable for restoring state after peer shutdown</summary>
         /// <returns>Tail chain object with linked pre-chains</returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public Blockchain.Chain.Chain LoadMostComprehensiveChain()
+        public ChainContext LoadMostComprehensiveChain()
         {
             throw new NotImplementedException();
         }
 
-        public Blockchain.Chain.Chain LoadChain()
+        public ChainContext LoadChain(ChainIdentifier chainIdentifier)
         {
             throw new NotImplementedException();
         }

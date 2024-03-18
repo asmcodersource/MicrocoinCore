@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,15 +10,20 @@ namespace Microcoin.Microcoin.ChainStorage
 {
     public class ChainIdentifier
     {
+        public int TailChainBlockCount { get; protected set; }
         public int TailBlockId { get; protected set; }
-        public int TailBlockHash { get; protected set; }
+        public string TailBlockHash { get; protected set; }
         public int ChainComplexity { get; protected set; }
 
-        public ChainIdentifier(int tailBlockId, int tailBlockHash, int chainComplexity)
+        public ChainIdentifier( AbstractChain chain ) 
         {
-            TailBlockId = tailBlockId;
-            TailBlockHash = tailBlockHash;
-            ChainComplexity = chainComplexity;
+            var tailBlock = chain.GetLastBlock();
+            if (tailBlock == null)
+                throw new Exception("Empty chain can't be used to create ChainIdentifier");
+            TailChainBlockCount = chain.GetBlocksList().Count();
+            TailBlockId = tailBlock.MiningBlockInfo.BlockId;
+            TailBlockHash = tailBlock.Hash;
+            ChainComplexity = tailBlock.MiningBlockInfo.ChainComplexity;
         }
 
         public override bool Equals(object? obj)
