@@ -64,6 +64,8 @@ namespace Microcoin.Microcoin.ChainStorage
             var chainIdentifier = new ChainIdentifier(chain);
             if (chainsDictionary.ContainsKey(chainIdentifier) is true)
                 throw new Exception("Trying to add already exist chain to storage");
+            // TODO: Implement method
+            throw new NotImplementedException();
         }
 
         public void RemoveChainFromStorage(ChainIdentifier chainIdentifier)
