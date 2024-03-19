@@ -1,6 +1,7 @@
 ﻿using Microcoin.Microcoin;
 using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Blockchain.BlocksPool;
+using Tests.Generators;
 
 namespace Tests
 {
@@ -16,8 +17,8 @@ namespace Tests
         public void BlockPipeline_Hash_Test() 
         {
             // Same block have to has same hash
-            List<Peer> peers = TransactionTheory.CreateTestPeers(10);
-            var transactionsTheories = TransactionTheory.GetValidTransactionsTheories(peers, 10);
+            List<Peer> peers = TransactionTheoriesGenerator.CreateTestPeers(10);
+            var transactionsTheories = TransactionTheoriesGenerator.GetValidTransactionsTheories(peers, 10);
             var block = new Block();
             foreach (var transactionTheory in transactionsTheories)
                 block.Transactions.Add(transactionTheory.Transaction);

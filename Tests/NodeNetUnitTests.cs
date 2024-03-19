@@ -1,6 +1,6 @@
 ﻿using NodeNet.NodeNet;
 using NodeNet.NodeNet.RSAEncryptions;
-using Tests.NodeNetNetworkConnections;
+using Tests.Generators;
 
 namespace Tests
 {
@@ -83,16 +83,16 @@ namespace Tests
                     int first_received_summary = 0;
                     int second_received_summary = 0;
                     int sending_summary = 0;
-                    first_node.MessageReceived += (msgcontext) => { first_received_summary += Convert.ToInt32(msgcontext.Message.Data); };
-                    second_node.MessageReceived += (msgcontext) => { second_received_summary += Convert.ToInt32(msgcontext.Message.Data); };
+                    first_node.MessageReceived += (msgcontext) => { lock (this) { first_received_summary += Convert.ToInt32(msgcontext.Message.Data); } };
+                    second_node.MessageReceived += (msgcontext) => { lock (this) { second_received_summary += Convert.ToInt32(msgcontext.Message.Data); } };
                     for (int i = 0; i < 1024; i++)
                     {
                         sending_summary += i;
-                        first_node.SendMessage(i.ToString());
-                        second_node.SendMessage((1023-i).ToString());
+                        first_node.SendMessage(i.ToString()).Wait();
+                        second_node.SendMessage((1023-i).ToString()).Wait();
                     }
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(150);
 
                     Assert.Equal(sending_summary, first_received_summary);
                     Assert.Equal(sending_summary, second_received_summary);
@@ -107,7 +107,7 @@ namespace Tests
             lock (wallLock)
             {
                 // Create for test performing
-                var nodeNetNetworkConnections = NodeNetNetworkConnections.NodeNetNetworkConnections.Shared;
+                var nodeNetNetworkConnections = NodeNetTestNetworksGenerator.Shared;
 
                 // Verifies that data passes through the network from sender to recipient
                 List<Task> tasks = new List<Task>();

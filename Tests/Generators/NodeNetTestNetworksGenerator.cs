@@ -1,7 +1,7 @@
 ﻿using NodeNet.NodeNet;
 using Microcoin.RSAEncryptions;
 
-namespace Tests.NodeNetNetworkConnections
+namespace Tests.Generators
 {
     public record ConnectionPair
     {
@@ -21,18 +21,18 @@ namespace Tests.NodeNetNetworkConnections
     /// Utility for creating network of connections between NodeNet peers
     /// for testing main features of NodeNet system
     /// </summary>
-    public class NodeNetNetworkConnections : IDisposable
+    public class NodeNetTestNetworksGenerator : IDisposable
     {
-        static public NodeNetNetworkConnections Shared { get; protected set; }
+        static public NodeNetTestNetworksGenerator Shared { get; protected set; }
         static protected int portIterator = 6000; // used to give uniq socket port for every nodenet peer
         public List<Node>? Nodes { get; protected set; } = null;
         public List<ConnectionPair> ConnectionsList = new List<ConnectionPair>();
 
 
-        static NodeNetNetworkConnections()
+        static NodeNetTestNetworksGenerator()
         {
             // Create for test performing
-            NodeNetNetworkConnections nodeNetNetworkConnections = new NodeNetNetworkConnections();
+            NodeNetTestNetworksGenerator nodeNetNetworkConnections = new NodeNetTestNetworksGenerator();
             nodeNetNetworkConnections.CreateNetworkPeers(100);
             nodeNetNetworkConnections.CreateNetworkTree(4);
             nodeNetNetworkConnections.PerformRandomConnections(0);
@@ -76,7 +76,7 @@ namespace Tests.NodeNetNetworkConnections
                         break;
                     var firstPeer = Nodes[firstPeerId];
                     var layerLocalId = firstPeerId - firstPeerOffset;
-                    var secondPeerOffset = (firstPeerOffset + peersOnLayer) + (layerLocalId * maxConnectionsPerNode);
+                    var secondPeerOffset = firstPeerOffset + peersOnLayer + layerLocalId * maxConnectionsPerNode;
                     for (int secondPeerId = secondPeerOffset; secondPeerId < maxConnectionsPerNode + secondPeerOffset; secondPeerId++)
                     {
                         if (secondPeerId >= Nodes.Count())

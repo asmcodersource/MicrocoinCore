@@ -2,8 +2,7 @@
 using NodeNet.NodeNet;
 using Microcoin.RSAEncryptions;
 using System.Text;
-using Tests.NodeNetNetworkConnections;
-
+using Tests.Generators;
 
 namespace NodeNetTimingStatistics
 {
@@ -11,7 +10,7 @@ namespace NodeNetTimingStatistics
     {
         string? data;
         Node first_node, second_node;
-        NodeNetNetworkConnections nodeNetNetworkConnections = NodeNetNetworkConnections.Shared;
+        NodeNetTestNetworksGenerator nodeNetNetworkConnections = NodeNetTestNetworksGenerator.Shared;
 
         [Params(512)]
         public int MessagesCount;

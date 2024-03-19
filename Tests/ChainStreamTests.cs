@@ -2,6 +2,7 @@
 using Microcoin.Microcoin.ChainsIO;
 using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Blockchain.Block;
+using Tests.Generators;
 
 namespace Tests
 {
@@ -14,10 +15,10 @@ namespace Tests
 
             // Create some chain with fake blocks
             Chain chain = new Chain();
-            List<Peer> peers = TransactionTheory.CreateTestPeers(10);
+            List<Peer> peers = TransactionTheoriesGenerator.CreateTestPeers(10);
             for (int i = 0; i < 1; i++)
             {
-                var transactionsTheories = TransactionTheory.GetValidTransactionsTheories(peers, 10);
+                var transactionsTheories = TransactionTheoriesGenerator.GetValidTransactionsTheories(peers, 10);
                 var block = new Block();
                 foreach(var transactionTheory in transactionsTheories)
                     block.Transactions.Add(transactionTheory.Transaction);
