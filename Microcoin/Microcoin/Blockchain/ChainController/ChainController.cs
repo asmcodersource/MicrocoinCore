@@ -51,6 +51,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             {
                 // Essentially, with this call we only request that the chain be loaded, but not necessarily that it will be loaded.
                 // We don't care about everything else inside the chain.
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) accepted as possible chain fetch");
                 ChainLoader.RequestChainFetch(block);
             }
             return false;
@@ -69,6 +70,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 currentChainOperationsCTS.Cancel();
                 currentChainOperationsCTS = new CancellationTokenSource();
                 ChainGetNextBlock?.Invoke(block);
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) accepted as tail block of chain");
                 return true;
             }
         }

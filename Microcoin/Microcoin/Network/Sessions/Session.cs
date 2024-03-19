@@ -1,6 +1,6 @@
 ﻿using NodeNet.NodeNet.Message;
 
-namespace Microcoin.Network.Sessions
+namespace Microcoin.Microcoin.Network.Sessions
 {
     /// <summary>
     /// Implements communication across different sessions on top of one communication stream. 

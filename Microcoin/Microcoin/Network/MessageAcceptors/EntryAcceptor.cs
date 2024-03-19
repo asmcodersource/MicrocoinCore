@@ -1,7 +1,7 @@
 ﻿using NodeNet.NodeNet.Message;
 using Newtonsoft.Json.Linq;
 
-namespace Microcoin.Network.MessageAcceptors
+namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     public class EntryAcceptor : IAcceptor
     {

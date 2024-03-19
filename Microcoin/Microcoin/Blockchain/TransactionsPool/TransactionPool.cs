@@ -33,6 +33,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                 return false;
             // If transaction succesfully pass pipeline, add it to pool
             AddTransaction(transaction);
+            Serilog.Log.Debug($"Microcoin peer | Transaction({transaction.GetHashCode()}) succesfully passed handle pipeline");
             return true;
         }
 

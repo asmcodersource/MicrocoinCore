@@ -1,6 +1,6 @@
 ﻿using NodeNet.NodeNet.Message;
 
-namespace Microcoin.Network.MessageAcceptors
+namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     /// <summary>
     /// Acceptor it is entity that handle any type of NodeNet messages in context of Microcoin

@@ -60,8 +60,8 @@ namespace Tests
                         Assert.True(msgContext.Message.Data == message);
                     };
 
-                    first_node.SendMessage(message);
-                    second_node.SendMessage(message);
+                    first_node.SendMessage(message).Wait();
+                    second_node.SendMessage(message).Wait();
 
                     Thread.Sleep(50);
 

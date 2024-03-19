@@ -1,4 +1,5 @@
-﻿using Microcoin.Microcoin.Blockchain.Chain;
+﻿using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.Mining;
 using Microcoin.Microcoin.Blockchain.TransactionsPool;
@@ -51,6 +52,7 @@ namespace Microcoin.Microcoin
 
         public void TryStartMineBlock(AbstractChain tailChain, IDeepTransactionsVerify deepTransactionsVerify)
         {
+            Serilog.Log.Debug($"Microcoin peer | Trying to start mine new block");
             lock (this)
             {
                 if (MiningTask is not null && MiningTask.IsCompleted is not true)

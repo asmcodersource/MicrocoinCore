@@ -1,9 +1,8 @@
-﻿using Microcoin.Network.MessageAcceptors;
-using Microcoin.Microcoin.Blockchain.Transaction;
+﻿using Microcoin.Microcoin.Blockchain.Transaction;
 using NodeNet.NodeNet;
 using NodeNet.NodeNet.RSAEncryptions;
 using NodeNet.NodeNet.TcpCommunication;
-
+using Microcoin.Microcoin.Network.MessageAcceptors;
 
 namespace Microcoin.Microcoin
 {

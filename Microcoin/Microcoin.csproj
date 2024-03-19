@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Microcoin\Logging\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\NodeNet\NodeNet\NodeNet.csproj" />
   </ItemGroup>
 

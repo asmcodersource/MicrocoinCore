@@ -59,6 +59,7 @@ namespace Microcoin.Microcoin
 
             TransactionsPool.OnTransactionReceived += (transaction)
                 => PeerMining.TryStartMineBlock(ChainController.ChainTail, new DeepTransactionsVerify());
+            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) mining initialized");
         }
 
         public void InitializeNetworking()
@@ -69,6 +70,7 @@ namespace Microcoin.Microcoin
             PeerNetworking.PostInitialize();
             PeerNetworking.TransactionReceived += (transaction) => TransactionsPool.HandleTransaction(transaction);
             PeerNetworking.BlockReceived += (block) => BlocksPool.HandleBlock(block);
+            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) network initialized");
         }
 
         public void LoadOrCreateWalletKeys(string filePath = "wallet.keys")
@@ -83,6 +85,7 @@ namespace Microcoin.Microcoin
                 PeerWalletKeys.CreateKeys();
                 PeerWalletKeys.SaveKeys(filePath);
             }
+            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) keys initialized");
         }
 
         protected void BlockMinedHandler(Microcoin.Blockchain.Block.Block block)

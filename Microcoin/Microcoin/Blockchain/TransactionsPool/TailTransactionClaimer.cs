@@ -28,6 +28,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                     blockTransactions.Remove(transaction);
             }
             transactionsPool.RemoveTransactions(removeTransations);
+            Serilog.Log.Debug($"Microcoin peer | Claimed {blockTransactions.Count()} transactions for new block");
             return blockTransactions;
         }
     }

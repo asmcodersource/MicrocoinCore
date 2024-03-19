@@ -28,6 +28,7 @@ namespace Microcoin.Microcoin.ChainStorage
                 fetchedHeaders.Add(chainHeader);
                 chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader);
             }
+            Serilog.Log.Debug($"Microcoin | Chain storage fetched {fetchedHeaders.Count()} chains");
         }
 
         /// <summary>Suitable for restoring state after peer shutdown</summary>
@@ -43,6 +44,7 @@ namespace Microcoin.Microcoin.ChainStorage
                     mostComprehensiveChainHeader = chainHeader;
             ChainContext chainContext = new ChainContext(headersFiles[mostComprehensiveChainHeader]);
             chainContext.Fetch();
+            Serilog.Log.Debug("Microcoin | Most comprehensive chain loaded from chain");
             return chainContext;
         }
 
@@ -56,6 +58,7 @@ namespace Microcoin.Microcoin.ChainStorage
             var chainHeader = chainsDictionary[chainIdentifier];
             ChainContext chainContext = new ChainContext(headersFiles[chainHeader]);
             chainContext.Fetch();
+            Serilog.Log.Debug("Microcoin | Chain loaded from chain");
             return chainContext;
         }
 
@@ -80,6 +83,7 @@ namespace Microcoin.Microcoin.ChainStorage
             chainsDictionary.Remove(chainIdentifier);
             headersFiles.Remove(chainHeader);
             fetchedHeaders.Remove(chainHeader);
+            Serilog.Log.Debug("Microcoin | Chain removed from storage");
         }
     }
 }

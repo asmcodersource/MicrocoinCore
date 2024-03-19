@@ -27,7 +27,7 @@ namespace Tests
 
             ChainStreaming.WriteChainToStream(stream, chain, CancellationToken.None).Wait();
             stream.Seek(0, SeekOrigin.Begin);
-            var readedChain = ChainStreaming.ReadChainFromStream(stream, CancellationToken.None).Result;
+            var readedChain = ChainStreaming.ReadChainFromStream(stream, chain.GetBlocksList().Count(), CancellationToken.None).Result;
 
             for (int i = 0; i < chain.GetBlocksList().Count; i++)
             {

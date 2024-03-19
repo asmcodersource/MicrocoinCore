@@ -1,8 +1,9 @@
 ﻿using NodeNet.NodeNet.Message;
 using Microcoin.Microcoin.Blockchain.Transaction;
 using Newtonsoft.Json.Linq;
+using Microcoin.Microcoin.Blockchain.Block;
 
-namespace Microcoin.Network.MessageAcceptors
+namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     public class TransactionsAcceptor : IAcceptor
     {
@@ -17,7 +18,10 @@ namespace Microcoin.Network.MessageAcceptors
             string transactionJsonString = jsonTransactionToken.ToString();
             Transaction? transaction = Transaction.ParseTransactionFromJson(transactionJsonString);
             if (transaction != null)
+            {
                 TransactionReceived?.Invoke(transaction);
+                Serilog.Log.Debug($"Microcoin peer | Transaction({transaction.GetHashCode()}) accepted from network");
+            }
         }
     }
 }
