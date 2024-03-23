@@ -1,4 +1,4 @@
-﻿namespace Microcoin.Microcoin.Blockchain.Mining
+﻿namespace Microcoin.Microcoin.Mining
 {
     [Serializable]
     public class MiningBlockInfo

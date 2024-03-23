@@ -1,4 +1,4 @@
-﻿namespace Microcoin.Microcoin.Blockchain.Mining
+﻿namespace Microcoin.Microcoin.Mining
 {
     public class MiningRules
     {

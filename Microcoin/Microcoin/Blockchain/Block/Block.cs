@@ -1,4 +1,4 @@
-﻿using Microcoin.Microcoin.Blockchain.Mining;
+﻿using Microcoin.Microcoin.Mining;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;

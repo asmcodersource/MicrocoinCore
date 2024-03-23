@@ -1,12 +1,12 @@
 ﻿using Microcoin.Microcoin.Blockchain.Chain;
 
-namespace Microcoin.Microcoin.Blockchain.Mining
+namespace Microcoin.Microcoin.Mining
 {
     public class Miner : IMiner
     {
         public MiningRules MiningRules { get; protected set; }
 
-        public event Action<Microcoin.Blockchain.Block.Block, string> BlockMined;
+        public event Action<Blockchain.Block.Block, string> BlockMined;
 
         public void SetRules(MiningRules rules)
         {
@@ -21,12 +21,12 @@ namespace Microcoin.Microcoin.Blockchain.Mining
         /// which will give him a huge increase in power against the background of other network members.
         /// Well, let's assume that everyone uses this version of the miner.
         /// </summary>
-        public async Task<string> StartBlockMining(AbstractChain chain, Microcoin.Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken)
+        public async Task<string> StartBlockMining(AbstractChain chain, Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
-            Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining started");
+            Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining started");
             // Get chain complexity, used to calculate chain complexity for new tail block
             int chainComplexity = 0;
-            Microcoin.Blockchain.Block.Block tailBlock = chain.GetLastBlock();
+            Blockchain.Block.Block tailBlock = chain.GetLastBlock();
             if (tailBlock != null)
                 chainComplexity = tailBlock.MiningBlockInfo.ChainComplexity;
             try
@@ -48,7 +48,7 @@ namespace Microcoin.Microcoin.Blockchain.Mining
                     {
                         block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
                         var hash = block.GetMiningBlockHash();
-                        if (Microcoin.Blockchain.Block.Block.GetHashComplexity(hash) < block.MiningBlockInfo.Complexity)
+                        if (Blockchain.Block.Block.GetHashComplexity(hash) < block.MiningBlockInfo.Complexity)
                             continue;
                         lock (this)
                         {
@@ -63,13 +63,14 @@ namespace Microcoin.Microcoin.Blockchain.Mining
                 }
                 cancellationToken.ThrowIfCancellationRequested();
                 throw new Exception("Something wen't wrong");
-            } finally
+            }
+            finally
             {
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining finished");
+                Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining finished");
             }
         }
 
-        public bool VerifyBlockMining(AbstractChain chain, Microcoin.Blockchain.Block.Block block)
+        public bool VerifyBlockMining(AbstractChain chain, Blockchain.Block.Block block)
         {
             var isBlockRewardCorrect = MiningRules.RewardRule.Verify(chain, block);
             if (isBlockRewardCorrect is not true)
@@ -80,7 +81,7 @@ namespace Microcoin.Microcoin.Blockchain.Mining
             var computedHash = block.GetMiningBlockHash();
             if (computedHash != block.Hash)
                 return false;
-            if (Microcoin.Blockchain.Block.Block.GetHashComplexity(block.Hash) < block.MiningBlockInfo.Complexity)
+            if (Blockchain.Block.Block.GetHashComplexity(block.Hash) < block.MiningBlockInfo.Complexity)
                 return false;
             return true;
         }

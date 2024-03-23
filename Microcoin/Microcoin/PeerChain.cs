@@ -1,7 +1,7 @@
 ﻿using Microcoin.Microcoin.ChainFetcher;
 using Microcoin.Microcoin.Blockchain.ChainController;
-using Microcoin.Microcoin.Blockchain.Mining;
 using Microcoin.Microcoin.Blockchain.Chain;
+using Microcoin.Microcoin.Mining;
 
 namespace Microcoin.Microcoin
 {

@@ -1,9 +1,9 @@
-﻿using Microcoin.Microcoin.Blockchain.Mining;
-using Microcoin.Microcoin.Blockchain.Transaction;
+﻿using Microcoin.Microcoin.Blockchain.Transaction;
 using Microcoin.Microcoin.Blockchain.BlocksPool;
 using Microcoin.Microcoin.Blockchain.TransactionsPool;
 using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.Mining;
 
 namespace Microcoin.Microcoin
 {
