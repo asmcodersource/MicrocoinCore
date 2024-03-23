@@ -13,17 +13,17 @@ namespace Microcoin.Microcoin.Blockchain.Mining
     {
         protected int defaultComplexity = 4;
         protected int targetTime = 10;
-        protected int allowedTimeDivitation = 3;
+        protected int allowedTimeDivitation = 1;
         protected int avgWindow = 10;
 
         public int Calculate(AbstractChain contextChain, Block.Block block)
         {
-            var windowFirstBlock = contextChain.GetBlockFromTail(2048);
+            var windowFirstBlock = contextChain.GetBlockFromTail(avgWindow);
             var windowLastBlock = contextChain.GetBlockFromTail(0);
             if (windowFirstBlock is null)
                 return defaultComplexity;
             var durationWindow = windowFirstBlock.MiningBlockInfo.CreateTime - windowLastBlock.MiningBlockInfo.CreateTime;
-            var duration = durationWindow / 2048;
+            var duration = durationWindow / avgWindow;
             if (Math.Abs(duration.Minutes - targetTime) < allowedTimeDivitation)
             {
                 return windowLastBlock.MiningBlockInfo.Complexity;
