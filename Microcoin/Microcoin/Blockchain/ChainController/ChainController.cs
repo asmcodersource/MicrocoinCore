@@ -8,13 +8,14 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
     public class ChainController
     {
         protected CancellationTokenSource currentChainOperationsCTS;
-        public event Action<Microcoin.Blockchain.Block.Block> ChainGetNextBlock;
+        public event Action<Microcoin.Blockchain.Block.Block> ChainReceivedNextBlock;
         public ChainFetcher.ChainFetcher ChainLoader { get; protected set; }
         public Chain.Chain ChainTail { get; protected set; }
         public IMiner Miner { get; protected set; }
         public INextBlockRule NextBlockRule { get; protected set; }
         public IDeepTransactionsVerify DeepTransactionsVerify { get; protected set; }
         public IFetchableChainRule FetchableChainRule { get; protected set; }
+        public int ChainBranchBlocksCount { get; protected set; } = 50;
 
         public ChainController(Chain.Chain chainTail, IMiner miner, ChainFetcher.ChainFetcher chainLoader = null)
         {
@@ -69,7 +70,9 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 ChainTail.AddTailBlock(block);
                 currentChainOperationsCTS.Cancel();
                 currentChainOperationsCTS = new CancellationTokenSource();
-                ChainGetNextBlock?.Invoke(block);
+                ChainReceivedNextBlock?.Invoke(block);
+                if (ChainTail.GetBlocksList().Count >= ChainBranchBlocksCount)
+                    BranchToNexthChainPart();
                 Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) accepted as tail block of chain");
                 return true;
             }
@@ -107,6 +110,16 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             // I used lock to prevent returning past CTS
             lock (ChainTail)
                 return currentChainOperationsCTS.Token;
+        }
+
+        protected void BranchToNexthChainPart()
+        {
+            Serilog.Log.Debug($"Microcoin peer | Chain has branched");
+            var nextChainPart = new Chain.Chain();
+            nextChainPart.LinkPreviousChain(nextChainPart);
+            ChainTail = nextChainPart;
+            var chainsStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
+            chainsStorage.AddNewChainToStorage(nextChainPart);
         }
     }
 }
