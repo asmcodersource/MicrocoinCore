@@ -26,10 +26,10 @@ namespace Microcoin.Microcoin
             NetworkNode.MessageReceived += (messageContext) => EntryAcceptor.Handle(messageContext);
         }
 
-        public virtual void CreateDefaultNode()
+        public virtual void CreateDefaultNode(int port = 0)
         {
             var senderEncryptionOptions = RSAEncryption.CreateSignOptions();
-            var senderTcpOptions = new TcpListenerOptions(0);
+            var senderTcpOptions = new TcpListenerOptions(port);
             NetworkNode = Node.CreateRSAHttpNode(senderEncryptionOptions, senderTcpOptions);
             NetworkNode.NetworkExplorer.LoadRecentConnectionsFromFile("knownPeers.json");
         }
