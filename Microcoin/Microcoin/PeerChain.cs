@@ -2,6 +2,7 @@
 using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Mining;
+using Microcoin.Microcoin.Blockchain.Block;
 
 namespace Microcoin.Microcoin
 {
@@ -33,7 +34,7 @@ namespace Microcoin.Microcoin
 
         public void SetInitialChain()
         {
-
+            throw new Exception("You should have at least one chain in chain-storage directory");
         }
     }
 }
