@@ -63,7 +63,7 @@ namespace Tests.Generators
                     second_peer = peers[random.Next(peers.Count)];
                 } while (first_peer == second_peer);
                 StringBuilder stringBuilder = null;
-                var transaction = first_peer.CreateTransaction(second_peer.PeerWalletKeys.TransactionSigner.SignOptions.PublicKey, Random.Shared.Next() + 1);
+                var transaction = first_peer.CreateTransaction(second_peer.PeerWalletKeys.TransactionSigner.SignOptions.PublicKey, 10);
                 var wrongType = values.GetValue(random.Next(values.Length));
                 switch (wrongType)
                 {
@@ -76,7 +76,7 @@ namespace Tests.Generators
                         transaction.Sign = stringBuilder.ToString();
                         break;
                     case InvalidTheoryType.WrongTime:
-                        transaction.DateTime = DateTime.UtcNow + new TimeSpan(random.Next(1), random.Next(10), random.Next(50) + 50);
+                        transaction.DateTime = DateTime.UtcNow + new TimeSpan(1, random.Next(10), random.Next(50) + 50);
                         break;
                     case InvalidTheoryType.WrongPublicKey:
                         stringBuilder = new StringBuilder(transaction.SenderPublicKey);

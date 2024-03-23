@@ -1,10 +1,8 @@
 ﻿using Microcoin.Microcoin.Blockchain.Chain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microcoin.Microcoin.ChainStorage
 {
@@ -14,6 +12,16 @@ namespace Microcoin.Microcoin.ChainStorage
         public int TailBlockId { get; protected set; }
         public string TailBlockHash { get; protected set; }
         public int ChainComplexity { get; protected set; }
+
+        // Deserialize constructor
+        [JsonConstructor]
+        public ChainIdentifier(int tailChainBlockCount, int tailBlockId, string tailBlockHash, int chainComplexity)
+        {
+            TailChainBlockCount = tailChainBlockCount;
+            TailBlockId = tailBlockId;
+            TailBlockHash = tailBlockHash;
+            ChainComplexity = chainComplexity;
+        }
 
         public ChainIdentifier( AbstractChain chain ) 
         {
@@ -37,6 +45,16 @@ namespace Microcoin.Microcoin.ChainStorage
         public override int GetHashCode()
         {
             return HashCode.Combine(TailBlockId, TailBlockHash, ChainComplexity);
+        }
+
+        public string GetSHA256()
+        {
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                string json = JsonSerializer.Serialize(this);
+                var hash = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(json));
+                return Convert.ToBase64String(hash);
+            }
         }
     }
 }

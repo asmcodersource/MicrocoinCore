@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace Microcoin.Microcoin.ChainStorage
 {
+    [Serializable]
     public class ChainHeader
     {
         public ChainIdentifier ChainIdentifier { get; protected set; }
         public string ChainFilePath { get; protected set; }
         public string? PreviousChainHeaderPath { get; protected set; }
 
-        public ChainHeader(ChainIdentifier chainIdentifier, string chainFilePath, string? previousChainHeaderPath = null)
+        [JsonConstructor]
+        public ChainHeader(ChainIdentifier chainIdentifier, string chainFilePath, string? previousChainHeaderPath)
         {
             ChainIdentifier = chainIdentifier;
             ChainFilePath = chainFilePath;

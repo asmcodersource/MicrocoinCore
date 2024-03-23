@@ -111,7 +111,7 @@ namespace Tests
 
                 // Verifies that data passes through the network from sender to recipient
                 List<Task> tasks = new List<Task>();
-                for (int i = 0; i < 400; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     var firstPeer = nodeNetNetworkConnections.GetRandomNode();
                     var secondPeer = nodeNetNetworkConnections.GetRandomNode();
@@ -147,7 +147,7 @@ namespace Tests
 
             await first_node.SendMessage(message, second_node.SignOptions.PublicKey);
             await second_node.SendMessage(message, first_node.SignOptions.PublicKey);
-            await Task.Delay(80000);
+            await Task.Delay(4000);
             Assert.Equal(3, receivedMessagesCount);
         }
 

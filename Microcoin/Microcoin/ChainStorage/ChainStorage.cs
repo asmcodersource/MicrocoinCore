@@ -2,7 +2,7 @@
 
 namespace Microcoin.Microcoin.ChainStorage
 {
-    class ChainStorage
+    public class ChainStorage
     {
         public string ChainHeaderExtension { get; set; } = "header";
         public string ChainChainExtension { get; set; } = "chain";
@@ -24,9 +24,7 @@ namespace Microcoin.Microcoin.ChainStorage
             foreach( var chainHeaderFile in chainHeaderFiles)
             {
                 var chainHeader = ChainHeader.LoadFromFile(chainHeaderFile);
-                headersFiles.Add(chainHeader, chainHeaderFile);
-                fetchedHeaders.Add(chainHeader);
-                chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader);
+                AddChainToFetched(chainHeaderFile, chainHeader);
             }
             Serilog.Log.Debug($"Microcoin | Chain storage fetched {fetchedHeaders.Count()} chains");
         }
@@ -53,22 +51,41 @@ namespace Microcoin.Microcoin.ChainStorage
             return chainsDictionary.ContainsKey(chainIdentifier);
         }
 
-        public ChainContext LoadChainByIdentifier(ChainIdentifier chainIdentifier)
+        public ChainContext? LoadChainByIdentifier(ChainIdentifier chainIdentifier)
         {
+            if (chainsDictionary.ContainsKey(chainIdentifier) is not true)
+                return null;
+
             var chainHeader = chainsDictionary[chainIdentifier];
+            Serilog.Log.Debug("Microcoin | Chain loaded from chain");
             ChainContext chainContext = new ChainContext(headersFiles[chainHeader]);
             chainContext.Fetch();
-            Serilog.Log.Debug("Microcoin | Chain loaded from chain");
             return chainContext;
         }
 
-        public void AddNewChainToStorage(AbstractChain chain)
+        public ChainHeader AddNewChainToStorage(AbstractChain chain)
         {
             var chainIdentifier = new ChainIdentifier(chain);
-            if (chainsDictionary.ContainsKey(chainIdentifier) is true)
-                throw new Exception("Trying to add already exist chain to storage");
-            // TODO: Implement method
-            throw new NotImplementedException();
+            if( chainsDictionary.ContainsKey(chainIdentifier))
+                return chainsDictionary[chainIdentifier];
+            // Since each subsequent part of the chain must refer to the previous one,
+            // you need to recursively add all parts of the chain to the storage starting from the beginning;
+            // those chains that are already present in the storage can be skipped.
+            ChainHeader? previousChainHeader = null;
+            if( chain.PreviousChain is not null)
+                previousChainHeader = AddNewChainToStorage(chain.PreviousChain);
+            var previousChainHeaderPath = previousChainHeader is null ? null : GetHeaderFileNameByIdentifier(previousChainHeader.ChainIdentifier);
+            var headerFileName = GetHeaderFileNameByIdentifier(chainIdentifier);
+            var storeChainHeader = new ChainHeader(
+                chainIdentifier, 
+                Path.Combine(WorkingDirectory, GetChainFileNameByIdentifier(chainIdentifier)),
+                previousChainHeaderPath is null ? null: Path.Combine(WorkingDirectory, previousChainHeaderPath)
+            );
+
+            ChainContext chainContext = new ChainContext(Path.Combine(WorkingDirectory, headerFileName), chain, storeChainHeader);
+            chainContext.Push();
+            AddChainToFetched(Path.Combine(WorkingDirectory, headerFileName), storeChainHeader);
+            return storeChainHeader;
         }
 
         public void RemoveChainFromStorage(ChainIdentifier chainIdentifier)
@@ -84,6 +101,23 @@ namespace Microcoin.Microcoin.ChainStorage
             headersFiles.Remove(chainHeader);
             fetchedHeaders.Remove(chainHeader);
             Serilog.Log.Debug("Microcoin | Chain removed from storage");
+        }
+
+        protected string GetHeaderFileNameByIdentifier(ChainIdentifier chainIdentifier)
+        {
+            return chainIdentifier.GetHashCode() + "." + ChainHeaderExtension;
+        }
+
+        protected string GetChainFileNameByIdentifier(ChainIdentifier chainIdentifier)
+        {
+            return chainIdentifier.GetHashCode() + "." + ChainChainExtension;
+        }
+        
+        protected void AddChainToFetched(string chainHeaderFile, ChainHeader chainHeader)
+        {
+            headersFiles.Add(chainHeader, chainHeaderFile);
+            fetchedHeaders.Add(chainHeader);
+            chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader);
         }
     }
 }

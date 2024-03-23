@@ -9,8 +9,7 @@ namespace Microcoin.Microcoin.ChainStorage
     {
         public string HeaderFilePath { get; protected set; }
         public Chain? Chain { get; protected set; } = null;
-
-        protected ChainHeader? chainHeader = null;
+        public ChainHeader? ChainHeader { get; protected set; } = null;
 
 
         public ChainContext(string headerFilePath)
@@ -18,35 +17,64 @@ namespace Microcoin.Microcoin.ChainStorage
             HeaderFilePath = headerFilePath;
         }
 
+        public ChainContext(string headerFilePath, AbstractChain? chain, ChainHeader? chainHeader) : this(headerFilePath)
+        {
+            Chain = (Chain)chain;
+            this.ChainHeader = chainHeader;
+        }
+
         public ChainHeader GetChainHeader()
         {
-            if (chainHeader is null)
+            if (ChainHeader is null)
                 throw new Exception("Chain context is not initialized");
             UpdateChainHeader();
-            return chainHeader;
+            return ChainHeader;
+        }
+
+        public void FetchLastPart()
+        {
+            try
+            {
+                ChainHeader = ChainHeader.LoadFromFile(HeaderFilePath);
+                Chain = FetchChainFromFile(ChainHeader.ChainFilePath);
+            } catch
+            {
+                ChainHeader = null;
+                Chain = null;
+            }
         }
 
         public void Fetch()
         {
             try
             {
-                chainHeader = ChainHeader.LoadFromFile(HeaderFilePath);
-                Chain = FetchChainFromFile(chainHeader.ChainFilePath);
-            } finally
+                ChainHeader = ChainHeader.LoadFromFile(HeaderFilePath);
+                Chain = FetchChainFromFile(ChainHeader.ChainFilePath);
+                string? lastChainHeaderFile = ChainHeader.PreviousChainHeaderPath;
+                var lastChainContext = this;
+                while (lastChainHeaderFile is not null) {
+                    var previousPartContext = new ChainContext(lastChainHeaderFile);
+                    previousPartContext.FetchLastPart();
+                    lastChainContext.Chain.LinkPreviousChain(previousPartContext.Chain);
+                    lastChainContext = previousPartContext;
+                    lastChainHeaderFile = previousPartContext.ChainHeader.PreviousChainHeaderPath;
+                }
+            }
+            catch
             {
-                chainHeader = null;
+                ChainHeader = null;
                 Chain = null;
             }
         }
 
         public void Push()
         {
-            if (chainHeader is null || Chain is null)
+            if (ChainHeader is null || Chain is null)
                 throw new Exception("Chain context is not initialized");
 
             UpdateChainHeader();
-            chainHeader.StoreToFile(HeaderFilePath);
-            PushChainToFile(chainHeader.ChainFilePath);
+            ChainHeader.StoreToFile(HeaderFilePath);
+            PushChainToFile(ChainHeader.ChainFilePath);
         }
 
         protected void PushChainToFile(string chainFilePath)
@@ -60,7 +88,7 @@ namespace Microcoin.Microcoin.ChainStorage
         protected Chain FetchChainFromFile(string chainFilePath)
         {
             using (var fileStream = File.OpenRead(chainFilePath))
-                return ChainsIO.ChainStreaming.ReadChainFromStream(fileStream as Stream, chainHeader.ChainIdentifier.TailChainBlockCount, CancellationToken.None).Result as Chain;
+                return ChainsIO.ChainStreaming.ReadChainFromStream(fileStream as Stream, ChainHeader.ChainIdentifier.TailChainBlockCount, CancellationToken.None).Result as Chain;
         }
 
         /// <summary>
@@ -72,7 +100,7 @@ namespace Microcoin.Microcoin.ChainStorage
             if (Chain is null)
                 throw new Exception("Chain context is not initialized");
             ChainIdentifier chainIdentifier = new ChainIdentifier(Chain);
-            chainHeader = new ChainHeader(chainIdentifier, chainHeader.PreviousChainHeaderPath);
+            ChainHeader = new ChainHeader(chainIdentifier, ChainHeader.ChainFilePath, ChainHeader.PreviousChainHeaderPath);
         }
     }
 }
