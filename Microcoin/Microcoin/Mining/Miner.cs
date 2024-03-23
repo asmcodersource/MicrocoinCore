@@ -29,10 +29,10 @@ namespace Microcoin.Microcoin.Mining
             Blockchain.Block.Block tailBlock = chain.GetLastBlock();
             if (tailBlock != null)
                 chainComplexity = tailBlock.MiningBlockInfo.ChainComplexity;
+            bool isBlockAlreadyMined = false;
             try
             {
                 // Prepare to mining
-                bool isBlockAlreadyMined = false;
                 block.MiningBlockInfo.MinerPublicKey = minerWallet;
                 Random random = new Random();
                 while (cancellationToken.IsCancellationRequested is not true && isBlockAlreadyMined is not true)
@@ -44,7 +44,7 @@ namespace Microcoin.Microcoin.Mining
                     block.MiningBlockInfo.MinerReward = miningReward;
                     block.MiningBlockInfo.ChainComplexity = miningComplexity + chainComplexity;
                     // To reduce count of complexity and reward recalculations
-                    for (int i = 0; i < 1024 * 16; i++)
+                    for (int i = 0; i < 16; i++)
                     {
                         block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
                         var hash = block.GetMiningBlockHash();

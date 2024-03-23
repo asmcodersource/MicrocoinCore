@@ -10,8 +10,8 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                 return false;
             if (transaction.DateTime > DateTime.UtcNow)
                 return false;
-            if (transaction.SenderPublicKey == transaction.ReceiverPublicKey)  // Transactions between same wallet is invalid
-                return false;
+            // if (transaction.SenderPublicKey == transaction.ReceiverPublicKey)  // Transactions between same wallet is invalid
+            //    return false;
             return true;
         }
     }

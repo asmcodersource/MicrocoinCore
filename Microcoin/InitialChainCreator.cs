@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Microcoin
 {
     // Used to create the very first chain, as well as the very first block in the chain. This is the point from where it is determined who will receive the first coins on the network.
-    internal class InitialChainCreator
+    public class InitialChainCreator
     {
         public Peer InitialPeer { get; protected set; }
         public Chain InitialChain { get; protected set; }

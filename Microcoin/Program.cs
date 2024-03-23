@@ -6,6 +6,13 @@ using Serilog.Core;
 InitializeDepencyInjections();
 // CreateInitialChain(); // Uncomment this line, if you wan't to create initial chain
 
+Peer peer = new Peer();
+peer.LoadOrCreateWalletKeys("wallet.keys");
+peer.InitializeAcceptancePools();
+peer.InitializeMining();
+peer.InitializeChain();
+peer.InitializeNetworking(0);
+
 void InitializeDepencyInjections()
 {
     Logging.InitializeLogger();

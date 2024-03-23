@@ -53,8 +53,8 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                     return;
                 Pool.Add(transaction);
                 PresentedTransactions.Add(transaction);
-                OnTransactionReceived?.Invoke(this);
             }
+            OnTransactionReceived?.Invoke(this);
         }
 
         protected void RemoveTransaction(Transaction.Transaction transaction)

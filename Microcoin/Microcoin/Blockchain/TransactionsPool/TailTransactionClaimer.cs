@@ -22,10 +22,12 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                 if (blockTransactions.Count > maxTransactionsCount)
                     break;
                 blockTransactions.Add(transaction);
-                removeTransations.Add(transaction);
                 var isSuccess = deepTransactionsVerify.Verify(chain, blockTransactions, CancellationToken.None).Result;
                 if (isSuccess is not true)
+                {
+                    removeTransations.Add(transaction);
                     blockTransactions.Remove(transaction);
+                }
             }
             transactionsPool.RemoveTransactions(removeTransations);
             Serilog.Log.Debug($"Microcoin peer | Claimed {blockTransactions.Count()} transactions for new block");

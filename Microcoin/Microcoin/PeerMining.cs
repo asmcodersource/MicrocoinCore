@@ -8,7 +8,7 @@ namespace Microcoin.Microcoin
     public class PeerMining
     {
         public event Action<Microcoin.Blockchain.Block.Block> BlockMined;
-        protected Task? MiningTask;
+        protected Thread? MiningThread;
         protected CancellationTokenSource? MiningCancellationTokenSource;
         public int MaxTransactionsPerBlock { get; set; } = 512;
         public IMiner Miner { get; protected set; }
@@ -42,7 +42,8 @@ namespace Microcoin.Microcoin
                 if (MiningCancellationTokenSource is not null)
                 {
                     MiningCancellationTokenSource?.Cancel();
-                    MiningTask?.Wait();
+                    //MiningThread?.Join();
+                    MiningThread = null;
                     return true;
                 }
                 return false;
@@ -54,8 +55,8 @@ namespace Microcoin.Microcoin
             Serilog.Log.Debug($"Microcoin peer | Trying to start mine new block");
             lock (this)
             {
-                if (MiningTask is not null && MiningTask.IsCompleted is not true)
-                    throw new Exception("Only one mining proccess allowed");
+                if (MiningThread is not null && MiningThread.IsAlive is not false )
+                    return; // TODO: verify this line
 
                 if (IsMiningEnabled)
                 {
@@ -75,7 +76,8 @@ namespace Microcoin.Microcoin
             block.Transactions = transactions;
             Miner.LinkBlockToChain(tailChain, block);
             // TODO: verify this line
-            MiningTask = Task.Run(() => MineBlock(tailChain, block, deepTransactionsVerify, cancellationToken));
+            MiningThread = new Thread(() => MineBlock(tailChain, block, deepTransactionsVerify, cancellationToken));
+            MiningThread.Start();
         }
 
 
@@ -85,6 +87,7 @@ namespace Microcoin.Microcoin
             {
                 block.Hash = await Miner.StartBlockMining(tailChain, block, MinerWaller, cancellationToken);
                 BlockMined.Invoke(block);
+                MiningThread = null;
             }
             catch (OperationCanceledException) { }
         }

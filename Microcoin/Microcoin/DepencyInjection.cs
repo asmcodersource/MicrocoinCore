@@ -3,7 +3,7 @@ using Microcoin.Microcoin.ChainStorage;
 
 namespace Microcoin.Microcoin
 {
-    internal static class DepencyInjection
+    public static class DepencyInjection
     {
         static public Container Container; // Multiple peers running within the same process will share a shared chain store.
 

@@ -32,9 +32,9 @@ namespace Microcoin.Microcoin.Mining
             else
             {
                 if (duration.Minutes - targetTime >= 0)
-                    return windowLastBlock.MiningBlockInfo.Complexity--;
+                    return windowLastBlock.MiningBlockInfo.Complexity - 1;
                 else
-                    return windowLastBlock.MiningBlockInfo.Complexity++;
+                    return windowLastBlock.MiningBlockInfo.Complexity + 1;
             }
         }
 

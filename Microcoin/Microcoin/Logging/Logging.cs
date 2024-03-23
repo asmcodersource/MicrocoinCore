@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Microcoin.Logging
 {
-    internal static class Logging
+    public static class Logging
     {
         static public void InitializeLogger()
         {

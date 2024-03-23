@@ -72,8 +72,7 @@ namespace Microcoin.Microcoin
             if (miningEnable)
                 PeerMining.StartMining();
 
-            TransactionsPool.OnTransactionReceived += (transaction)
-                => PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
+            TransactionsPool.OnTransactionReceived += (transaction) => PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
             Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) mining initialized");
         }
 
@@ -106,9 +105,10 @@ namespace Microcoin.Microcoin
 
         protected void BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
         {
-            BlocksPool.HandleBlock(block).Wait();
-            PeerNetworking.SendBlockToNetwork(block);
             PeerMining.StopMining();
+            PeerChain.ChainController.AcceptBlock(block).Wait();
+            PeerNetworking.SendBlockToNetwork(block);
+            PeerMining.StartMining();
             PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
         }
     }
