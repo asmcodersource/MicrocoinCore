@@ -103,6 +103,11 @@ namespace Microcoin.Microcoin.ChainStorage
             Serilog.Log.Debug("Microcoin | Chain removed from storage");
         }
 
+        public int CountOfChainsHeaders()
+        {
+            return chainsDictionary.Count();
+        }
+
         protected string GetHeaderFileNameByIdentifier(ChainIdentifier chainIdentifier)
         {
             return chainIdentifier.GetHashCode() + "." + ChainHeaderExtension;
