@@ -4,6 +4,7 @@ using Microcoin.Microcoin.Blockchain.TransactionsPool;
 using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Mining;
+using NodeNet.NodeNet;
 
 namespace Microcoin.Microcoin
 {
@@ -74,6 +75,16 @@ namespace Microcoin.Microcoin
 
             TransactionsPool.OnTransactionReceived += (transaction) => PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
             Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) mining initialized");
+        }
+
+        public void InitializeNetworking(Node nodeNet)
+        {
+            PeerNetworking = new PeerNetworking(nodeNet);
+            PeerNetworking.CreateDefaultRouting();
+            PeerNetworking.TransactionReceived += (transaction) => TransactionsPool.HandleTransaction(transaction);
+            PeerNetworking.BlockReceived += (block) => BlocksPool.HandleBlock(block);
+            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) network initialized");
+            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) listening on port: {this.PeerNetworking.NetworkNode.GetNodeTcpPort()}");
         }
 
         public void InitializeNetworking(int portForNodeNet = 0)

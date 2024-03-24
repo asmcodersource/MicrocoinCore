@@ -16,13 +16,21 @@ namespace Microcoin.Microcoin
         public event Action<Microcoin.Blockchain.Block.Block> BlockReceived;
         public event Action<Transaction> TransactionReceived;
 
+        public PeerNetworking() { }
+
+        public PeerNetworking(Node nodeNet)
+        {
+            NetworkNode = nodeNet;
+            NetworkNode.NetworkExplorer.LoadRecentConnectionsFromFile("knownPeers.json");
+        }
+
         public virtual void CreateDefaultRouting()
         {
             BlocksAcceptor = new BlocksAcceptor();
             TransactionsAcceptor = new TransactionsAcceptor();
             EntryAcceptor = new EntryAcceptor(TransactionsAcceptor, BlocksAcceptor);
-            BlocksAcceptor.BlockReceived += BlockReceived;
-            TransactionsAcceptor.TransactionReceived += TransactionReceived;
+            BlocksAcceptor.BlockReceived += (block) => BlockReceived?.Invoke(block);
+            TransactionsAcceptor.TransactionReceived += (transaction) => TransactionReceived?.Invoke(transaction);
             NetworkNode.MessageReceived += (messageContext) => EntryAcceptor.Handle(messageContext);
         }
 
