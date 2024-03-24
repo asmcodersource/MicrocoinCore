@@ -6,13 +6,13 @@ namespace Microcoin.Microcoin.Mining
     /// <summary>
     /// This rule determines the difficulty of the next block. 
     /// The complexity of the block determines the number of calculations that the network must perform to mine the block. 
-    /// The idea was taken from the Bitcoin network. Every 2048 blocks, a difficulty check is performed; 
-    /// if mining lasts more than 10 minutes, the difficulty decreases; 
+    /// The idea was taken from the Bitcoin network. Every 'avgWindow' blocks, a difficulty check is performed; 
+    /// if mining lasts more than 'targetTime' minutes, the difficulty decreases; 
     /// if it takes less, it increases.
     /// </summary>
     public class ComplexityRule : IComplexityRule
     {
-        protected int defaultComplexity = 4;
+        protected int defaultComplexity = 24;
         protected int targetTime = 10;
         protected int allowedTimeDivitation = 1;
         protected int avgWindow = 10;
@@ -25,7 +25,7 @@ namespace Microcoin.Microcoin.Mining
                 return defaultComplexity;
             var durationWindow = windowFirstBlock.MiningBlockInfo.CreateTime - windowLastBlock.MiningBlockInfo.CreateTime;
             var duration = durationWindow / avgWindow;
-            if (Math.Abs(duration.Minutes - targetTime) < allowedTimeDivitation)
+            if (Math.Abs(duration.TotalMinutes - targetTime) < allowedTimeDivitation)
             {
                 return windowLastBlock.MiningBlockInfo.Complexity;
             }

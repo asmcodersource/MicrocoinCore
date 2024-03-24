@@ -23,6 +23,7 @@ namespace Microcoin.Microcoin.Mining
         /// </summary>
         public async Task<string> StartBlockMining(AbstractChain chain, Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
+            DateTime beginTime = DateTime.UtcNow;
             Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining started");
             // Get chain complexity, used to calculate chain complexity for new tail block
             int chainComplexity = 0;
@@ -66,7 +67,11 @@ namespace Microcoin.Microcoin.Mining
             }
             finally
             {
-                Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining finished");
+                var finishTime = DateTime.UtcNow;
+                if(isBlockAlreadyMined)
+                    Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining finished, after {(finishTime-beginTime).TotalSeconds} seconds");
+                else
+                    Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining canceled, after {(finishTime - beginTime).TotalSeconds} seconds");
             }
         }
 
