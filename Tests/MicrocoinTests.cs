@@ -22,14 +22,14 @@ namespace Tests
 
         static MicrocoinTests()
         {
-            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "test-peers-wallet-keys"));
-            DirectoryInfo dir = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "test-peers-wallet-keys"));
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "test-chains"));
+            DirectoryInfo dir = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "test-chains"));
             foreach (var file in dir.GetFiles())
                 file.Delete();
 
             Logging.InitializeLogger();
             DepencyInjection.CreateContainer();
-            DepencyInjection.AddChainsStorage(Path.Combine(Directory.GetCurrentDirectory(), "test-peers-wallet-keys"));
+            DepencyInjection.AddChainsStorage(Path.Combine(Directory.GetCurrentDirectory(), "test-chains"));
             var initialChainCreator = new InitialChainCreator();
             initialChainCreator.CreateInitialialChain();
             initialChainCreator.StoreInitialChainToFile();
@@ -88,12 +88,12 @@ namespace Tests
             output.WriteLine("Network and peers created");
 
             // Sending coins by peers to another peers
-            for( int i = 0; i < 1024*16; i++)
+            for( int i = 0; i < 1024*32; i++)
             {
                 Peer peerSender, peerReceiver;
                 peerSender = peersCoins.ElementAt(Random.Shared.Next(peersCoins.Count)).Key;
                 peerReceiver = peers.ElementAt(Random.Shared.Next(peers.Count));
-                double coinsToSend = peersCoins[peerSender] / 100; 
+                double coinsToSend = peersCoins[peerSender] / 1000000000; 
                 var transaction = peerSender.SendCoins(peerReceiver.WalletPublicKey, coinsToSend);
                 DoPeerCoinsCount(peerSender, -coinsToSend);
                 DoPeerCoinsCount(peerReceiver, +coinsToSend);

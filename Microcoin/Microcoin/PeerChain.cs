@@ -9,6 +9,7 @@ namespace Microcoin.Microcoin
     // Represent current chain, and operations with it
     public class PeerChain
     {
+        public Action<Block> ChainReceiveNextBlock;
         protected ChainStorage.ChainStorage ChainStorage { get; set; }
         public ChainController? ChainController { get; protected set; }
         public ChainFetcher.ChainFetcher ChainFetcher { get; protected set; }
@@ -32,6 +33,7 @@ namespace Microcoin.Microcoin
             var mostComprehensiveChain = ChainStorage.LoadMostComprehensiveChain();
             ChainController = new ChainController(mostComprehensiveChain.Chain, Miner, ChainFetcher);
             ChainController.DefaultInitialize();
+            ChainController.ChainReceivedNextBlock += (block) => ChainReceiveNextBlock?.Invoke(block);
         }
 
         public void SetInitialChain()

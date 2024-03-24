@@ -50,6 +50,7 @@ namespace Microcoin.Microcoin
                 PeerChain.SetInitialChain();
             else
                 PeerChain.SetMostComprehensive();
+            PeerChain.ChainReceiveNextBlock += (block) => ResetBlockMiningHandler(block);
             Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) chain initialized");
         }
 
@@ -116,9 +117,16 @@ namespace Microcoin.Microcoin
 
         protected void BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
         {
-            PeerMining.StopMining();
             PeerChain.ChainController.AcceptBlock(block).Wait();
             PeerNetworking.SendBlockToNetwork(block);
+            PeerMining.StopMining();
+            PeerMining.StartMining();
+            PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
+        }
+
+        protected void ResetBlockMiningHandler(Block block)
+        {
+            PeerMining.StopMining();
             PeerMining.StartMining();
             PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
         }
