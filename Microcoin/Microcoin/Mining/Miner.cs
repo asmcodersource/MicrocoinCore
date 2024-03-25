@@ -24,13 +24,15 @@ namespace Microcoin.Microcoin.Mining
         public async Task<string> StartBlockMining(AbstractChain chain, Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
             DateTime beginTime = DateTime.UtcNow;
-            Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining started");
+            Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining started");
             // Get chain complexity, used to calculate chain complexity for new tail block
             int chainComplexity = 0;
             Blockchain.Block.Block tailBlock = chain.GetLastBlock();
             if (tailBlock != null)
                 chainComplexity = tailBlock.MiningBlockInfo.ChainComplexity;
+            var immutableTransactionsBlock = new Blockchain.Block.ImmutableTransactionsBlock(block);
             bool isBlockAlreadyMined = false;
+            int latest_complexity = -1;
             try
             {
                 // Prepare to mining
@@ -44,11 +46,17 @@ namespace Microcoin.Microcoin.Mining
                     double miningReward = MiningRules.RewardRule.Calculate(chain, block);
                     block.MiningBlockInfo.MinerReward = miningReward;
                     block.MiningBlockInfo.ChainComplexity = miningComplexity + chainComplexity;
+                    if( latest_complexity != miningComplexity)
+                    {
+                        Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining get complexity: {miningComplexity}, previous complexity: {latest_complexity}");
+                        latest_complexity = miningComplexity;
+                    }
                     // To reduce count of complexity and reward recalculations
-                    for (int i = 0; i < 16; i++)
+                    for (int i = 0; i < 512; i++)
                     {
                         block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
-                        var hash = block.GetMiningBlockHash();
+                        immutableTransactionsBlock.ChangeMiningBlockInfo(block.MiningBlockInfo);
+                        var hash = immutableTransactionsBlock.CalculateMiningBlockHash();
                         if (Blockchain.Block.Block.GetHashComplexity(hash) < block.MiningBlockInfo.Complexity)
                             continue;
                         lock (this)
@@ -57,7 +65,6 @@ namespace Microcoin.Microcoin.Mining
                                 break;
                             isBlockAlreadyMined = true;
                             cancellationToken.ThrowIfCancellationRequested();
-                            BlockMined?.Invoke(block, hash);
                             return hash;
                         }
                     }
@@ -68,10 +75,13 @@ namespace Microcoin.Microcoin.Mining
             finally
             {
                 var finishTime = DateTime.UtcNow;
-                if(isBlockAlreadyMined)
-                    Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining finished, after {(finishTime-beginTime).TotalSeconds} seconds");
+                if (isBlockAlreadyMined)
+                {
+                    Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining with complexity {block.MiningBlockInfo.Complexity} finished, after {(finishTime - beginTime).TotalSeconds} seconds");
+                    BlockMined?.Invoke(block, block.Hash);
+                }
                 else
-                    Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining canceled, after {(finishTime - beginTime).TotalSeconds} seconds");
+                    Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining canceled, after {(finishTime - beginTime).TotalSeconds} seconds");
             }
         }
 

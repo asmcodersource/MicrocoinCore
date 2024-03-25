@@ -39,11 +39,15 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             CancellationToken cancellationToken = GetChainOperationCancellationToken();
             if (NextBlockRule.IsBlockNextToChain(block, ChainTail))
             {
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as possible next tail");
                 try
                 {
                     var isBlockValid = await DeepBlockVerify(block, ChainTail, cancellationToken);
                     if (isBlockValid is not true)
+                    {
+                        Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) bad transactions received");
                         return false;
+                    }
                     return AddBlockToTail(block);  // this block valid as new tail of current blockchain, try to set it as tail
                 }
                 catch (TaskCanceledException) { return false; /* This block did not have time to pass the inspection, most likely another block was accepted as the final one. */ }
@@ -52,8 +56,11 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             {
                 // Essentially, with this call we only request that the chain be loaded, but not necessarily that it will be loaded.
                 // We don't care about everything else inside the chain.
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) accepted as possible chain fetch");
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as possible chain fetch");
                 ChainLoader.RequestChainFetch(block);
+            } else
+            {
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()} is not next tail or fetch possible");
             }
             return false;
         }
@@ -73,7 +80,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 ChainReceivedNextBlock?.Invoke(block);
                 if (ChainTail.GetBlocksList().Count >= ChainBranchBlocksCount)
                     BranchToNexthChainPart();
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) accepted as tail block of chain");
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as tail block of chain, current blocks in chain: {ChainTail.BlocksDictionary.Count()}");
                 return true;
             }
         }

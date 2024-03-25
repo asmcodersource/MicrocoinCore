@@ -20,7 +20,7 @@ namespace Microcoin.Microcoin.Network.MessageAcceptors
             if (transaction != null)
             {
                 TransactionReceived?.Invoke(transaction);
-                Serilog.Log.Debug($"Microcoin peer | Transaction({transaction.GetHashCode()}) accepted from network");
+                Serilog.Log.Verbose($"Microcoin peer | Transaction({transaction.GetHashCode()}) accepted from network");
             }
         }
     }

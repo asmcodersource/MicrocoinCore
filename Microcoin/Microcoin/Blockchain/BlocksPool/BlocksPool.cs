@@ -13,9 +13,12 @@ namespace Microcoin.Microcoin.Blockchain.BlocksPool
             // Handle block on verifing pipeline
             var handleResult = await Task.Run(() => HandlePipeline.Handle(block));
             if (handleResult.IsHandleSuccesful is not true)
+            {
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) failed pass handle pipeline");
                 return;
+            }
             // If block succesfully pass pipeline, add it to pool
-            Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) succesfully passed handle pipeline");
+            Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) succesfully passed handle pipeline");
             OnBlockReceived?.Invoke(this, block);
         }
 

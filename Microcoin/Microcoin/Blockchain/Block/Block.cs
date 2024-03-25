@@ -1,6 +1,4 @@
 ﻿using Microcoin.Microcoin.Mining;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 
 namespace Microcoin.Microcoin.Blockchain.Block
@@ -12,18 +10,15 @@ namespace Microcoin.Microcoin.Blockchain.Block
         public MiningBlockInfo MiningBlockInfo { get; set; } = new MiningBlockInfo();
         public string Hash { get; set; } = "";
 
-
-        /// <returns>Special hash of block, it dosn't include all field of object</returns>
         public string GetMiningBlockHash()
         {
-            using (SHA256 sha256Hash = SHA256.Create())
+            if (Hash == "")
             {
-                var temp1 = JsonSerializer.Serialize(Transactions);
-                var temp2 = JsonSerializer.Serialize(MiningBlockInfo);
-                var temp3 = Encoding.UTF8.GetBytes(temp1 + temp2);
-                byte[] hash = sha256Hash.ComputeHash(temp3);
-                return Convert.ToBase64String(hash);
+                // hash is not initialized, lets create it for first time...
+                var immutalbeTransactionBlock = new ImmutableTransactionsBlock(this);
+                immutalbeTransactionBlock.CalculateMiningBlockHash();
             }
+            return Hash;
         }
 
         public static int GetHashComplexity(string hash)

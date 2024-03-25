@@ -61,8 +61,8 @@ namespace Tests
         {
             // Create test network nodes with connections
             NodeNetTestNetworksGenerator nodeNetNetworkConnections = new NodeNetTestNetworksGenerator();
-            nodeNetNetworkConnections.CreateNetworkPeers(20);
-            nodeNetNetworkConnections.CreateNetworkTree(4);
+            nodeNetNetworkConnections.CreateNetworkPeers(5);
+            nodeNetNetworkConnections.CreateNetworkTree(5);
             nodeNetNetworkConnections.PerformRandomConnections(0);
             // Create many peers on test network nodes
             List<Peer> peers = new List<Peer>();
@@ -76,15 +76,15 @@ namespace Tests
                 peer.InitializeNetworking(node);
                 peers.Add(peer);
 
-                peer.TransactionsPool.OnTransactionReceived += (transaction) => output.WriteLine($"Peer [{peer.GetHashCode()}] accepted transaction [{transaction.GetHashCode()}]");
-                peer.BlocksPool.OnBlockReceived += (blockspool, block) => output.WriteLine($"Peer [{peer.GetHashCode()}] accepted block [{block.GetHashCode()}]");
-                peer.PeerMining.BlockMined += (block) => output.WriteLine($"Peer [{peer.GetHashCode()}] mined block [{block.GetHashCode()}]");
-                peer.PeerNetworking.TransactionReceived += (transaction) => output.WriteLine($"Peer [{peer.GetHashCode()}] receive transaction [{transaction.GetHashCode()}] from network");
-                peer.PeerNetworking.BlockReceived += (block) => output.WriteLine($"Peer [{peer.GetHashCode()}] receive block [{block.GetHashCode()}] from network");
+                //peer.TransactionsPool.OnTransactionReceived += (transaction) => output.WriteLine($"Peer [{peer.GetHashCode()}] accepted transaction [{transaction.GetHashCode()}]");
+                //peer.BlocksPool.OnBlockReceived += (blockspool, block) => output.WriteLine($"Peer [{peer.GetHashCode()}] accepted block [{block.GetMiningBlockHash()}]");
+                //peer.PeerMining.BlockMined += (block) => output.WriteLine($"Peer [{peer.GetHashCode()}] mined block [{block.GetMiningBlockHash()}]");
+                //peer.PeerNetworking.TransactionReceived += (transaction) => output.WriteLine($"Peer [{peer.GetHashCode()}] receive transaction [{transaction.GetHashCode()}] from network");
+                //peer.PeerNetworking.BlockReceived += (block) => output.WriteLine($"Peer [{peer.GetHashCode()}] receive block [{block.GetMiningBlockHash()}] from network");
             }
             // Set first peers as initial peer
             peers[0].LoadOrCreateWalletKeys(InitialPeerWalletKeys);
-            DoPeerCoinsCount(peers[0], 0.000000000001);
+            DoPeerCoinsCount(peers[0], 0.1);
             output.WriteLine("Network and peers created");
 
             // Sending coins by peers to another peers
@@ -93,7 +93,7 @@ namespace Tests
                 Peer peerSender, peerReceiver;
                 peerSender = peersCoins.ElementAt(Random.Shared.Next(peersCoins.Count)).Key;
                 peerReceiver = peers.ElementAt(Random.Shared.Next(peers.Count));
-                double coinsToSend = peersCoins[peerSender] / 1000000000; 
+                double coinsToSend = peersCoins[peerSender] / 1000; 
                 var transaction = peerSender.SendCoins(peerReceiver.WalletPublicKey, coinsToSend);
                 DoPeerCoinsCount(peerSender, -coinsToSend);
                 DoPeerCoinsCount(peerReceiver, +coinsToSend);

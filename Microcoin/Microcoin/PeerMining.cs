@@ -52,7 +52,7 @@ namespace Microcoin.Microcoin
 
         public void TryStartMineBlock(AbstractChain tailChain, IDeepTransactionsVerify deepTransactionsVerify)
         {
-            Serilog.Log.Debug($"Microcoin peer | Trying to start mine new block");
+            Serilog.Log.Verbose($"Microcoin peer | Trying to start mine new block");
             lock (this)
             {
                 if (MiningThread is not null && MiningThread.IsAlive is not false )

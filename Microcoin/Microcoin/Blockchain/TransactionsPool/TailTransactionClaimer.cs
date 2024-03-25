@@ -15,7 +15,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 
         public static List<Transaction.Transaction> ClaimTailTransactions(this TransactionsPool transactionsPool, AbstractChain chain, IDeepTransactionsVerify deepTransactionsVerify, int maxTransactionsCount)
         {
-            var poolTransactions = transactionsPool.TakeTransactions();
+            var poolTransactions = transactionsPool.TakeTransactions(maxTransactionsCount);
             var blockTransactions = new List<Transaction.Transaction>();
             var removeTransations = new List<Transaction.Transaction>();
             foreach (var transaction in poolTransactions)
@@ -31,7 +31,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                 }
             }
             transactionsPool.RemoveTransactions(removeTransations);
-            Serilog.Log.Debug($"Microcoin peer | Claimed {blockTransactions.Count()} transactions for new block");
+            Serilog.Log.Verbose($"Microcoin peer | Claimed {blockTransactions.Count()} transactions for new block");
             return blockTransactions;
         }
     }

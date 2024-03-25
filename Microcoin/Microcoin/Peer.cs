@@ -36,6 +36,7 @@ namespace Microcoin.Microcoin
                 throw new NullReferenceException("Peer is not initialized");
 
             var transaction = CreateTransaction(receiverPublicKey, coinsCount);
+            PeerNetworking.SendTransactionToNetwork(transaction);
             TransactionsPool.HandleTransaction(transaction).Wait();
             return transaction;
         }
@@ -82,8 +83,8 @@ namespace Microcoin.Microcoin
         {
             PeerNetworking = new PeerNetworking(nodeNet);
             PeerNetworking.CreateDefaultRouting();
-            PeerNetworking.TransactionReceived += (transaction) => TransactionsPool.HandleTransaction(transaction);
-            PeerNetworking.BlockReceived += (block) => BlocksPool.HandleBlock(block);
+            PeerNetworking.TransactionReceived += async (transaction) => await TransactionsPool.HandleTransaction(transaction);
+            PeerNetworking.BlockReceived += async (block) => await BlocksPool.HandleBlock(block);
             Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) network initialized");
             Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) listening on port: {this.PeerNetworking.NetworkNode.GetNodeTcpPort()}");
         }
@@ -117,11 +118,8 @@ namespace Microcoin.Microcoin
 
         protected void BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
         {
-            PeerChain.ChainController.AcceptBlock(block).Wait();
             PeerNetworking.SendBlockToNetwork(block);
-            PeerMining.StopMining();
-            PeerMining.StartMining();
-            PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
+            PeerChain.ChainController.AcceptBlock(block);
         }
 
         protected void ResetBlockMiningHandler(Block block)

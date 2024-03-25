@@ -9,10 +9,12 @@ namespace Microcoin.Microcoin.Blockchain.BlocksPool
         {
             if (block.Transactions == null || block.Transactions.Count == 0)
                 return false;
-            if (block.MiningBlockInfo.CreateTime < new DateTime(2024, 1, 1) && block.MiningBlockInfo.CreateTime > DateTime.UtcNow.AddMinutes(1))
+/*            if (block.MiningBlockInfo.CreateTime < new DateTime(2024, 1, 1))
+                return false;
+            if (block.MiningBlockInfo.CreateTime > DateTime.UtcNow)
                 return false;
             if (block.MiningBlockInfo == null)
-                return false;
+                return false;*/
             return true;
         }
     }

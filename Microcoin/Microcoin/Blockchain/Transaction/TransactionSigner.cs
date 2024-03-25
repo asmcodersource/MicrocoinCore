@@ -22,13 +22,14 @@ namespace Microcoin.Microcoin.Blockchain.Transaction
                 throw new NullReferenceException(nameof(SignOptions));
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                transaction.Sign = "";
                 transaction.DateTime = DateTime.UtcNow;
                 transaction.SenderPublicKey = SignOptions.PublicKey;
                 IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(memoryStream, transaction);
-                string sign = RSAEncryption.Sign(memoryStream.ToArray(), SignOptions);
-                transaction.Sign = sign;
+                formatter.Serialize(memoryStream, transaction.ReceiverPublicKey);
+                formatter.Serialize(memoryStream, transaction.SenderPublicKey);
+                formatter.Serialize(memoryStream, transaction.DateTime);
+                formatter.Serialize(memoryStream, transaction.TransferAmount);
+                transaction.Sign = RSAEncryption.Sign(memoryStream.ToArray(), SignOptions);
             }
         }
     }

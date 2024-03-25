@@ -22,11 +22,11 @@ namespace Microcoin.Microcoin.Blockchain.Transaction
                 throw new NullReferenceException(nameof(ValidateOptions));
             using (MemoryStream memoryStream = new MemoryStream())
             {
-                var tempSign = transaction.Sign;
-                transaction.Sign = "";
                 IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(memoryStream, transaction);
-                transaction.Sign = tempSign;
+                formatter.Serialize(memoryStream, transaction.ReceiverPublicKey);
+                formatter.Serialize(memoryStream, transaction.SenderPublicKey);
+                formatter.Serialize(memoryStream, transaction.DateTime);
+                formatter.Serialize(memoryStream, transaction.TransferAmount);
                 return RSAEncryption.VerifySign(memoryStream.ToArray(), transaction.Sign, ValidateOptions);
             }
         }

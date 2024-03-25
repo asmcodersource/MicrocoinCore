@@ -18,7 +18,7 @@ namespace Microcoin.Microcoin.Network.MessageAcceptors
             if (block != null)
             {
                 BlockReceived?.Invoke(block);
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) accepted from network");
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted from network");
             }
         }
     }
