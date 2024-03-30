@@ -33,6 +33,7 @@ namespace Microcoin.Microcoin.Mining
             var immutableTransactionsBlock = new Blockchain.Block.ImmutableTransactionsBlock(block);
             bool isBlockAlreadyMined = false;
             int latest_complexity = -1;
+            int hasheshCalculated = 0;
             try
             {
                 // Prepare to mining
@@ -54,6 +55,7 @@ namespace Microcoin.Microcoin.Mining
                     // To reduce count of complexity and reward recalculations
                     for (int i = 0; i < 512; i++)
                     {
+                        hasheshCalculated++;
                         block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
                         immutableTransactionsBlock.ChangeMiningBlockInfo(block.MiningBlockInfo);
                         var hash = immutableTransactionsBlock.CalculateMiningBlockHash();

@@ -21,6 +21,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
                 BlocksDictionary.Add(block.Hash, block);
                 CountTransactionsTransfers(block.Transactions);
                 CountMinerReward(block);
+                ChainLength = ChainLength + 1;
             }
         }
 

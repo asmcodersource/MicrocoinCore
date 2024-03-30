@@ -12,35 +12,37 @@ namespace Microcoin.Microcoin.Mining
     /// </summary>
     public class ComplexityRule : IComplexityRule
     {
-        protected int defaultComplexity = 19;
-        protected int targetTime = 2;
-        protected int allowedTimeDivitation = 1;
+        protected Dictionary<ComplexityWindowIdentifier, int> complexityWindowCache = new Dictionary<ComplexityWindowIdentifier, int>();
+        protected int defaultComplexity = 18;
+        protected int targetTime = 5;
         protected int avgWindow = 5;
 
         public int Calculate(AbstractChain contextChain, Block block)
         {
-            var windowLastBlock = contextChain.GetBlockFromTail(0);
-            if (windowLastBlock == null)
+            if( contextChain.ChainLength < avgWindow )
                 return defaultComplexity;
-            var windowFirstBlock = contextChain.GetBlockFromTail(avgWindow);
-            if (windowFirstBlock == null || windowFirstBlock == windowLastBlock)
-                windowFirstBlock = contextChain.GetBlockFromTail(windowLastBlock.MiningBlockInfo.BlockId);
-            if (windowFirstBlock == null || windowFirstBlock == windowLastBlock)
-                return defaultComplexity;
-            var durationWindow =  windowLastBlock.MiningBlockInfo.CreateTime - windowFirstBlock.MiningBlockInfo.CreateTime;
-            var actualWindowSize = windowLastBlock.MiningBlockInfo.BlockId - windowFirstBlock.MiningBlockInfo.BlockId;
-            var duration = durationWindow / actualWindowSize;
-            if (Math.Abs(duration.TotalMinutes - targetTime) < allowedTimeDivitation)
+
+            int windowBeginBlockId = (int)(contextChain.ChainLength / avgWindow) * avgWindow - avgWindow;
+            Block windowFirstBlock = contextChain.GetBlockFromHead(windowBeginBlockId);
+            Block windowLastBlock = contextChain.GetBlockFromHead(windowBeginBlockId + avgWindow - 1);
+            var complexityWindowIdentifier = new ComplexityWindowIdentifier(windowFirstBlock, windowLastBlock);
+            if (complexityWindowCache.ContainsKey(complexityWindowIdentifier))
+                return complexityWindowCache[complexityWindowIdentifier];
+            double averageHashRatePerSeconds = 0;
+            for( int i = 0; i < avgWindow - 1; i++ )
             {
-                return windowLastBlock.MiningBlockInfo.Complexity;
+                var windowCurrentBlock = contextChain.GetBlockFromHead(windowBeginBlockId + i);
+                var windowNextBlock = contextChain.GetBlockFromHead(windowBeginBlockId + i + 1);
+                var windowBlockAvgHashesToMine = Complexity.GetAverageIterationsToMine(windowCurrentBlock.MiningBlockInfo.Complexity);
+                var windowBlockMiningTime = windowNextBlock.MiningBlockInfo.CreateTime - windowCurrentBlock.MiningBlockInfo.CreateTime;
+                var windowBlockPredictedHashRate = (double)windowBlockAvgHashesToMine / Math.Abs(windowBlockMiningTime.TotalSeconds);
+                averageHashRatePerSeconds += windowBlockPredictedHashRate;
             }
-            else
-            {
-                if (duration.Minutes - targetTime >= 0)
-                    return windowLastBlock.MiningBlockInfo.Complexity - 1;
-                else
-                    return windowLastBlock.MiningBlockInfo.Complexity + 1;
-            }
+            averageHashRatePerSeconds = averageHashRatePerSeconds / (avgWindow - 1);
+            var averageHashRatePerTargetTime = averageHashRatePerSeconds * 60 * targetTime;
+            var complexity = Complexity.GetClosestComplexity(averageHashRatePerTargetTime);
+            complexityWindowCache.Add(complexityWindowIdentifier, complexity);
+            return complexity;
         }
 
         public bool Verify(AbstractChain contextChain, Block block)
@@ -49,6 +51,35 @@ namespace Microcoin.Microcoin.Mining
             if (block.MiningBlockInfo.Complexity < complexity)
                 return false;
             return true;
+        }
+    }
+
+    public class ComplexityWindowIdentifier
+    {
+        public Block FirstBlock { get; protected set; }
+        public Block LastBlock { get; protected set; }
+
+        public ComplexityWindowIdentifier(Block firstBlock, Block lastBlock) 
+        {
+            this.FirstBlock = firstBlock;
+            this.LastBlock = lastBlock;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(FirstBlock, LastBlock);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (base.Equals(obj) is true)
+                return true;
+            if( obj is ComplexityWindowIdentifier rangeIdentifier)
+            {
+                if (this.FirstBlock == rangeIdentifier.FirstBlock && this.LastBlock == rangeIdentifier.LastBlock)
+                    return true;
+            }
+            return false;
         }
     }
 }
