@@ -14,7 +14,7 @@ namespace Microcoin.Microcoin.Mining
     {
         protected Dictionary<ComplexityWindowIdentifier, int> complexityWindowCache = new Dictionary<ComplexityWindowIdentifier, int>();
         protected int defaultComplexity = 18;
-        protected int targetTime = 5;
+        protected int targetTime = 1;
         protected int avgWindow = 5;
 
         public int Calculate(AbstractChain contextChain, Block block)

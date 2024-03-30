@@ -23,8 +23,8 @@ namespace Microcoin.Microcoin.Mining
         /// </summary>
         public async Task<string> StartBlockMining(AbstractChain chain, Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
+            Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining started, block id = {block.MiningBlockInfo.BlockId}");
             DateTime beginTime = DateTime.UtcNow;
-            Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining started");
             // Get chain complexity, used to calculate chain complexity for new tail block
             int chainComplexity = 0;
             Blockchain.Block.Block tailBlock = chain.GetLastBlock();
@@ -49,7 +49,7 @@ namespace Microcoin.Microcoin.Mining
                     block.MiningBlockInfo.ChainComplexity = miningComplexity + chainComplexity;
                     if( latest_complexity != miningComplexity)
                     {
-                        Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining get complexity: {miningComplexity}, previous complexity: {latest_complexity}");
+                        Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining get complexity: {miningComplexity}, previous complexity: {latest_complexity}");
                         latest_complexity = miningComplexity;
                     }
                     // To reduce count of complexity and reward recalculations
@@ -79,11 +79,11 @@ namespace Microcoin.Microcoin.Mining
                 var finishTime = DateTime.UtcNow;
                 if (isBlockAlreadyMined)
                 {
-                    Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining with complexity {block.MiningBlockInfo.Complexity} finished, after {(finishTime - beginTime).TotalSeconds} seconds");
+                    Log.Debug($"Microcoin peer | Block({block.GetHashCode()})({block.GetMiningBlockHash()}) mining with complexity {block.MiningBlockInfo.Complexity} finished, after {(finishTime - beginTime).TotalSeconds} seconds");
                     BlockMined?.Invoke(block, block.Hash);
                 }
                 else
-                    Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) mining canceled, after {(finishTime - beginTime).TotalSeconds} seconds");
+                    Log.Debug($"Microcoin peer | Block({block.GetHashCode()})({block.GetMiningBlockHash()}) mining canceled, after {(finishTime - beginTime).TotalSeconds} seconds");
             }
         }
 

@@ -119,7 +119,9 @@ namespace Microcoin.Microcoin
         protected void BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
         {
             PeerNetworking.SendBlockToNetwork(block);
-            PeerChain.ChainController.AcceptBlock(block);
+            ResetBlockMiningHandler(block);
+            PeerChain.ChainController.AcceptBlock(block).Wait();
+            ResetBlockMiningHandler(block);
         }
 
         protected void ResetBlockMiningHandler(Block block)

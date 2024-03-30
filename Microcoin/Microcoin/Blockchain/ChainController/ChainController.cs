@@ -61,6 +61,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             } else
             {
                 Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()} is not next tail or fetch possible");
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()} current id = {block.MiningBlockInfo.BlockId}, expected id = {ChainTail.GetLastBlock().MiningBlockInfo.BlockId + 1}, prew hash = {block.MiningBlockInfo.PreviousBlockHash}, expected prew hash = {ChainTail.GetLastBlock().Hash}");
             }
             return false;
         }

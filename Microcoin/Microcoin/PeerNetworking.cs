@@ -59,7 +59,8 @@ namespace Microcoin.Microcoin
                 type = "WalletTransaction"
             };
             var messageJson = Newtonsoft.Json.JsonConvert.SerializeObject(messageDTO);
-            NetworkNode.SendMessage(messageJson);
+            lock (this)
+                NetworkNode.SendMessage(messageJson);
         }
 
         public void SendBlockToNetwork(Microcoin.Blockchain.Block.Block block)
@@ -71,7 +72,8 @@ namespace Microcoin.Microcoin
                 type = "ChainBlock"
             };
             var messageJson = Newtonsoft.Json.JsonConvert.SerializeObject(messageDTO);
-            NetworkNode.SendMessage(messageJson);
+            lock (this)
+                NetworkNode.SendMessage(messageJson);
         }
     }
 }

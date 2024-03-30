@@ -74,7 +74,6 @@ namespace Microcoin.Microcoin
             Microcoin.Blockchain.Block.Block block = new Microcoin.Blockchain.Block.Block();
             block.MiningBlockInfo = new MiningBlockInfo();
             block.Transactions = transactions;
-            Miner.LinkBlockToChain(tailChain, block);
             // TODO: verify this line
             MiningThread = new Thread(() => MineBlock(tailChain, block, deepTransactionsVerify, cancellationToken));
             MiningThread.Start();
@@ -85,8 +84,10 @@ namespace Microcoin.Microcoin
         {
             try
             {
+                Miner.LinkBlockToChain(tailChain, block);
                 block.Hash = await Miner.StartBlockMining(tailChain, block, MinerWaller, cancellationToken);
-                BlockMined.Invoke(block);
+                if(cancellationToken.IsCancellationRequested is not true )
+                    BlockMined.Invoke(block);
                 MiningThread = null;
             }
             catch (OperationCanceledException) { }
