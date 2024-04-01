@@ -39,7 +39,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             CancellationToken cancellationToken = GetChainOperationCancellationToken();
             if (NextBlockRule.IsBlockNextToChain(block, ChainTail))
             {
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as possible next tail");
+                Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as possible next tail");
                 try
                 {
                     var isBlockValid = await DeepBlockVerify(block, ChainTail, cancellationToken);
@@ -60,8 +60,8 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 ChainLoader.RequestChainFetch(block);
             } else
             {
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()} is not next tail or fetch possible");
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()} current id = {block.MiningBlockInfo.BlockId}, expected id = {ChainTail.GetLastBlock().MiningBlockInfo.BlockId + 1}, prew hash = {block.MiningBlockInfo.PreviousBlockHash}, expected prew hash = {ChainTail.GetLastBlock().Hash}");
+                Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()} is not next tail or fetch possible");
+                Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()} current id = {block.MiningBlockInfo.BlockId}, expected id = {ChainTail.GetLastBlock().MiningBlockInfo.BlockId + 1}, prew hash = {block.MiningBlockInfo.PreviousBlockHash}, expected prew hash = {ChainTail.GetLastBlock().Hash}");
             }
             return false;
         }

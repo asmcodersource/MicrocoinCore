@@ -59,7 +59,7 @@ namespace Microcoin.Microcoin
         {
             TransactionsPool.InitializeHandlerPipeline();
             BlocksPool.InitializeHandlerPipeline(TransactionsPool.HandlePipeline);
-            BlocksPool.OnBlockReceived += (pool, block) => PeerChain.ChainController.AcceptBlock(block); 
+            BlocksPool.OnBlockReceived += (pool, block) => PeerChain.ChainController.AcceptBlock(block);
         }
 
         public void InitializeMining(bool miningEnable = true)
@@ -119,15 +119,13 @@ namespace Microcoin.Microcoin
         protected void BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
         {
             PeerNetworking.SendBlockToNetwork(block);
-            ResetBlockMiningHandler(block);
             PeerChain.ChainController.AcceptBlock(block).Wait();
             ResetBlockMiningHandler(block);
         }
 
         protected void ResetBlockMiningHandler(Block block)
         {
-            PeerMining.StopMining();
-            PeerMining.StartMining();
+            PeerMining.CancelCurrentMiningProcess();
             PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
         }
     }

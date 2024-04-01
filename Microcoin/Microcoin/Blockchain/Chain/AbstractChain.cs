@@ -21,7 +21,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
         public void LinkPreviousChain(AbstractChain previousChain)
         { 
             PreviousChain = previousChain;
-            ChainLength = blocksList.Count() + PreviousChain.ChainLength;
+            ChainLength = blocksList.Count() + (PreviousChain is not null ? PreviousChain.ChainLength : 0);
         }
 
         public List<Microcoin.Blockchain.Block.Block> GetBlocksList()
@@ -31,7 +31,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
         public void SetBlockList(List<Microcoin.Blockchain.Block.Block> blockList)
         { 
             blocksList = blockList;
-            ChainLength = blocksList.Count() + PreviousChain.ChainLength;
+            ChainLength = blocksList.Count() + (PreviousChain is not null ? PreviousChain.ChainLength : 0);
         }
 
         public bool IsChainHasTransaction(Transaction.Transaction transaction)
@@ -54,10 +54,10 @@ namespace Microcoin.Microcoin.Blockchain.Chain
 
         public Microcoin.Blockchain.Block.Block? GetBlockFromHead(int blockIdFromHead)
         {
-            if (ChainLength - blocksList.Count() <= blockIdFromHead && ChainLength > blockIdFromHead)
-                return blocksList[ChainLength - (blockIdFromHead + 1)];
-            else if (PreviousChain is not null)
-                return GetBlockFromHead(blockIdFromHead);
+            if( blockIdFromHead < ChainLength && blockIdFromHead >= ChainLength - blocksList.Count())
+                return blocksList[blockIdFromHead - (ChainLength - blocksList.Count())];
+            else if ( PreviousChain is not null )
+                return PreviousChain.GetBlockFromHead(blockIdFromHead);
             else
                 return null;
         }

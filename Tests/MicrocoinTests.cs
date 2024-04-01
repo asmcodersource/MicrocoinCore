@@ -97,14 +97,14 @@ namespace Tests
                 var transaction = peerSender.SendCoins(peerReceiver.WalletPublicKey, coinsToSend);
                 DoPeerCoinsCount(peerSender, -coinsToSend);
                 DoPeerCoinsCount(peerReceiver, +coinsToSend);
-                output.WriteLine($"Peer [{peerSender.GetHashCode()}] send transaction [{transaction.GetHashCode()}]");
+                //output.WriteLine($"Peer [{peerSender.GetHashCode()}] send transaction [{transaction.GetHashCode()}]");
             }
 
             // If there is no exceptions, we can thing that it works, at least not faults, self-locks, etc.
             // Additional, we have logs, to read, what really happens behind
             // -- Log inside xUnit output ( less information )
             // -- Log file from run directory ( more information )
-            Thread.Sleep(1000*60*60);
+            Thread.Sleep(2*1000*60*60);
         }
 
         protected void DoPeerCoinsCount(Peer peer, double coinsChange)

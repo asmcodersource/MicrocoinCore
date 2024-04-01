@@ -13,9 +13,9 @@ namespace Microcoin.Microcoin.Mining
     public class ComplexityRule : IComplexityRule
     {
         protected Dictionary<ComplexityWindowIdentifier, int> complexityWindowCache = new Dictionary<ComplexityWindowIdentifier, int>();
-        protected int defaultComplexity = 18;
-        protected int targetTime = 1;
-        protected int avgWindow = 5;
+        protected int defaultComplexity =  22;
+        protected int targetTime = 10;
+        protected int avgWindow = 20;
 
         public int Calculate(AbstractChain contextChain, Block block)
         {
@@ -29,7 +29,7 @@ namespace Microcoin.Microcoin.Mining
             if (complexityWindowCache.ContainsKey(complexityWindowIdentifier))
                 return complexityWindowCache[complexityWindowIdentifier];
             double averageHashRatePerSeconds = 0;
-            for( int i = 0; i < avgWindow - 1; i++ )
+            for( int i = 0; i < avgWindow-1; i++ )
             {
                 var windowCurrentBlock = contextChain.GetBlockFromHead(windowBeginBlockId + i);
                 var windowNextBlock = contextChain.GetBlockFromHead(windowBeginBlockId + i + 1);

@@ -23,7 +23,7 @@ namespace Microcoin.Microcoin.Mining
         /// </summary>
         public async Task<string> StartBlockMining(AbstractChain chain, Blockchain.Block.Block block, string minerWallet, CancellationToken cancellationToken)
         {
-            Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining started, block id = {block.MiningBlockInfo.BlockId}");
+            Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining started, block id = {block.MiningBlockInfo.BlockId}, complexity = {MiningRules.ComplexityRule.Calculate(chain, block)}");
             DateTime beginTime = DateTime.UtcNow;
             // Get chain complexity, used to calculate chain complexity for new tail block
             int chainComplexity = 0;
@@ -49,11 +49,11 @@ namespace Microcoin.Microcoin.Mining
                     block.MiningBlockInfo.ChainComplexity = miningComplexity + chainComplexity;
                     if( latest_complexity != miningComplexity)
                     {
-                        Log.Debug($"Microcoin peer | Block({block.GetHashCode()}) mining get complexity: {miningComplexity}, previous complexity: {latest_complexity}");
+                        Log.Verbose($"Microcoin peer | Block({block.GetHashCode()}) mining get complexity: {miningComplexity}, previous complexity: {latest_complexity}");
                         latest_complexity = miningComplexity;
                     }
                     // To reduce count of complexity and reward recalculations
-                    for (int i = 0; i < 512; i++)
+                    for (int i = 0; i < 1024*16; i++)
                     {
                         hasheshCalculated++;
                         block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);

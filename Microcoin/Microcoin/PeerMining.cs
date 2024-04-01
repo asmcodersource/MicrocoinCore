@@ -39,10 +39,10 @@ namespace Microcoin.Microcoin
         {
             lock (this)
             {
-                if (MiningCancellationTokenSource is not null)
+                if (MiningThread is not null && MiningCancellationTokenSource is not null)
                 {
-                    MiningCancellationTokenSource?.Cancel();
-                    //MiningThread?.Join();
+                    MiningCancellationTokenSource.Cancel();
+                    MiningThread.Join();
                     MiningThread = null;
                     return true;
                 }
@@ -55,14 +55,10 @@ namespace Microcoin.Microcoin
             Serilog.Log.Verbose($"Microcoin peer | Trying to start mine new block");
             lock (this)
             {
-                if (MiningThread is not null && MiningThread.IsAlive is not false )
-                    return; // TODO: verify this line
-
-                if (IsMiningEnabled)
-                {
-                    MiningCancellationTokenSource = new CancellationTokenSource();
-                    StartMineBlock(tailChain, deepTransactionsVerify, MiningCancellationTokenSource.Token);
-                }
+                if (MiningThread is not null || IsMiningEnabled is not true )
+                    return;
+                MiningCancellationTokenSource = new CancellationTokenSource();
+                StartMineBlock(tailChain, deepTransactionsVerify, MiningCancellationTokenSource.Token);
             }
         }
 
@@ -84,13 +80,13 @@ namespace Microcoin.Microcoin
         {
             try
             {
-                Miner.LinkBlockToChain(tailChain, block);
+                (Miner as IMiner).LinkBlockToChain(tailChain, block);
                 block.Hash = await Miner.StartBlockMining(tailChain, block, MinerWaller, cancellationToken);
-                if(cancellationToken.IsCancellationRequested is not true )
-                    BlockMined.Invoke(block);
-                MiningThread = null;
+                if (cancellationToken.IsCancellationRequested is not true )
+                    Task.Run(() => BlockMined.Invoke(block));
             }
             catch (OperationCanceledException) { }
+            finally { MiningThread = null; }
         }
     }
 }

@@ -34,6 +34,7 @@ namespace Tests
             var signOptions = Microcoin.RSAEncryptions.RSAEncryption.CreateSignOptions();
             // Sign transaction
             var transaction = new Transaction();
+            transaction.ReceiverPublicKey = "";
             TransactionSigner transactionSigner = new TransactionSigner();
             transactionSigner.SetSignOptions(signOptions);
             transactionSigner.Sign(transaction);

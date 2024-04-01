@@ -18,7 +18,7 @@ namespace Microcoin.Microcoin.Blockchain.BlocksPool
                 return;
             }
             // If block succesfully pass pipeline, add it to pool
-            Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) succesfully passed handle pipeline");
+            Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()}) succesfully passed handle pipeline");
             OnBlockReceived?.Invoke(this, block);
         }
 
