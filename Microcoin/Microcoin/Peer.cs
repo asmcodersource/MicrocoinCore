@@ -48,9 +48,9 @@ namespace Microcoin.Microcoin
             var chainsStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
             chainsStorage.FetchChains();
             if (chainsStorage.CountOfChainsHeaders() == 0)
-                PeerChain.SetInitialChain();
+                PeerChain.InitByInitialChain();
             else
-                PeerChain.SetMostComprehensive();
+                PeerChain.InitByMostComprehensive();
             PeerChain.ChainReceiveNextBlock += (block) => ResetBlockMiningHandler(block);
             Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) chain initialized");
         }

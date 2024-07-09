@@ -60,8 +60,8 @@ namespace Tests
                         Assert.True(msgContext.Message.Data == message);
                     };
 
-                    first_node.SendMessage(message).Wait();
-                    second_node.SendMessage(message).Wait();
+                    first_node.SendMessage(message);
+                    second_node.SendMessage(message);
 
                     Thread.Sleep(50);
 
@@ -88,8 +88,8 @@ namespace Tests
                     for (int i = 0; i < 1024; i++)
                     {
                         sending_summary += i;
-                        first_node.SendMessage(i.ToString()).Wait();
-                        second_node.SendMessage((1023-i).ToString()).Wait();
+                        first_node.SendMessage(i.ToString());
+                        second_node.SendMessage((1023-i).ToString());
                     }
 
                     Thread.Sleep(150);
@@ -145,13 +145,10 @@ namespace Tests
                         receivedMessagesCount |= 2;
             };
 
-            await first_node.SendMessage(message, second_node.SignOptions.PublicKey);
-            await second_node.SendMessage(message, first_node.SignOptions.PublicKey);
+            first_node.SendMessage(message, second_node.SignOptions.PublicKey);
+            second_node.SendMessage(message, first_node.SignOptions.PublicKey);
             await Task.Delay(4000);
             Assert.Equal(3, receivedMessagesCount);
         }
-
-
-        
     }
 }

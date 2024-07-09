@@ -28,7 +28,7 @@ namespace Microcoin.Microcoin
             return ChainController.ChainTail;
         }
        
-        public void SetMostComprehensive()
+        public void InitByMostComprehensive()
         {
             var mostComprehensiveChain = ChainStorage.LoadMostComprehensiveChain();
             ChainController = new ChainController(mostComprehensiveChain.Chain, Miner, ChainFetcher);
@@ -36,9 +36,14 @@ namespace Microcoin.Microcoin
             ChainController.ChainReceivedNextBlock += (block) => ChainReceiveNextBlock?.Invoke(block);
         }
 
-        public void SetInitialChain()
+        public void InitByInitialChain()
         {
-            throw new Exception("You should have at least one chain in chain-storage directory");
+            var initialChainCreator = new InitialChainCreator();
+            initialChainCreator.CreateInitialialChain();
+            var initialChain = initialChainCreator.InitialChain;
+            ChainController = new ChainController(initialChain, Miner, ChainFetcher);
+            ChainController.DefaultInitialize();
+            ChainController.ChainReceivedNextBlock += (block) => ChainReceiveNextBlock?.Invoke(block);
         }
     }
 }

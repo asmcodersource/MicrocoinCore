@@ -4,7 +4,7 @@ using Microcoin.Microcoin.Logging;
 using Serilog.Core;
 
 InitializeDepencyInjections();
-// CreateInitialChain(); // Uncomment this line, if you wan't to create initial chain
+//CreateInitialChain(); // Uncomment this line, if you wan't to create initial chain
 
 Peer peer = new Peer();
 peer.LoadOrCreateWalletKeys("wallet.keys");
@@ -22,7 +22,9 @@ void InitializeDepencyInjections()
 
 void CreateInitialChain()
 {
+    Serilog.Log.Verbose("Creating new initial chain");
     var initialChainCreator = new InitialChainCreator();
     initialChainCreator.CreateInitialialChain();
     initialChainCreator.StoreInitialChainToFile(); // use created keys file to access first coins in network
+    Serilog.Log.Verbose("Creating new initial chain finished");
 }

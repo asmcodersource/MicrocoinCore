@@ -56,7 +56,7 @@ namespace Microcoin.Microcoin.Mining
                     for (int i = 0; i < 1024*16; i++)
                     {
                         hasheshCalculated++;
-                        block.MiningBlockInfo.MinedValue = random.NextInt64() * (i % 2 == 1 ? 1 : -1);
+                        block.MiningBlockInfo.MinedValue = random.NextInt64();
                         immutableTransactionsBlock.ChangeMiningBlockInfo(block.MiningBlockInfo);
                         var hash = immutableTransactionsBlock.CalculateMiningBlockHash();
                         if (Blockchain.Block.Block.GetHashComplexity(hash) < block.MiningBlockInfo.Complexity)

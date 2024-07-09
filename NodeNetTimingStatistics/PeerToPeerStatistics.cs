@@ -39,16 +39,16 @@ namespace NodeNetTimingStatistics
         public void SynchronousSending()
         {
             for (int i = 0; i < MessagesCount; i++)
-                first_node.SendMessage(data).Wait();
+                first_node.SendMessage(data);
         }
 
-        [Benchmark]
+        /*[Benchmark]
         public void AsynchronousSending()
         {
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < MessagesCount; i++)
                 tasks.Add(first_node.SendMessage(data));
             Task.WhenAll(tasks).Wait();
-        }
+        }*/
     }
 }
