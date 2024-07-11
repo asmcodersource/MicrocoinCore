@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
 {
-    internal class ProviderSession
+    public class ProviderSession
     {
         public event Action<ProviderSession>? SessionFinishedSuccesful;
         public event Action<ProviderSession>? SessionFinishedFaulty;
-        private readonly Session wrappedSession;
+        public Session WrappedSession { get; set; }
 
         public ProviderSession(Session session)
         {
-            wrappedSession = session;
+            WrappedSession = session;
         }
     }
 }

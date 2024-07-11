@@ -9,16 +9,16 @@ using System.Threading.Tasks;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
-    internal class FetcherSession
+    public class FetcherSession
     {
         public event Action<AbstractChain>? ChainFetched;
         public event Action<FetcherSession>? SessionFinishedSuccesful;
         public event Action<FetcherSession>? SessionFinishedFaulty;
-        private readonly Session wrappedSession;
+        public Session WrappedSession { get; set; }
 
         public FetcherSession(Session session)
         {
-            wrappedSession = session;
+            WrappedSession = session;
         }
     }
 }

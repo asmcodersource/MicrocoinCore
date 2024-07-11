@@ -35,7 +35,8 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListene
 
         protected void NewSessionHandler(Session newSession)
         {
-
+            var providerSession = new ProviderSession.ProviderSession(newSession);
+            NewProviderSessionCreated?.Invoke(providerSession);
         }
     }
 }

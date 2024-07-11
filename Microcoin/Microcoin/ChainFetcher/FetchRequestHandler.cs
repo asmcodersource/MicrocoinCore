@@ -8,6 +8,16 @@ namespace Microcoin.Microcoin.ChainFetcher
 {
     public class FetchRequestHandler
     {
-        public FetchRequestHandler(FetchRequest fetchRequest) { }
+        public readonly FetchRequest Request;
+
+        public FetchRequestHandler(FetchRequest fetchRequest) 
+        {
+            Request = fetchRequest;
+        }
+
+        public async Task StartHandling()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

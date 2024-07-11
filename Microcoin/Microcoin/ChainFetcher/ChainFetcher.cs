@@ -21,7 +21,7 @@ public class ChainFetcher
 
         private HashSet<Blockchain.Block.Block> BlocksInFetchSystem = new HashSet<Blockchain.Block.Block>();
         private List<HandlingFetchRequest> HandlingRequests = new List<HandlingFetchRequest>();
-        private Queue<FetchRequest> RequestQueue = new Queue<FetchRequest>();
+        private LinkedList<FetchRequest> RequestLinkedList = new LinkedList<FetchRequest>();
 
 
         public bool RequestChainFetch(Microcoin.Blockchain.Block.Block block)
@@ -35,13 +35,13 @@ public class ChainFetcher
             // It prevent from adding more than 'MaxFetchQueueSize' requests
             lock (this)
             {
-                if (RequestQueue.Count >= MaxFetchQueueSize)
+                if (RequestLinkedList.Count >= MaxFetchQueueSize)
                     return false;
                 if (BlocksInFetchSystem.Contains(block))
                     return false;
                 var newFetchRequest = new FetchRequest(block, handleTime);
                 BlocksInFetchSystem.Add(block);
-                RequestQueue.Enqueue(newFetchRequest);
+                AddFetchRequestToList(newFetchRequest);
                 return true;
             }
         }
@@ -49,23 +49,51 @@ public class ChainFetcher
         public bool HandleNextRequest()
         {
             // Get first request, if it ready, then handle it, in other case return false
-            FetchRequest? peekFetchRequest = null;
             lock (this)
             {
-                if( RequestQueue.TryPeek(out peekFetchRequest) is not true )
+                if (RequestLinkedList.Count == 0)
                     return false;
-                if (peekFetchRequest.HandleAfterTime < DateTime.UtcNow)
+                FetchRequest peekFetchRequest = RequestLinkedList.First();
+                if( peekFetchRequest.HandleAfterTime >= DateTime.UtcNow )
                     return false;
-                RequestQueue.Dequeue();
+                RequestLinkedList.RemoveFirst();
 
                 // Create task that will handle this request
                 var newHandlingRequest = new HandlingFetchRequest(
                     peekFetchRequest,
                     new FetchRequestHandler(peekFetchRequest)
                 );
+                newHandlingRequest.RequestHandler.StartHandling();
                 HandlingRequests.Add(newHandlingRequest);
                 return true;
             }
+        }
+
+        /// <summary>
+        /// It is necessary to add a new request to the list, in the correct place, 
+        /// which is determined by the time after which it should be processed (in ascending order).
+        /// </summary>
+        private void AddFetchRequestToList(FetchRequest fetchRequest)
+        {
+            if(RequestLinkedList.Count == 0)
+            {
+                RequestLinkedList.AddFirst(fetchRequest);
+                return;
+            }
+            var enumerator = RequestLinkedList.GetEnumerator();
+            FetchRequest? insertTargetRequest = null;
+            while (enumerator.MoveNext())
+            {
+                if (enumerator.Current.HandleAfterTime >= fetchRequest.HandleAfterTime)
+                {
+                    insertTargetRequest = enumerator.Current;
+                    break;
+                }
+            }
+            if( insertTargetRequest is not null )
+                RequestLinkedList.AddBefore(new LinkedListNode<FetchRequest>(insertTargetRequest), fetchRequest);
+            else 
+                RequestLinkedList.AddLast(fetchRequest);
         }
     }
 }
