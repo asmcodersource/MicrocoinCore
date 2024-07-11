@@ -26,7 +26,16 @@ namespace Microcoin.Microcoin.Blockchain.Chain
             => TransactionsSet.Contains(transaction);
 
         public double GetWalletCoins(string walletPublicKey)
-            => WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;
+        {
+            AbstractChain? currentChain = this;
+            double walletsCoins = 0;
+            while (currentChain is not null )
+            {
+                walletsCoins += currentChain.WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;
+                currentChain = currentChain.PreviousChain;
+            }
+            return walletsCoins;
+        }
 
         public Microcoin.Blockchain.Block.Block? GetLastBlock()
             => GetBlockFromTail(0);
