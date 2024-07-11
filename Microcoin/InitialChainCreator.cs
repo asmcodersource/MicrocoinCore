@@ -14,7 +14,7 @@ namespace Microcoin
     public class InitialChainCreator
     {
         public Peer InitialPeer { get; protected set; }
-        public Chain InitialChain { get; protected set; }
+        public MutableChain InitialChain { get; protected set; }
 
 
         public InitialChainCreator()
@@ -37,7 +37,7 @@ namespace Microcoin
         public  void CreateInitialialChain()
         {
             var miner = InitialPeer.PeerMining.Miner;
-            var zeroChain = new Chain();
+            var zeroChain = new MutableChain();
             var zeroTransactionPeer = InitialPeer;
             // Create new block with one initial transaction
             Block zeroBlock = new Block();

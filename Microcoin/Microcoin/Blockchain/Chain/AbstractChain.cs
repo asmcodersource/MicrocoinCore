@@ -1,4 +1,5 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
+using System.Collections.Immutable;
 
 namespace Microcoin.Microcoin.Blockchain.Chain
 {
@@ -10,29 +11,16 @@ namespace Microcoin.Microcoin.Blockchain.Chain
     [Serializable]
     public abstract class AbstractChain
     {
-        public Dictionary<string, double> WalletsCoins { get; protected set; }
-        public AbstractChain? PreviousChain { get; protected set; }
-        public HashSet<Transaction.Transaction> TransactionsSet { get; protected set; }
-        public Dictionary<string, Microcoin.Blockchain.Block.Block> BlocksDictionary { get; protected set; }
-        public int ChainLength { get; protected set; } = 0;
-        protected List<Microcoin.Blockchain.Block.Block> blocksList { get; set; }
+        public ImmutableChain? PreviousChain { get; protected set; }
+        public IReadOnlyDictionary<string, double> WalletsCoins { get; protected set; }
+        public IReadOnlyCollection<Transaction.Transaction> TransactionsSet { get; protected set; }
+        public IReadOnlyDictionary<string, Microcoin.Blockchain.Block.Block> BlocksDictionary { get; protected set; }
+        public IReadOnlyList<Microcoin.Blockchain.Block.Block> BlocksList { get; protected set; }
+        public int EntireChainLength { get; protected set; } = 0;
 
 
-        public void LinkPreviousChain(AbstractChain previousChain)
-        { 
-            PreviousChain = previousChain;
-            ChainLength = blocksList.Count() + (PreviousChain is not null ? PreviousChain.ChainLength : 0);
-        }
-
-        public List<Microcoin.Blockchain.Block.Block> GetBlocksList()
-            => blocksList;
-
-        /// <summary> Use it careful, because it don't update initiale state of object </summary>
-        public void SetBlockList(List<Microcoin.Blockchain.Block.Block> blockList)
-        { 
-            blocksList = blockList;
-            ChainLength = blocksList.Count() + (PreviousChain is not null ? PreviousChain.ChainLength : 0);
-        }
+        public IReadOnlyList<Microcoin.Blockchain.Block.Block> GetBlocksList()
+            => BlocksList;
 
         public bool IsChainHasTransaction(Transaction.Transaction transaction)
             => TransactionsSet.Contains(transaction);
@@ -45,17 +33,17 @@ namespace Microcoin.Microcoin.Blockchain.Chain
 
         public Microcoin.Blockchain.Block.Block? GetBlockFromTail(int blockIdFromTail)
         {
-            if (blockIdFromTail < blocksList.Count)
-                return blocksList[(blocksList.Count - blockIdFromTail) - 1];
+            if (blockIdFromTail < BlocksList.Count)
+                return BlocksList[(BlocksList.Count - blockIdFromTail) - 1];
             else if (PreviousChain is not null)
-                return PreviousChain.GetBlockFromTail(blockIdFromTail - blocksList.Count);
+                return PreviousChain.GetBlockFromTail(blockIdFromTail - BlocksList.Count);
             return null;
         }
 
         public Microcoin.Blockchain.Block.Block? GetBlockFromHead(int blockIdFromHead)
         {
-            if( blockIdFromHead < ChainLength && blockIdFromHead >= ChainLength - blocksList.Count())
-                return blocksList[blockIdFromHead - (ChainLength - blocksList.Count())];
+            if( blockIdFromHead < EntireChainLength && blockIdFromHead >= EntireChainLength - BlocksList.Count())
+                return BlocksList[blockIdFromHead - (EntireChainLength - BlocksList.Count())];
             else if ( PreviousChain is not null )
                 return PreviousChain.GetBlockFromHead(blockIdFromHead);
             else

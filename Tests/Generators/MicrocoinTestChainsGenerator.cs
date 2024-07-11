@@ -21,7 +21,7 @@ namespace Tests.Generators
             peersCoins = new Dictionary<Peer, double>();
         }
 
-        public Chain CreateChain(int chainPartsOfChain, int blocksCountPerChain, int trasnactionsCountPerChain)
+        public MutableChain CreateChain(int chainPartsOfChain, int blocksCountPerChain, int trasnactionsCountPerChain)
         {
             var tailChain = GetZeroChain();
             for (int chainPartId = 0; chainPartId < chainPartsOfChain; chainPartId++)
@@ -32,9 +32,9 @@ namespace Tests.Generators
             return tailChain;
         }
 
-        protected Chain CreateChainContinueChain(Chain previousChain, int blocksCountPerChain, int trasnactionsCountPerChain)
+        protected MutableChain CreateChainContinueChain(MutableChain previousChain, int blocksCountPerChain, int trasnactionsCountPerChain)
         {
-            Chain chainContinue = new Chain();
+            MutableChain chainContinue = new MutableChain();
             chainContinue.LinkPreviousChain(previousChain);
             for (int blockId = 0; blockId < blocksCountPerChain; blockId++)
             {
@@ -64,9 +64,9 @@ namespace Tests.Generators
 
         // Any chain must start from the first block, which is the initial block.
         // In this project, this block is called Zero Block, and this Chain is called also Zero Chain.
-        protected Chain GetZeroChain()
+        protected MutableChain GetZeroChain()
         {
-            var zeroChain = new Chain();
+            var zeroChain = new MutableChain();
             var zeroTransactionPeer = peers[Random.Shared.Next(peers.Count)];
             // Create new block with one initial transaction
             Block zeroBlock = new Block();

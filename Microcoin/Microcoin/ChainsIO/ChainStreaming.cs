@@ -10,7 +10,7 @@ namespace Microcoin.Microcoin.ChainsIO
         public static async Task<AbstractChain> ReadChainFromStream(Stream stream, int chainsBlocks, CancellationToken cancellationToken)
         {
             var jsonStreamParser = new JsonStreamParser.JsonStreamParser();
-            var chain = new Chain();
+            var chain = new MutableChain();
             for (int i = 0; i < chainsBlocks; i++)
             {
                 var chainBlock = (await jsonStreamParser.ParseJsonObject(stream, cancellationToken)).Deserialize<Block>();
@@ -42,7 +42,7 @@ namespace Microcoin.Microcoin.ChainsIO
             await WriteBlocksToStream(stream, blocks, cancellationToken);
         }
 
-        public static async Task WriteBlocksToStream(Stream stream, List<Block> blocks, CancellationToken cancellationToken)
+        public static async Task WriteBlocksToStream(Stream stream, IReadOnlyCollection<Block> blocks, CancellationToken cancellationToken)
         {
             StreamWriter streamWriter = new StreamWriter(stream);
             foreach (var block in blocks)

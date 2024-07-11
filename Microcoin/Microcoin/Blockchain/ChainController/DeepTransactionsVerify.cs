@@ -30,7 +30,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                     tempCoinsCount[transaction.ReceiverPublicKey] += transaction.TransferAmount;
             }
             cancellationToken.ThrowIfCancellationRequested();
-            // Any wallet can't have less than zero coint after transaction
+            // Any wallet can't have less than zero coins after transaction
             foreach (var walletCoinsPair in tempCoinsCount)
                 if (chain.GetWalletCoins(walletCoinsPair.Key) + tempCoinsCount[walletCoinsPair.Key] < 0)
                     return false;

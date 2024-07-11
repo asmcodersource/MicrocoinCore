@@ -27,7 +27,7 @@ namespace Tests
             block.Transactions.Add(peer.CreateTransaction(peer.WalletPublicKey, 0));
 
 
-            Microcoin.Microcoin.Blockchain.Chain.Chain chain = new Chain();
+            Microcoin.Microcoin.Blockchain.Chain.MutableChain chain = new MutableChain();
             Miner miner = new Miner();
             miner.SetRules(new MiningRules(new ComplexityRule(), new RewardRule()));
             miner.StartBlockMining(chain, block, peer.WalletPublicKey, CancellationToken.None);
@@ -52,7 +52,7 @@ namespace Tests
             first_block.Transactions.Add(first_peer.CreateTransaction(first_peer.WalletPublicKey, 0));
 
             // add this first block to chain
-            Chain chain = new Chain();
+            MutableChain chain = new MutableChain();
             Miner miner = new Miner();
             miner.SetRules(new MiningRules(new ComplexityRule(), new RewardRule()));
             var first_hash = miner.StartBlockMining(chain, first_block, first_peer.WalletPublicKey, CancellationToken.None).Result;

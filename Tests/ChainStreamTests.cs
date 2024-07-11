@@ -14,7 +14,7 @@ namespace Tests
             Stream stream = new MemoryStream(1024 * 1024 * 1024);
 
             // Create some chain with fake blocks
-            Chain chain = new Chain();
+            MutableChain chain = new MutableChain();
             List<Peer> peers = TransactionTheoriesGenerator.CreateTestPeers(10);
             for (int i = 0; i < 5; i++)
             {

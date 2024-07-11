@@ -16,12 +16,12 @@ namespace Tests
                 new MessageInfo(signOptions.PublicKey, "here is some public key"),
                 "here is some data"
             );
-            MessageSigner messageSigner = new MessageSigner();
-            messageSigner.SetSignOptions(signOptions);
-            messageSigner.Sign(message);
+            RsaMessageSigner RsaMessageSigner = new RsaMessageSigner();
+            RsaMessageSigner.SetSignOptions(signOptions);
+            RsaMessageSigner.Sign(message);
             // Validate message sign
-            MessageValidator messageValidator = new MessageValidator();
-            messageValidator.SetValidateOptions(MessageValidator.GetReceiverValidateOptions(message));
+            RsaMessageValidator messageValidator = new RsaMessageValidator();
+            messageValidator.SetValidateOptions(RsaMessageValidator.GetReceiverValidateOptions(message));
             var success = messageValidator.Validate(message);
             // Is sign validation works fine?
             Assert.True(success);

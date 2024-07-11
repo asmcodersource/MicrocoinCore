@@ -19,10 +19,10 @@ namespace Microcoin.Microcoin.Mining
 
         public int Calculate(AbstractChain contextChain, Block block)
         {
-            if( contextChain.ChainLength < avgWindow )
+            if( contextChain.EntireChainLength < avgWindow )
                 return defaultComplexity;
 
-            int windowBeginBlockId = (int)(contextChain.ChainLength / avgWindow) * avgWindow - avgWindow;
+            int windowBeginBlockId = (int)(contextChain.EntireChainLength / avgWindow) * avgWindow - avgWindow;
             Block windowFirstBlock = contextChain.GetBlockFromHead(windowBeginBlockId);
             Block windowLastBlock = contextChain.GetBlockFromHead(windowBeginBlockId + avgWindow - 1);
             var complexityWindowIdentifier = new ComplexityWindowIdentifier(windowFirstBlock, windowLastBlock);

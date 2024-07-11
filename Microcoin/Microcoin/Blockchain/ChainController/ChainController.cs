@@ -10,14 +10,14 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
         protected CancellationTokenSource currentChainOperationsCTS;
         public event Action<Microcoin.Blockchain.Block.Block> ChainReceivedNextBlock;
         public ChainFetcher.ChainFetcher ChainLoader { get; protected set; }
-        public Chain.Chain ChainTail { get; protected set; }
+        public Chain.MutableChain ChainTail { get; protected set; }
         public IMiner Miner { get; protected set; }
         public INextBlockRule NextBlockRule { get; protected set; }
         public IDeepTransactionsVerify DeepTransactionsVerify { get; protected set; }
         public IFetchableChainRule FetchableChainRule { get; protected set; }
         public int ChainBranchBlocksCount { get; protected set; } = 50;
 
-        public ChainController(Chain.Chain chainTail, IMiner miner, ChainFetcher.ChainFetcher chainLoader = null)
+        public ChainController(Chain.MutableChain chainTail, IMiner miner, ChainFetcher.ChainFetcher chainLoader = null)
         {
             // ChainControllers without chainLoader can't load chain from network
             // This is done to avoid loading threads inside loading threads.
@@ -123,7 +123,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
         protected void BranchToNexthChainPart()
         {
             Serilog.Log.Debug($"Microcoin peer | Chain has branched");
-            var nextChainPart = new Chain.Chain();
+            var nextChainPart = new Chain.MutableChain();
             nextChainPart.LinkPreviousChain(nextChainPart);
             ChainTail = nextChainPart;
             var chainsStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();

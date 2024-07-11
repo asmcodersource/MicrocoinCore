@@ -8,7 +8,7 @@ namespace Microcoin.Microcoin.ChainStorage
     public class ChainContext
     {
         public string HeaderFilePath { get; protected set; }
-        public Chain? Chain { get; protected set; } = null;
+        public MutableChain? Chain { get; protected set; } = null;
         public ChainHeader? ChainHeader { get; protected set; } = null;
 
 
@@ -19,7 +19,12 @@ namespace Microcoin.Microcoin.ChainStorage
 
         public ChainContext(string headerFilePath, AbstractChain? chain, ChainHeader? chainHeader) : this(headerFilePath)
         {
-            Chain = (Chain)chain;
+            Chain = chain switch
+            {
+                ImmutableChain immutableChain => new MutableChain(immutableChain),
+                MutableChain mutableChain => mutableChain,
+                _ => throw new InvalidOperationException("Unexpected chain type")
+            };
             this.ChainHeader = chainHeader;
         }
 
@@ -85,10 +90,10 @@ namespace Microcoin.Microcoin.ChainStorage
                 ChainsIO.ChainStreaming.WriteChainToStream(fileStream as Stream, Chain, CancellationToken.None).Wait();
         }
 
-        protected Chain FetchChainFromFile(string chainFilePath)
+        protected MutableChain FetchChainFromFile(string chainFilePath)
         {
             using (var fileStream = File.OpenRead(chainFilePath))
-                return ChainsIO.ChainStreaming.ReadChainFromStream(fileStream as Stream, ChainHeader.ChainIdentifier.TailChainBlockCount, CancellationToken.None).Result as Chain;
+                return ChainsIO.ChainStreaming.ReadChainFromStream(fileStream as Stream, ChainHeader.ChainIdentifier.TailChainBlockCount, CancellationToken.None).Result as MutableChain;
         }
 
         /// <summary>
