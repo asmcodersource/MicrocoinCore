@@ -1,5 +1,6 @@
 ﻿using NodeNet.NodeNet;
 using Microcoin.RSAEncryptions;
+using NodeNet.NodeNet.RSAEncryptions;
 
 namespace Tests.Generators
 {
@@ -14,6 +15,33 @@ namespace Tests.Generators
             node1 = first;
             node2 = second;
             this.info = info;
+        }
+    }
+
+    public class NodeNetConnection : IDisposable
+    {
+        private static int PortEnumerator = 3000;
+        public Node first_node { get; protected set; }
+        public Node second_node { get; protected set; }
+        public bool IsConnectionSuccess { get; protected set; }
+
+        public NodeNetConnection()
+        {
+            first_node = Node.CreateRSAHttpNode(
+                NodeNet.NodeNet.RSAEncryptions.RSAEncryption.CreateSignOptions(),
+                new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(PortEnumerator++)
+            );
+            second_node = Node.CreateRSAHttpNode(
+                NodeNet.NodeNet.RSAEncryptions.RSAEncryption.CreateSignOptions(),
+                new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(PortEnumerator++)
+            );
+            IsConnectionSuccess = first_node.Connect($"127.0.0.1:{PortEnumerator-1}");
+        }
+
+        public void Dispose()
+        {
+            first_node.Close();
+            second_node.Close();
         }
     }
 

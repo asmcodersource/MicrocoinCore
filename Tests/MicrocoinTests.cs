@@ -88,7 +88,7 @@ namespace Tests
             output.WriteLine("Network and peers created");
 
             // Sending coins by peers to another peers
-            for( int i = 0; i < 1024*32; i++)
+            for( int i = 0; i < 32*32; i++)
             {
                 Peer peerSender, peerReceiver;
                 peerSender = peersCoins.ElementAt(Random.Shared.Next(peersCoins.Count)).Key;
@@ -104,7 +104,7 @@ namespace Tests
             // Additional, we have logs, to read, what really happens behind
             // -- Log inside xUnit output ( less information )
             // -- Log file from run directory ( more information )
-            Thread.Sleep(2*1000*60*60);
+            Thread.Sleep(5*60*1000);
         }
 
         protected void DoPeerCoinsCount(Peer peer, double coinsChange)

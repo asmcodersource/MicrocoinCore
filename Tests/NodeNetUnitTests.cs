@@ -4,35 +4,6 @@ using Tests.Generators;
 
 namespace Tests
 {
-
-    public class NodeNetConnection : IDisposable
-    {
-        public Node first_node { get; protected set; }
-        public Node second_node { get; protected set; }
-
-        public bool IsConnectionSuccess { get; protected set; }
-
-        public NodeNetConnection()
-        {
-            first_node = Node.CreateRSAHttpNode(
-                RSAEncryption.CreateSignOptions(),
-                new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(1333)
-            );
-            second_node = Node.CreateRSAHttpNode(
-                RSAEncryption.CreateSignOptions(),
-                new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(1334)
-            );
-            IsConnectionSuccess = first_node.Connect("127.0.0.1:1334");
-        }
-
-        public void Dispose()
-        {
-            first_node.Close();
-            second_node.Close();
-        }
-    }
-
-
     public class NodeNetUnitTests
     {
         static object wallLock = new object();
