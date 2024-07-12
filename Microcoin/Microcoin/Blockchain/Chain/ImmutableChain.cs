@@ -5,6 +5,7 @@
     {
         public ImmutableChain(AbstractChain chain)
         {
+            EntireChainLength = chain.EntireChainLength;
             TransactionsSet = chain.TransactionsSet;
             WalletsCoins = chain.WalletsCoins;
             PreviousChain = chain.PreviousChain;

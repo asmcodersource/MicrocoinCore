@@ -25,6 +25,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
 
         public MutableChain(ImmutableChain immutableChain)
         {
+            EntireChainLength = immutableChain.EntireChainLength;
             PreviousChain = immutableChain.PreviousChain;
             BlocksList = new List<Microcoin.Blockchain.Block.Block>(immutableChain.BlocksList);
             BlocksDictionary = new Dictionary<string, Microcoin.Blockchain.Block.Block>(immutableChain.BlocksDictionary);
@@ -39,6 +40,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
 
         private MutableChain(Dictionary<string, double> walletsCoins, HashSet<Transaction.Transaction> transactionsSet, Dictionary<string, Block.Block> blocksDictionary, List<Block.Block> blocksList, ImmutableChain? previousChain)
         {
+            EntireChainLength = ((previousChain?.EntireChainLength) ?? 0) + blocksList.Count;
             PreviousChain = previousChain;
             BlocksList = new List<Microcoin.Blockchain.Block.Block>(blocksList);
             BlocksDictionary = new Dictionary<string, Microcoin.Blockchain.Block.Block>(blocksDictionary);
