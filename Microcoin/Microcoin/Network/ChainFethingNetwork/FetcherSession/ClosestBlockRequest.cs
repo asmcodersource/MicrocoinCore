@@ -21,7 +21,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
         /// Creates a task that will communicate through the session to find the closest parent block for the requested chain
         /// </summary>  
         /// <returns>The block that will act as the parent for the loaded blockchain.</returns>
-        public static async Task<Block> CreateRequestTask(FetcherSession fetcherSession, AbstractChain actualChain, CancellationToken cancellationToken)
+        public static async Task<Block> CreateRequestTask(FetcherSession fetcherSession, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

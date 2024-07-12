@@ -7,12 +7,14 @@ using NodeNet.NodeNet;
 using NodeNet.NodeNetSession.Session;
 using NodeNet.NodeNetSession.SessionListener;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession;
+using Microcoin.Microcoin.Blockchain.Chain;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListener
 {
-    internal class ProviderSessionListener
+    public class ProviderSessionListener
     {
         public event Action<ProviderSession.ProviderSession> NewProviderSessionCreated = null!;
+        public AbstractChain? SourceChain { get; set; }
         private readonly Node communicationNode;
         private readonly SessionListener sessionListener;
 
@@ -36,6 +38,8 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListene
         protected void NewSessionHandler(Session newSession)
         {
             var providerSession = new ProviderSession.ProviderSession(newSession);
+            providerSession.SourceChain = SourceChain;
+            providerSession.StartUploadingProcess();
             NewProviderSessionCreated?.Invoke(providerSession);
         }
     }

@@ -3,6 +3,7 @@ using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.ChainStorage;
 using NodeNet.NodeNet.NetworkExplorer.Requests;
 using System.Collections.Concurrent;
+using NodeNet.NodeNet;
 
 namespace Microcoin.Microcoin.ChainFetcher { 
     public record FetchRequest(Blockchain.Block.Block RequestedBlock, DateTime HandleAfterTime);
@@ -16,6 +17,9 @@ namespace Microcoin.Microcoin.ChainFetcher {
 /// </summary>
 public class ChainFetcher
     {
+        public readonly Node CommunicationNode;
+        // The circuit on the basis of which the loaded circuit will be created
+        public AbstractChain? SourceChain { get; set; } 
         public int MaxFetchQueueSize { get; set; } = 50;
         public int MaxHandlingConcurrentTask { get; set; } = 5;
 
@@ -23,6 +27,10 @@ public class ChainFetcher
         private List<HandlingFetchRequest> HandlingRequests = new List<HandlingFetchRequest>();
         private LinkedList<FetchRequest> RequestLinkedList = new LinkedList<FetchRequest>();
 
+        public ChainFetcher(Node communcationNode)
+        {
+            CommunicationNode = communcationNode;
+        }
 
         public bool RequestChainFetch(Microcoin.Blockchain.Block.Block block)
         {
@@ -63,7 +71,9 @@ public class ChainFetcher
                     peekFetchRequest,
                     new FetchRequestHandler(peekFetchRequest)
                 );
-                newHandlingRequest.RequestHandler.StartHandling();
+                if (SourceChain is null)
+                    throw new Exception("Source chain isn't initialized");
+                newHandlingRequest.RequestHandler.StartHandling(CommunicationNode, SourceChain);
                 HandlingRequests.Add(newHandlingRequest);
                 return true;
             }

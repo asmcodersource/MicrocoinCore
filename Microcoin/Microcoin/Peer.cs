@@ -43,7 +43,7 @@ namespace Microcoin.Microcoin
 
         public void InitializeChain()
         {
-            ChainFetcher = new ChainFetcher.ChainFetcher();
+            ChainFetcher = new ChainFetcher.ChainFetcher(PeerNetworking.NetworkNode);
             PeerChain = new PeerChain(PeerMining.Miner, ChainFetcher);
             var chainsStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
             chainsStorage.FetchChains();
