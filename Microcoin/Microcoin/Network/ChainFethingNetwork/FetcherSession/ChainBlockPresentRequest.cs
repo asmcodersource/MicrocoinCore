@@ -30,7 +30,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             };
             fetcherSession.WrappedSession.SendMessage(JsonSerializer.Serialize(requestDTO));
             var response = await fetcherSession.WrappedSession.WaitForMessage();
-            var result = MessageContextHelper<ChainBlockPresentResponseDTO>.Parse(response);
+            var result = MessageContextHelper.Parse<ChainBlockPresentResponseDTO>(response);
             if (result is null)
                 throw new OperationCanceledException();
             return result.IsPresented;

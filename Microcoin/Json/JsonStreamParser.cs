@@ -2,7 +2,7 @@
 using System.Text.Json;
 
 
-namespace Microcoin.JsonStreamParser
+namespace Microcoin.Json
 {
     /// <summary>
     /// This thing simply reads data from a stream and tries to parse it as a Json serialized object. 

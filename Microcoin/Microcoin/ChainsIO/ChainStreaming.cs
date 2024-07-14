@@ -9,7 +9,7 @@ namespace Microcoin.Microcoin.ChainsIO
     {
         public static async Task<AbstractChain> ReadChainFromStream(Stream stream, int chainsBlocks, CancellationToken cancellationToken)
         {
-            var jsonStreamParser = new JsonStreamParser.JsonStreamParser();
+            var jsonStreamParser = new Json.JsonStreamParser();
             var chain = new MutableChain();
             for (int i = 0; i < chainsBlocks; i++)
             {
@@ -23,7 +23,7 @@ namespace Microcoin.Microcoin.ChainsIO
 
         public static async Task<List<Block>> ReadBlocksFromStream(Stream stream, int blocksCount, CancellationToken cancellationToken)
         {
-            var jsonStreamParser = new JsonStreamParser.JsonStreamParser();
+            var jsonStreamParser = new Json.JsonStreamParser();
             var blocks = new List<Block>();
             for (int i = 0; i < blocksCount; i++)
             {
