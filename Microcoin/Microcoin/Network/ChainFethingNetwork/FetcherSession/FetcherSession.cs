@@ -11,25 +11,28 @@ using Microcoin.Microcoin.Blockchain.ChainController;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
+    public class ChainDownloadingException : Exception
+    {
+        public ChainDownloadingException(string? reason = null) : base(reason) { }
+    }
+
+
     public class FetcherSession
     {
-        public Session WrappedSession { get; set; }
-
-        public event Action<AbstractChain>? ChainFetched;
-        public event Action<FetcherSession>? SessionFinishedSuccesful;
-        public event Action<FetcherSession>? SessionFinishedFaulty;
-
+        public readonly Session WrappedSession;
+        public readonly int ChainBranchBlocksCount;
         public readonly AbstractChain SourceChain;
         public readonly FetchRequest FetchRequest;
 
-        public FetcherSession(Session session, AbstractChain sourceChain, FetchRequest fetchRequest)
+        public FetcherSession(Session session, AbstractChain sourceChain, FetchRequest fetchRequest, int chainBranchBlocksCount)
         {
             WrappedSession = session;
-            this.SourceChain = sourceChain;
-            this.FetchRequest = fetchRequest;
+            SourceChain = sourceChain;
+            FetchRequest = fetchRequest;
+            ChainBranchBlocksCount = chainBranchBlocksCount;
         }
 
-        public async Task<AbstractChain> StartDonwloadingProccess(CancellationToken generalCancellationToken)
+        public async Task<MutableChain> StartDonwloadingProccess(CancellationToken generalCancellationToken)
         {
             CancellationTokenSource initialCommunicationCTS = new CancellationTokenSource();
             initialCommunicationCTS.CancelAfter(25_000);
@@ -40,7 +43,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             var closestBlockRequest = new ClosestBlockRequest(this);
             var closestBlock = await closestBlockRequest.CreateRequestTask(initialCommunicationCTS.Token);
             var truncatedChain = CreateTrunkedChain(closestBlock);
-            var downloadingChainRequest = new ChainDownloadingRequest(this, truncatedChain, FetchRequest.RequestedBlock);
+            var downloadingChainRequest = new ChainDownloadingRequest(this, truncatedChain, FetchRequest.RequestedBlock, ChainBranchBlocksCount);
             var downloadedChain = await downloadingChainRequest.CreateRequestTask(generalCancellationToken);
             return downloadedChain;
         }
@@ -53,7 +56,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             {
                 endingChain = endingChain.PreviousChain;
                 if (endingChain is null)
-                    throw new Exception("Something wen't wrong with finding last chain");
+                    throw new ChainDownloadingException("Something wen't wrong with finding last chain");
             }
             var forkedEndChain = new MutableChain();
             if(endingChain.PreviousChain is not null)

@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession;
 using NodeNet.NodeNetSession.SessionMessage;
 using System.Text.Json;
+using static Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession.FetcherSession;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
@@ -27,27 +28,38 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
         public readonly FetcherSession FetcherSession;
         public readonly MutableChain StartingChain;
         public readonly Block TargetBlock;
+        public readonly int ChainBranchBlocksCount;
 
-        public ChainDownloadingRequest(FetcherSession fetcherSession, MutableChain startingChain, Block targetBlock)
+        public ChainDownloadingRequest(FetcherSession fetcherSession, MutableChain startingChain, Block targetBlock, int chainBranchBlocksCount)
         {
             FetcherSession = fetcherSession;
             StartingChain = startingChain;
             TargetBlock = targetBlock;
+            ChainBranchBlocksCount = chainBranchBlocksCount;
         }
 
-        public async Task<AbstractChain> CreateRequestTask(CancellationToken cancellationToken)
+        public async Task<MutableChain> CreateRequestTask(CancellationToken cancellationToken)
         {
             await RequestDownloading(cancellationToken);
             ICollection<Block>? receivedBlocks = null;
+            var currentChain = StartingChain;
             do
             {
                 receivedBlocks = await ReceiveBlocks(cancellationToken);
                 if (receivedBlocks is null)
-                    throw new Exception("Bad response while blocks downloading");
+                    throw new ChainDownloadingException("Bad response while blocks downloading");
                 if (receivedBlocks.Count == 0)
                     break;
-                foreach( var block in receivedBlocks )
-                    StartingChain.AddTailBlock(block);
+                foreach (var block in receivedBlocks)
+                {
+                    if( currentChain.BlocksList.Count >= ChainBranchBlocksCount)
+                    {
+                        var newTailChain = new MutableChain();
+                        newTailChain.LinkPreviousChain(currentChain);
+                        currentChain = newTailChain;
+                    }
+                    currentChain.AddTailBlock(block);
+                }
             } while (cancellationToken.IsCancellationRequested is not true);
             return StartingChain;
         }
@@ -66,7 +78,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             var responseSessionMsg = MessageContextHelper.GetSessionMessageData(responseMsg);
             var response = JsonTypedWrapper.Deserialize<ChainDownloadResponseDTO>(responseSessionMsg);
             if (response.IsAccepted is not true)
-                throw new Exception("Chain downloading rejected");
+                throw new ChainDownloadingException("Chain downloading rejected");
         }
 
         private async Task<ICollection<Block>?> ReceiveBlocks(CancellationToken cancellationToken)

@@ -1,5 +1,6 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
 using System.Collections.Immutable;
+using System.Threading.Tasks.Dataflow;
 
 namespace Microcoin.Microcoin.Blockchain.Chain
 {
@@ -57,6 +58,48 @@ namespace Microcoin.Microcoin.Blockchain.Chain
                 return PreviousChain.GetBlockFromHead(blockIdFromHead);
             else
                 return null;
+        }
+
+        public IEnumerable<Block.Block> GetEnumerable(Block.Block? startingBlock = null, Block.Block? endingBlock = null)
+        {
+            // Find starting point of downloading
+            // find last part of chain, that need to be taken from source
+            var currentChain = this;
+            Stack<AbstractChain> chainQueue = new Stack<AbstractChain>();
+            if (startingBlock is not null)
+            {
+                do
+                {
+                    if (currentChain is null)
+                        throw new Exception("Something wen't wrong with finding last chain");
+                    chainQueue.Push(currentChain);
+                    currentChain = currentChain.PreviousChain;
+                } while ((currentChain.EntireChainLength - 1) > startingBlock.MiningBlockInfo.BlockId);
+            }
+            else
+            {
+                do
+                {
+                    chainQueue.Push(currentChain);
+                    currentChain = currentChain.PreviousChain;
+                } while (currentChain is not null);
+            }
+
+            // We return blocks through the yield generator, either to the end of the chain,
+            // or to the requested block, depending on the parameter
+            while (chainQueue.Count > 0)
+            {
+                var chain = chainQueue.Pop();
+                foreach (var block in chain.BlocksList)
+                {
+                    if (startingBlock is not null && block.MiningBlockInfo.BlockId <= startingBlock.MiningBlockInfo.BlockId)
+                        continue;
+                    yield return block;
+                    if (endingBlock is not null && block.MiningBlockInfo.BlockId == endingBlock.MiningBlockInfo.BlockId)
+                        yield break;
+                }
+            }
+            yield break;
         }
     }
 }

@@ -22,6 +22,7 @@ public class ChainFetcher
         public AbstractChain? SourceChain { get; set; } 
         public int MaxFetchQueueSize { get; set; } = 50;
         public int MaxHandlingConcurrentTask { get; set; } = 5;
+        public int ChainBranchBlocksCount { get; private set; }
 
         private HashSet<Blockchain.Block.Block> BlocksInFetchSystem = new HashSet<Blockchain.Block.Block>();
         private List<HandlingFetchRequest> HandlingRequests = new List<HandlingFetchRequest>();
@@ -30,6 +31,13 @@ public class ChainFetcher
         public ChainFetcher(Node communcationNode)
         {
             CommunicationNode = communcationNode;
+        }
+
+        public void SetChainBranchValue(int chainBranchBlocksCount)
+        {
+            if (chainBranchBlocksCount <= 0)
+                throw new ArgumentException("Chain branch blocks count must be more than zero");
+            ChainBranchBlocksCount = chainBranchBlocksCount;
         }
 
         public bool RequestChainFetch(Microcoin.Blockchain.Block.Block block)
@@ -69,7 +77,7 @@ public class ChainFetcher
                 // Create task that will handle this request
                 var newHandlingRequest = new HandlingFetchRequest(
                     peekFetchRequest,
-                    new FetchRequestHandler(peekFetchRequest)
+                    new FetchRequestHandler(peekFetchRequest, ChainBranchBlocksCount)
                 );
                 if (SourceChain is null)
                     throw new Exception("Source chain isn't initialized");

@@ -10,6 +10,7 @@ using System.Text.Json;
 using NodeNet.NodeNetSession.SessionMessage;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession;
 using Microcoin.Json;
+using static Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession.FetcherSession;
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
     public record ClaimBlockAsDownloadRootDTO
@@ -55,9 +56,9 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                     rightBlockId = centralBlockId - 1;
             }
             if (centralBlock is null)
-                throw new Exception("Something wen't wrong");
+                throw new ChainDownloadingException("Something wen't wrong");
             if ( await BlockPresentRequest( centralBlock) )
-                throw new OperationCanceledException();
+                throw new ChainDownloadingException();
             ClaimBlockAsClosest( centralBlock);
             return centralBlock;
         }
@@ -72,10 +73,10 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
             var responseMsgContext = await FetcherSession.WrappedSession.WaitForMessage();
             if (responseMsgContext is null)
-                throw new OperationCanceledException();
+                throw new ChainDownloadingException();
             var responseObject = MessageContextHelper.Parse<ChainBlockPresentResponseDTO>(responseMsgContext);
             if( responseObject is null )
-                throw new OperationCanceledException();
+                throw new ChainDownloadingException();
             return responseObject.IsPresented;
         }
 

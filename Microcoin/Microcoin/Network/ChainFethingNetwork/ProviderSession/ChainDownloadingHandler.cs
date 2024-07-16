@@ -67,7 +67,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 RejectReason = null,
             };
             ProviderSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(response));
-            downloadingBlocks = TakeBlocksOfChain(true).GetEnumerator();
+            downloadingBlocks = SourceChain.GetEnumerable(StartingBlock).GetEnumerator();
             return true;
         }
 
@@ -83,37 +83,6 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 blocksToSend.Add(downloadingBlocks.Current);
             ProviderSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize<ICollection<Block>>(blocksToSend));
             return blocksToSend.Count > 0;
-        }
-
-        private IEnumerable<Block> TakeBlocksOfChain(bool takeUntilChainEnding)
-        {
-            // Find starting point of downloading
-            // find last part of chain, that need to be taken from source
-            var currentChain = SourceChain;
-            Stack<AbstractChain> chainQueue = new Stack<AbstractChain>();
-            do
-            {
-                if (currentChain is null)
-                    throw new Exception("Something wen't wrong with finding last chain");
-                chainQueue.Push(currentChain);
-                currentChain = currentChain.PreviousChain;
-            } while ((currentChain.EntireChainLength - 1) > StartingBlock.MiningBlockInfo.BlockId);
-
-            // We return blocks through the yield generator, either to the end of the chain,
-            // or to the requested block, depending on the parameter
-            while (chainQueue.Count > 0)
-            {
-                var chain = chainQueue.Pop();
-                foreach (var block in chain.BlocksList)
-                {
-                    if (block.MiningBlockInfo.BlockId <= StartingBlock.MiningBlockInfo.BlockId)
-                        continue;
-                    yield return block;
-                    if (takeUntilChainEnding is not true && block.MiningBlockInfo.BlockId == TargetBlock.MiningBlockInfo.BlockId)
-                        yield break;
-                }
-            }
-            yield break;
         }
     }
 }
