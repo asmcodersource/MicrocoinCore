@@ -75,7 +75,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
             var responseMsg = await FetcherSession.WrappedSession.WaitForMessage(cancellationToken);
             var responseSessionMsg = MessageContextHelper.GetSessionMessageData(responseMsg);
-            return JsonSerializer.Deserialize<ICollection<Block>>(responseSessionMsg);
+            return JsonTypedWrapper.Deserialize<ICollection<Block>>(responseSessionMsg);
         }
     }
 }

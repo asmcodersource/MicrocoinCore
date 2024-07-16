@@ -21,6 +21,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
     public class ChainBlockPresentHandler
     {
         public readonly ProviderSession ProviderSession;
+        public Block TargetBlock { get; private set; } = null!;
 
         public ChainBlockPresentHandler( ProviderSession providerSession )
         {
@@ -40,8 +41,11 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 RequestedBlockHash = request.RequestedBlockHash,
                 IsPresented = false
             };
-            if( storedBlock is not null && storedBlock.Hash == request.RequestedBlockHash )
+            if (storedBlock is not null && storedBlock.Hash == request.RequestedBlockHash)
+            {
+                TargetBlock = storedBlock;
                 response.IsPresented = true;
+            }
             ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(response));
             return response.IsPresented;
         }

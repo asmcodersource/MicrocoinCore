@@ -31,8 +31,8 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 return false;
             var closestBlockRequestHandler = new ClosestBlockHandler(this);
             var closestBlock = await closestBlockRequestHandler.CreateHandleTask(initialCommunicationCTS.Token);
-            // var chainDownloadingHandler = new ChainDownloadingHandler(this, SourceChain, closestBlock, );
-            // await chainDownloadingHandler.CreateHandleTask(CancellationToken.None);
+            var chainDownloadingHandler = new ChainDownloadingHandler(this, SourceChain, closestBlock, blockPresentRequestHandler.TargetBlock);
+            await chainDownloadingHandler.CreateHandleTask(CancellationToken.None);
             return true;
         }
     }
