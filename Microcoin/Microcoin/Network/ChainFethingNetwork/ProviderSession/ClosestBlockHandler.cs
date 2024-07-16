@@ -34,37 +34,50 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 //requestWaitingCTS.CancelAfter(5000);
                 var msgContext = await ProviderSession.WrappedSession.WaitForMessage(requestWaitingCTS.Token);
                 var sessionMsgData = MessageContextHelper.GetSessionMessageData(msgContext);
-                var temp = JsonTypedWrapper.GetWrappedTypeName(sessionMsgData);
-                try
+                var msgType = JsonTypedWrapper.GetWrappedTypeName(sessionMsgData);
+                switch (msgType)
                 {
-                    var presentRequest = JsonTypedWrapper.Deserialize<ChainBlockPresentRequestDTO>(sessionMsgData);
-                    var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(presentRequest.RequestedBlockId);
-                    var presentRequestResponse = new ChainBlockPresentResponseDTO()
-                    {
-                        RequestedBlockHash = presentRequest.RequestedBlockHash,
-                        RequestedBlockId = presentRequest.RequestedBlockId,
-                    };
-                    if ( blockFromChain.Hash == presentRequest.RequestedBlockHash)
-                    {
-                        presentRequestResponse.IsPresented = true;
-                        ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(presentRequestResponse));
-                    } else
-                    {
-                        presentRequestResponse.IsPresented = false;
-                        ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(presentRequestResponse));
-                    }
-                } catch (JsonTypedWrapper.JsonTypedException)
-                {
-                    // Maybe its claim request?
-                    var claimRequest = JsonTypedWrapper.Deserialize<ClaimBlockAsDownloadBeginning>(sessionMsgData);
-                    var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(claimRequest.ClaimBlockId);
-                    if (blockFromChain is not null)
-                        return blockFromChain;
-                    else
-                        throw new OperationCanceledException();
+                    case nameof(ChainBlockPresentRequestDTO):
+                        var chainBlockPresentRequestDTO = JsonTypedWrapper.Deserialize<ChainBlockPresentRequestDTO>(sessionMsgData);
+                        if (chainBlockPresentRequestDTO is null)
+                            throw new Exception("Invalid message received");
+                        BlockPresentRequestHandler(chainBlockPresentRequestDTO, cancellationToken);
+                        break;
+                    case nameof(ClaimBlockAsDownloadRootDTO):
+                        var chainBlockClaimRequestDTO = JsonTypedWrapper.Deserialize<ClaimBlockAsDownloadRootDTO>(sessionMsgData);
+                        if (chainBlockClaimRequestDTO is null)
+                            throw new Exception("Invalid message received");
+                        return BlockClaimRequestHandler(chainBlockClaimRequestDTO, cancellationToken);
+                    default:
+                        throw new Exception("Unexpected message in closest block communications");
                 }
             } while (cancellationToken.IsCancellationRequested is not true);
             throw new OperationCanceledException();
+        }
+
+        private bool BlockPresentRequestHandler(ChainBlockPresentRequestDTO chainBlockPresentRequest, CancellationToken cancellationToken)
+        {
+            var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(chainBlockPresentRequest.RequestedBlockId);
+            var presentRequestResponse = new ChainBlockPresentResponseDTO()
+            {
+                RequestedBlockHash = chainBlockPresentRequest.RequestedBlockHash,
+                RequestedBlockId = chainBlockPresentRequest.RequestedBlockId,
+            };
+            if (blockFromChain is not null && blockFromChain.Hash == chainBlockPresentRequest.RequestedBlockHash)
+                presentRequestResponse.IsPresented = true;
+            else
+                presentRequestResponse.IsPresented = false;
+            ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(presentRequestResponse));
+            return presentRequestResponse.IsPresented;
+        }
+
+        private Block BlockClaimRequestHandler(ClaimBlockAsDownloadRootDTO claimBlockAsDownloadingRoot, CancellationToken cancellationToken)
+        {
+            var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(claimBlockAsDownloadingRoot.ClaimBlockId);
+            if (blockFromChain is not null)
+                return blockFromChain;
+            else
+                throw new OperationCanceledException();
         }
     }
 }

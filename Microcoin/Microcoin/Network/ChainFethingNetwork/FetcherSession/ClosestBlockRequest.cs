@@ -12,7 +12,7 @@ using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession;
 using Microcoin.Json;
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
-    public record ClaimBlockAsDownloadBeginning
+    public record ClaimBlockAsDownloadRootDTO
     {
         public int ClaimBlockId { get; set; }
     }
@@ -81,7 +81,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 
         private void ClaimBlockAsClosest(Block block)
         {
-            var claimRequest = new ClaimBlockAsDownloadBeginning() { ClaimBlockId = block.MiningBlockInfo.BlockId };
+            var claimRequest = new ClaimBlockAsDownloadRootDTO() { ClaimBlockId = block.MiningBlockInfo.BlockId };
             FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(claimRequest));
         }
     }
