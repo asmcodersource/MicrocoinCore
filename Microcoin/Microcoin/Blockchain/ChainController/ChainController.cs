@@ -9,7 +9,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
     {
         protected CancellationTokenSource currentChainOperationsCTS;
         public event Action<Microcoin.Blockchain.Block.Block> ChainReceivedNextBlock;
-        public ChainFetcher.ChainFetcher ChainLoader { get; protected set; }
+        public ChainFetcher.ChainFetcher ChainFetcher { get; protected set; }
         public Chain.MutableChain ChainTail { get; protected set; }
         public IMiner Miner { get; protected set; }
         public INextBlockRule NextBlockRule { get; protected set; }
@@ -22,7 +22,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             // ChainControllers without chainLoader can't load chain from network
             // This is done to avoid loading threads inside loading threads.
             ChainTail = chainTail;
-            ChainLoader = chainLoader;
+            ChainFetcher = chainLoader;
             Miner = miner;
             currentChainOperationsCTS = new CancellationTokenSource();
         }
@@ -32,6 +32,11 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             NextBlockRule = new NextBlockRule();
             DeepTransactionsVerify = new DeepTransactionsVerify();
             FetchableChainRule = new FetchableChainRule();
+        }
+
+        public void SetChainFetcher(ChainFetcher.ChainFetcher chainFetcher)
+        {
+            ChainFetcher = chainFetcher;
         }
 
         public async Task<bool> AcceptBlock(Microcoin.Blockchain.Block.Block block)
@@ -52,12 +57,12 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 }
                 catch (TaskCanceledException) { return false; /* This block did not have time to pass the inspection, most likely another block was accepted as the final one. */ }
             }
-            else if (ChainLoader != null && FetchableChainRule.IsPossibleChainUpgrade(ChainTail, block))
+            else if (ChainFetcher != null && FetchableChainRule.IsPossibleChainUpgrade(ChainTail, block))
             {
                 // Essentially, with this call we only request that the chain be loaded, but not necessarily that it will be loaded.
                 // We don't care about everything else inside the chain.
                 Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as possible chain fetch");
-                ChainLoader.RequestChainFetch(block);
+                ChainFetcher.RequestChainFetch(block);
             } else
             {
                 Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()} is not next tail or fetch possible");

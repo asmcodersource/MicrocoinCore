@@ -3,6 +3,7 @@ using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Mining;
 using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.ChainFetcher;
 
 namespace Microcoin.Microcoin
 {
@@ -16,10 +17,9 @@ namespace Microcoin.Microcoin
         public INextBlockRule NextBlockRule { get; protected set; }
         public IMiner Miner { get; set; }
 
-        public PeerChain(IMiner miner, ChainFetcher.ChainFetcher chainFetcher)
+        public PeerChain(IMiner miner)
         {
             Miner = miner;
-            ChainFetcher = chainFetcher;
             ChainStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
         }
 
@@ -44,6 +44,12 @@ namespace Microcoin.Microcoin
             ChainController = new ChainController(initialChain, Miner, ChainFetcher);
             ChainController.DefaultInitialize();
             ChainController.ChainReceivedNextBlock += (block) => ChainReceiveNextBlock?.Invoke(block);
+        }
+
+        public void SetChainFetcher(ChainFetcher.ChainFetcher chainFetcher)
+        {
+            ChainFetcher = chainFetcher;
+            ChainController.SetChainFetcher(chainFetcher);
         }
     }
 }

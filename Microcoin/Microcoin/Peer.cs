@@ -43,8 +43,7 @@ namespace Microcoin.Microcoin
 
         public void InitializeChain()
         {
-            ChainFetcher = new ChainFetcher.ChainFetcher(PeerNetworking.NetworkNode);
-            PeerChain = new PeerChain(PeerMining.Miner, ChainFetcher);
+            PeerChain = new PeerChain(PeerMining.Miner);
             var chainsStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
             chainsStorage.FetchChains();
             if (chainsStorage.CountOfChainsHeaders() == 0)
@@ -83,6 +82,8 @@ namespace Microcoin.Microcoin
         {
             PeerNetworking = new PeerNetworking(nodeNet);
             PeerNetworking.CreateDefaultRouting();
+            ChainFetcher = new ChainFetcher.ChainFetcher(PeerNetworking.NetworkNode);
+            PeerChain.SetChainFetcher(ChainFetcher);
             PeerNetworking.TransactionReceived += async (transaction) => await TransactionsPool.HandleTransaction(transaction);
             PeerNetworking.BlockReceived += async (block) => await BlocksPool.HandleBlock(block);
             Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) network initialized");
