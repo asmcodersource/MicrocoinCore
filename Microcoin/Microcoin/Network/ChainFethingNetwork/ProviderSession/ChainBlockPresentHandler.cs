@@ -20,13 +20,20 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
 
     public class ChainBlockPresentHandler
     {
-        public static async Task<bool> CreateHandleTask(ProviderSession providerSession, CancellationToken cancellationToken)
+        public readonly ProviderSession ProviderSession;
+
+        public ChainBlockPresentHandler( ProviderSession providerSession )
         {
-            var requestMessage = await providerSession.WrappedSession.WaitForMessage();
+            ProviderSession = providerSession;
+        }
+
+        public async Task<bool> CreateHandleTask(CancellationToken cancellationToken)
+        {
+            var requestMessage = await ProviderSession.WrappedSession.WaitForMessage();
             var request = MessageContextHelper.Parse<ChainBlockPresentRequestDTO>(requestMessage);
             if (request is null)
                 throw new OperationCanceledException();
-            var storedBlock = providerSession.SourceChain.GetBlockFromHead(request.RequestedBlockId);
+            var storedBlock = ProviderSession.SourceChain.GetBlockFromHead(request.RequestedBlockId);
             var response = new ChainBlockPresentResponseDTO()
             {
                 RequestedBlockId = request.RequestedBlockId,
@@ -35,7 +42,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
             };
             if( storedBlock is not null && storedBlock.Hash == request.RequestedBlockHash )
                 response.IsPresented = true;
-            providerSession.WrappedSession.SendMessage(JsonSerializer.Serialize(response));
+            ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(response));
             return response.IsPresented;
         }
     }

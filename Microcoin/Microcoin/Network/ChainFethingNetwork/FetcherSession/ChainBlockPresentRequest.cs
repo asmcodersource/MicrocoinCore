@@ -20,16 +20,23 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 
     public class ChainBlockPresentRequest
     {
-        public static async Task<bool> CreateRequestTask(FetcherSession fetcherSession, CancellationToken cancellationToken)
+        public readonly FetcherSession FetcherSession;
+
+        public ChainBlockPresentRequest(FetcherSession fetcherSession)
         {
-            var requestBlock = fetcherSession.FetchRequest.RequestedBlock;
+            FetcherSession = fetcherSession;
+        }
+
+        public async Task<bool> CreateRequestTask(CancellationToken cancellationToken)
+        {
+            var requestBlock = FetcherSession.FetchRequest.RequestedBlock;
             var requestDTO = new ChainBlockPresentRequestDTO
             {
                 RequestedBlockId = requestBlock.MiningBlockInfo.BlockId,
                 RequestedBlockHash = requestBlock.Hash
             };
-            fetcherSession.WrappedSession.SendMessage(JsonSerializer.Serialize(requestDTO));
-            var response = await fetcherSession.WrappedSession.WaitForMessage();
+            FetcherSession.WrappedSession.SendMessage(JsonSerializer.Serialize(requestDTO));
+            var response = await FetcherSession.WrappedSession.WaitForMessage();
             var result = MessageContextHelper.Parse<ChainBlockPresentResponseDTO>(response);
             if (result is null)
                 throw new OperationCanceledException();

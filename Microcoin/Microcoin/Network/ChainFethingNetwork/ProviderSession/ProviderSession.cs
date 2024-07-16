@@ -25,11 +25,14 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
         {
             CancellationTokenSource initialCommunicationCTS = new CancellationTokenSource();
             initialCommunicationCTS.CancelAfter(20_000);
-            var isBlockPresented = await ChainBlockPresentHandler.CreateHandleTask(this, initialCommunicationCTS.Token);
+            var blockPresentRequestHandler = new ChainBlockPresentHandler(this);
+            var isBlockPresented = await blockPresentRequestHandler.CreateHandleTask(initialCommunicationCTS.Token);
             if (isBlockPresented is not true)
                 return false;
-            var closestBlock = await ClosestBlockHandler.CreateHandleTask(this, initialCommunicationCTS.Token);
-            await ChainDownloadingHandler.CreateHandleTask(this, SourceChain, closestBlock, CancellationToken.None);
+            var closestBlockRequestHandler = new ClosestBlockHandler(this);
+            var closestBlock = await closestBlockRequestHandler.CreateHandleTask(initialCommunicationCTS.Token);
+            // var chainDownloadingHandler = new ChainDownloadingHandler(this, SourceChain, closestBlock, );
+            // await chainDownloadingHandler.CreateHandleTask(CancellationToken.None);
             return true;
         }
     }
