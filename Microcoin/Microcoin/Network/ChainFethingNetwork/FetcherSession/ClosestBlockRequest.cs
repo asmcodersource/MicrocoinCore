@@ -35,10 +35,10 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
         {
             // If the last block of the current chain matches a block in the provider's chain, then starts downloading from this block
             var lastBlock = FetcherSession.SourceChain.GetLastBlock();
-            var lastBlockIsPresented = await BlockPresentRequest(lastBlock);
+            var lastBlockIsPresented = await BlockPresentRequest(lastBlock, cancellationToken);
             if( lastBlockIsPresented is true)
             {
-                ClaimBlockAsClosest(lastBlock);
+                ClaimBlockAsClosest(lastBlock, cancellationToken);
                 return lastBlock;
             }
             // In another case, we look for a common block using binary search, knowing that the block presence function is monotonic
@@ -49,7 +49,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             {
                 var centralBlockId = (rightBlockId + leftBlockId) / 2; // hi, overflow
                 centralBlock = FetcherSession.SourceChain.GetBlockFromHead(centralBlockId);
-                var isBlockPresented = await BlockPresentRequest(centralBlock);
+                var isBlockPresented = await BlockPresentRequest(centralBlock, cancellationToken);
                 if (isBlockPresented)
                     leftBlockId = centralBlockId + 1;
                 else
@@ -57,13 +57,13 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             }
             if (centralBlock is null)
                 throw new ChainDownloadingException("Something wen't wrong");
-            if ( await BlockPresentRequest( centralBlock) )
+            if ( await BlockPresentRequest( centralBlock, cancellationToken) )
                 throw new ChainDownloadingException();
-            ClaimBlockAsClosest( centralBlock);
+            ClaimBlockAsClosest( centralBlock, cancellationToken);
             return centralBlock;
         }
 
-        private async Task<bool> BlockPresentRequest( Block block)
+        private async Task<bool> BlockPresentRequest(Block block, CancellationToken cancellationToken)
         {
             var request = new ChainBlockPresentRequestDTO()
             {
@@ -71,7 +71,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                 RequestedBlockHash = block.Hash
             };
             FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
-            var responseMsgContext = await FetcherSession.WrappedSession.WaitForMessage();
+            var responseMsgContext = await FetcherSession.WrappedSession.WaitForMessage(cancellationToken);
             if (responseMsgContext is null)
                 throw new ChainDownloadingException();
             var responseObject = MessageContextHelper.Parse<ChainBlockPresentResponseDTO>(responseMsgContext);
@@ -80,7 +80,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             return responseObject.IsPresented;
         }
 
-        private void ClaimBlockAsClosest(Block block)
+        private void ClaimBlockAsClosest(Block block, CancellationToken cancellationToken)
         {
             var claimRequest = new ClaimBlockAsDownloadRootDTO() { ClaimBlockId = block.MiningBlockInfo.BlockId };
             FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(claimRequest));

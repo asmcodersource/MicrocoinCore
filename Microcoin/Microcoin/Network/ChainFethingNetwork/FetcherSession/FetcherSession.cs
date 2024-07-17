@@ -34,14 +34,14 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 
         public async Task<MutableChain> StartDonwloadingProccess(CancellationToken generalCancellationToken)
         {
-            CancellationTokenSource initialCommunicationCTS = new CancellationTokenSource();
-            initialCommunicationCTS.CancelAfter(25_000);
+            CancellationTokenSource initialCommunicationCTS = new CancellationTokenSource(60_000);
+            var initialCt = CancellationTokenSource.CreateLinkedTokenSource(generalCancellationToken, initialCommunicationCTS.Token);
             var blockPresentRequest = new ChainBlockPresentRequest(this);
-            var isBlockPresented = await blockPresentRequest.CreateRequestTask(initialCommunicationCTS.Token);
+            var isBlockPresented = await blockPresentRequest.CreateRequestTask(initialCt.Token);
             if (isBlockPresented is not true)
                 throw new OperationCanceledException();
             var closestBlockRequest = new ClosestBlockRequest(this);
-            var closestBlock = await closestBlockRequest.CreateRequestTask(initialCommunicationCTS.Token);
+            var closestBlock = await closestBlockRequest.CreateRequestTask(initialCt.Token);
             var truncatedChain = CreateTrunkedChain(closestBlock);
             var downloadingChainRequest = new ChainDownloadingRequest(this, truncatedChain, FetchRequest.RequestedBlock, ChainBranchBlocksCount);
             var downloadedChain = await downloadingChainRequest.CreateRequestTask(generalCancellationToken);

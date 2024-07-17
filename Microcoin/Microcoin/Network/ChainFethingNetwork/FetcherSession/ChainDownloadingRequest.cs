@@ -74,7 +74,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                 DownloadingTillChainEnd = true,
             };
             FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
-            var responseMsg = await FetcherSession.WrappedSession.WaitForMessage();
+            var responseMsg = await FetcherSession.WrappedSession.WaitForMessage(cancellationToken);
             var responseSessionMsg = MessageContextHelper.GetSessionMessageData(responseMsg);
             var response = JsonTypedWrapper.Deserialize<ChainDownloadResponseDTO>(responseSessionMsg);
             if (response.IsAccepted is not true)

@@ -17,6 +17,7 @@ namespace Microcoin.Microcoin.ChainFetcher
         public readonly int ChainBranchBlocksCount;
         public readonly FetchRequest Request;
         public event Action<MutableChain>? ChainFetched;
+        public event Action? ChainIsntFetched;
         public event Action<INodeConnection>? SessionFinishedSuccesful;
         public event Action<INodeConnection>? SessionFinishedFaulty;
         public MutableChain? DownloadedChain { get; private set; }
@@ -27,30 +28,38 @@ namespace Microcoin.Microcoin.ChainFetcher
             ChainBranchBlocksCount = chainBranchBlocksCount;
         }
 
-        public async Task<bool> StartHandling(Node communicationNode, AbstractChain sourceChain)
+        public async Task<bool> StartHandling(Node communicationNode, AbstractChain sourceChain, CancellationToken cancellationToken)
         {
-            var connections = communicationNode.GetNodeConnections();
-            var nonAnonymousConnections = connections.Where(node => node.OppositeSidePublicKey != null);
-            // TODO: sort by chain providers rating
-            foreach (var connection in nonAnonymousConnections)
+            try
             {
-                try
+                var connections = communicationNode.GetNodeConnections();
+                var nonAnonymousConnections = connections.Where(node => node.OppositeSidePublicKey != null);
+                // TODO: sort by chain providers rating
+                foreach (var connection in nonAnonymousConnections)
                 {
-                    var session = new Session(communicationNode);
-                    var connectionResult = await session.Connect(connection.OppositeSidePublicKey, "chain-fetching");
-                    if (connectionResult is ConnectionResult.Connected)
+                    try
                     {
-                        var fetcherSession = new FetcherSession(session, sourceChain, Request, ChainBranchBlocksCount);
-                        DownloadedChain = await fetcherSession.StartDonwloadingProccess(CancellationToken.None);
-                        ChainFetched?.Invoke(DownloadedChain);
-                        SessionFinishedSuccesful?.Invoke(connection);
-                        return true;
+                        var session = new Session(communicationNode);
+                        var connectionResult = await session.Connect(connection.OppositeSidePublicKey, "chain-fetching");
+                        if (connectionResult is ConnectionResult.Connected)
+                        {
+                            var fetcherSession = new FetcherSession(session, sourceChain, Request, ChainBranchBlocksCount);
+                            DownloadedChain = await fetcherSession.StartDonwloadingProccess(cancellationToken);
+                            ChainFetched?.Invoke(DownloadedChain);
+                            SessionFinishedSuccesful?.Invoke(connection);
+                            return true;
+                        }
+                    }
+                    catch (ChainDownloadingException ex)
+                    {
+                        SessionFinishedFaulty?.Invoke(connection);
                     }
                 }
-                catch (ChainDownloadingException ex) 
-                {
-                    SessionFinishedFaulty?.Invoke(connection);
-                }
+            }
+            catch( OperationCanceledException) { }
+            finally
+            {
+                ChainIsntFetched?.Invoke();
             }
             return false;
         }

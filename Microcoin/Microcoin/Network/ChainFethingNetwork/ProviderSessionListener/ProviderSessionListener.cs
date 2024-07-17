@@ -39,7 +39,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListene
         {
             var providerSession = new ProviderSession.ProviderSession(newSession);
             providerSession.SourceChain = SourceChain;
-            providerSession.StartUploadingProcess();
+            providerSession.StartUploadingProcess(CancellationToken.None);
             NewProviderSessionCreated?.Invoke(providerSession);
         }
     }

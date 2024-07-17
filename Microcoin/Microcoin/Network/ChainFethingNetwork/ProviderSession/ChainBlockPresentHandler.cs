@@ -30,7 +30,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
 
         public async Task<bool> CreateHandleTask(CancellationToken cancellationToken)
         {
-            var requestMessage = await ProviderSession.WrappedSession.WaitForMessage();
+            var requestMessage = await ProviderSession.WrappedSession.WaitForMessage(cancellationToken);
             var request = MessageContextHelper.Parse<ChainBlockPresentRequestDTO>(requestMessage);
             if (request is null)
                 throw new OperationCanceledException();

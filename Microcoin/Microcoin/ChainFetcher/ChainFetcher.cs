@@ -4,10 +4,11 @@ using Microcoin.Microcoin.ChainStorage;
 using NodeNet.NodeNet.NetworkExplorer.Requests;
 using System.Collections.Concurrent;
 using NodeNet.NodeNet;
+using System.Collections.Generic;
 
 namespace Microcoin.Microcoin.ChainFetcher { 
-    public record FetchRequest(Blockchain.Block.Block RequestedBlock, DateTime HandleAfterTime);
-    public record HandlingFetchRequest(FetchRequest Request, FetchRequestHandler RequestHandler);
+    public record FetchRequest(Blockchain.Block.Block RequestedBlock, DateTime HandleAfterTime, int NumberOfRetries);
+    public record HandlingFetchRequest(FetchRequest Request, FetchRequestHandler RequestHandler, CancellationTokenSource cts);
     public record FetchResult(HandlingFetchRequest HandlingFetchRequest, ChainContext? ChainContext);
 
 /// <summary>
@@ -18,15 +19,19 @@ namespace Microcoin.Microcoin.ChainFetcher {
 public class ChainFetcher
     {
         public readonly Node CommunicationNode;
-        // The circuit on the basis of which the loaded circuit will be created
         public AbstractChain? SourceChain { get; set; } 
         public int MaxFetchQueueSize { get; set; } = 50;
         public int MaxHandlingConcurrentTask { get; set; } = 5;
         public int ChainBranchBlocksCount { get; private set; }
+        public int MinutesBetweenRetries { get; private set; } = 5;
+        public ChainProvidersRating ChainProvidersRating { get; protected set; } = new ChainProvidersRating();
 
         private HashSet<Blockchain.Block.Block> BlocksInFetchSystem = new HashSet<Blockchain.Block.Block>();
         private List<HandlingFetchRequest> HandlingRequests = new List<HandlingFetchRequest>();
         private LinkedList<FetchRequest> RequestLinkedList = new LinkedList<FetchRequest>();
+
+        public event Action<MutableChain> ChainFetchCompleted;
+        public event Action<Block> ChainFetchFail;
 
         public ChainFetcher(Node communcationNode)
         {
@@ -55,7 +60,7 @@ public class ChainFetcher
                     return false;
                 if (BlocksInFetchSystem.Contains(block))
                     return false;
-                var newFetchRequest = new FetchRequest(block, handleTime);
+                var newFetchRequest = new FetchRequest(block, handleTime, 5);
                 BlocksInFetchSystem.Add(block);
                 AddFetchRequestToList(newFetchRequest);
                 return true;
@@ -77,11 +82,16 @@ public class ChainFetcher
                 // Create task that will handle this request
                 var newHandlingRequest = new HandlingFetchRequest(
                     peekFetchRequest,
-                    new FetchRequestHandler(peekFetchRequest, ChainBranchBlocksCount)
+                    new FetchRequestHandler(peekFetchRequest, ChainBranchBlocksCount),
+                    new CancellationTokenSource()
                 );
                 if (SourceChain is null)
                     throw new Exception("Source chain isn't initialized");
-                newHandlingRequest.RequestHandler.StartHandling(CommunicationNode, SourceChain);
+                newHandlingRequest.RequestHandler.ChainIsntFetched += () => OnChainFetchFaulted(newHandlingRequest);
+                newHandlingRequest.RequestHandler.ChainFetched += (chain) => OnChainFetchCompleted(newHandlingRequest, chain);
+                newHandlingRequest.RequestHandler.SessionFinishedSuccesful += (connection) => ChainProvidersRating.ChainFetchSuccesful(connection.OppositeSidePublicKey);
+                newHandlingRequest.RequestHandler.SessionFinishedFaulty += (connection) => ChainProvidersRating.ChainFetchFailed(connection.OppositeSidePublicKey);
+                newHandlingRequest.RequestHandler.StartHandling(CommunicationNode, SourceChain, newHandlingRequest.cts.Token);
                 HandlingRequests.Add(newHandlingRequest);
                 return true;
             }
@@ -112,6 +122,45 @@ public class ChainFetcher
                 RequestLinkedList.AddBefore(new LinkedListNode<FetchRequest>(insertTargetRequest), fetchRequest);
             else 
                 RequestLinkedList.AddLast(fetchRequest);
+        }
+
+        private void OnChainFetchCompleted(HandlingFetchRequest finishedFetchRequest, MutableChain mutableChain)
+        {
+            lock (this)
+            {
+                foreach (var handlingRequest in HandlingRequests)
+                {
+                    if (handlingRequest == finishedFetchRequest)
+                        continue;
+                    if (handlingRequest.Request.RequestedBlock.MiningBlockInfo.BlockId <= mutableChain.EntireChainLength)
+                    {
+                        BlocksInFetchSystem.Remove(handlingRequest.Request.RequestedBlock);
+                        handlingRequest.cts.Cancel();
+                    }
+                    
+                }
+                var requestToRemove = RequestLinkedList.Where(request => request.RequestedBlock.MiningBlockInfo.BlockId <= mutableChain.EntireChainLength);
+                RequestLinkedList = new LinkedList<FetchRequest>(RequestLinkedList.Except(requestToRemove));
+                BlocksInFetchSystem.Remove(finishedFetchRequest.Request.RequestedBlock);
+            }
+            ChainFetchCompleted?.Invoke(mutableChain);
+        }
+
+        private void OnChainFetchFaulted(HandlingFetchRequest finishedFetchRequest)
+        {
+            if ( finishedFetchRequest.Request.NumberOfRetries > 0)
+            {
+                var fetchRequest = new FetchRequest(
+                    finishedFetchRequest.Request.RequestedBlock,
+                    DateTime.UtcNow + new TimeSpan(0, MinutesBetweenRetries, 0),
+                    finishedFetchRequest.Request.NumberOfRetries - 1
+                );
+                lock (this)
+                    AddFetchRequestToList(fetchRequest);
+            } else
+            {
+                ChainFetchFail?.Invoke(finishedFetchRequest.Request.RequestedBlock);
+            }
         }
     }
 }
