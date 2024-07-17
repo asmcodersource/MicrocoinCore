@@ -9,5 +9,6 @@ namespace Microcoin.Microcoin.Blockchain.Chain
     public interface INextBlockRule
     {
         public bool IsBlockNextToChain(Block.Block block, AbstractChain chain);
+        public bool IsBlockNextToBlock(Block.Block nextBlock, Block.Block currentTailBlock);
     }
 }

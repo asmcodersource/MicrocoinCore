@@ -15,7 +15,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
         public INextBlockRule NextBlockRule { get; protected set; }
         public IDeepTransactionsVerify DeepTransactionsVerify { get; protected set; }
         public IFetchableChainRule FetchableChainRule { get; protected set; }
-        public int ChainBranchBlocksCount { get; protected set; } = 50;
+        public int ChainBranchBlocksCount { get; set; } = 50;
 
         public ChainController(Chain.MutableChain chainTail, IMiner miner, ChainFetcher.ChainFetcher chainLoader = null)
         {

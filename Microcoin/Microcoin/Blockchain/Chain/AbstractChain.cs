@@ -1,4 +1,5 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
 using System.Collections.Immutable;
 using System.Threading.Tasks.Dataflow;
 
@@ -32,7 +33,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
             double walletsCoins = 0;
             while (currentChain is not null )
             {
-                walletsCoins += currentChain.WalletsCoins.ContainsKey(walletPublicKey) ? WalletsCoins[walletPublicKey] : 0;
+                walletsCoins += currentChain.WalletsCoins.ContainsKey(walletPublicKey) ? currentChain.WalletsCoins[walletPublicKey] : 0;
                 currentChain = currentChain.PreviousChain;
             }
             return walletsCoins;
@@ -100,6 +101,27 @@ namespace Microcoin.Microcoin.Blockchain.Chain
                 }
             }
             yield break;
+        }
+
+        public MutableChain CreateTrunkedChain(Block.Block lastBlock)
+        {
+            // find last part of chain, that need to be taken from source
+            AbstractChain endingChain = this;
+            while (endingChain is not null )
+            {
+                if (endingChain.BlocksList.Contains(lastBlock))
+                    break;
+                endingChain = endingChain.PreviousChain;
+            }
+            var forkedEndChain = new MutableChain();
+            if (endingChain.PreviousChain is not null)
+                forkedEndChain.LinkPreviousChain(endingChain.PreviousChain);
+            var endingChainBlocks = endingChain.GetBlocksList();
+            var firstBlock = endingChainBlocks.First();
+            var numberOfBlocksToAppend = lastBlock.MiningBlockInfo.BlockId - firstBlock.MiningBlockInfo.BlockId;
+            for (int i = 0; i <= numberOfBlocksToAppend; i++)
+                forkedEndChain.AddTailBlock(endingChainBlocks[i]);
+            return forkedEndChain;
         }
     }
 }

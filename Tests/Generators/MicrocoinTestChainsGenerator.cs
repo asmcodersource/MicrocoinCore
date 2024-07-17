@@ -29,6 +29,10 @@ namespace Tests.Generators
                 var nextChain = CreateChainContinueChain(tailChain, blocksCountPerChain, trasnactionsCountPerChain);
                 tailChain = nextChain;
             }
+            foreach(var peerKeyValue in peersCoins)
+            {
+                Assert.Equal(peerKeyValue.Value, tailChain.GetWalletCoins(peerKeyValue.Key.WalletPublicKey), 0.0001);
+            }
             return tailChain;
         }
 
@@ -45,6 +49,11 @@ namespace Tests.Generators
                     Peer peerSender, peerReceiver;
                     peerSender = peersCoins.ElementAt(Random.Shared.Next(peersCoins.Count)).Key;
                     peerReceiver = peers.ElementAt(Random.Shared.Next(peers.Count));
+                    if( peerSender == peerReceiver)
+                    {
+                        transactionId--;
+                        continue;
+                    }
                     double coinsToSend = peersCoins[peerSender] / trasnactionsCountPerChain; // this way guaranteed to not take too much, leaving coins for the next transactions in the block.
                     var transaction = peerSender.CreateTransaction(peerReceiver.WalletPublicKey, coinsToSend);
                     DoPeerCoinsCount(peerSender, -coinsToSend);
