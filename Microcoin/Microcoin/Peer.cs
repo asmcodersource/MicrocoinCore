@@ -4,6 +4,7 @@ using Microcoin.Microcoin.Blockchain.TransactionsPool;
 using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Mining;
+using Microcoin.Microcoin.Blockchain.Chain;
 using NodeNet.NodeNet;
 
 namespace Microcoin.Microcoin
@@ -82,7 +83,8 @@ namespace Microcoin.Microcoin
         {
             PeerNetworking = new PeerNetworking(nodeNet);
             PeerNetworking.CreateDefaultRouting();
-            ChainFetcher = new ChainFetcher.ChainFetcher(PeerNetworking.NetworkNode);
+            var chainVerificator = new ChainVerificator(PeerMining.Miner);
+            ChainFetcher = new ChainFetcher.ChainFetcher(PeerNetworking.NetworkNode, chainVerificator);
             PeerChain.SetChainFetcher(ChainFetcher);
             PeerNetworking.TransactionReceived += async (transaction) => await TransactionsPool.HandleTransaction(transaction);
             PeerNetworking.BlockReceived += async (block) => await BlocksPool.HandleBlock(block);

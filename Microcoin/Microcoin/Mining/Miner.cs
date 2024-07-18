@@ -77,12 +77,12 @@ namespace Microcoin.Microcoin.Mining
             finally
             {
                 var finishTime = DateTime.UtcNow;
-                if (isBlockAlreadyMined)
+                if (isBlockAlreadyMined && cancellationToken.IsCancellationRequested is not true)
                 {
                     Log.Debug($"Microcoin peer | Block({block.GetHashCode()})({block.GetMiningBlockHash()}) mining with complexity {block.MiningBlockInfo.Complexity} finished, after {(finishTime - beginTime).TotalSeconds} seconds");
                     BlockMined?.Invoke(block, block.Hash);
                 }
-                else
+                if (cancellationToken.IsCancellationRequested)
                     Log.Debug($"Microcoin peer | Block({block.GetHashCode()})({block.GetMiningBlockHash()}) mining canceled, after {(finishTime - beginTime).TotalSeconds} seconds");
             }
         }

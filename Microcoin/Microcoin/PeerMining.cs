@@ -83,7 +83,7 @@ namespace Microcoin.Microcoin
                 (Miner as IMiner).LinkBlockToChain(tailChain, block);
                 block.Hash = await Miner.StartBlockMining(tailChain, block, MinerWaller, cancellationToken);
                 if (cancellationToken.IsCancellationRequested is not true )
-                    Task.Run(() => BlockMined.Invoke(block));
+                    await Task.Run(() => BlockMined.Invoke(block));
             }
             catch (OperationCanceledException) { }
             finally { MiningThread = null; }

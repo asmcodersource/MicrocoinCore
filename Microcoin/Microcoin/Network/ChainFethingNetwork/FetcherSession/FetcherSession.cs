@@ -11,12 +11,6 @@ using Microcoin.Microcoin.Blockchain.ChainController;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
-    public class ChainDownloadingException : Exception
-    {
-        public ChainDownloadingException(string? reason = null) : base(reason) { }
-    }
-
-
     public class FetcherSession
     {
         public readonly Session WrappedSession;
@@ -32,7 +26,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             ChainBranchBlocksCount = chainBranchBlocksCount;
         }
 
-        public async Task<MutableChain> StartDonwloadingProccess(CancellationToken generalCancellationToken)
+        public async Task<ChainDownloadingResult> StartDonwloadingProccess(CancellationToken generalCancellationToken)
         {
             CancellationTokenSource initialCommunicationCTS = new CancellationTokenSource(60_000);
             var initialCt = CancellationTokenSource.CreateLinkedTokenSource(generalCancellationToken, initialCommunicationCTS.Token);
@@ -45,7 +39,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             var truncatedChain = SourceChain.CreateTrunkedChain(closestBlock);
             var downloadingChainRequest = new ChainDownloadingRequest(this, truncatedChain, FetchRequest.RequestedBlock, ChainBranchBlocksCount);
             var downloadedChain = await downloadingChainRequest.CreateRequestTask(generalCancellationToken);
-            return downloadedChain;
+            return new ChainDownloadingResult(downloadedChain, closestBlock);
         }
     }
 }

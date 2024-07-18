@@ -27,14 +27,18 @@ namespace Tests
             secondNodeChain = generatedChainTail;
 
             var fetchRequest = new FetchRequest(generatedChainTail.GetBlockFromTail(0)!, DateTime.UtcNow, 1);
-            var firstNodeDownloader = new FetchRequestHandler(fetchRequest, 50);
+            var firstNodeDownloader = new HandlingFetchRequest(fetchRequest, 50);
             var secondNodeListener = new ProviderSessionListener(connectionPair.second_node);
             secondNodeListener.StartListening();
             secondNodeListener.SourceChain = generatedChainTail;
+            firstNodeDownloader.ChainFetched += (result) =>
+            {
+                var isChainEquals = IsChainsEqual(result.DownloadedChain, generatedChainTail);
+                Assert.True(isChainEquals, "Download chain isn't equal to source chain");
+            };
             var chainDownloadSucess = firstNodeDownloader.StartHandling(connectionPair.first_node, firstNodeChain, CancellationToken.None).Result;
             Assert.True(chainDownloadSucess, "Chain download isn't sucessful");
-            var isChainEquals = IsChainsEqual(firstNodeDownloader.DownloadedChain, generatedChainTail);
-            Assert.True(chainDownloadSucess, "Download chain isn't equal to source chain");
+
         }
 
         [Fact]
@@ -55,14 +59,17 @@ namespace Tests
             secondNodeChain = generatedChainTail;
 
             var fetchRequest = new FetchRequest(generatedChainTail.GetBlockFromTail(0)!, DateTime.UtcNow, 1);
-            var firstNodeDownloader = new FetchRequestHandler(fetchRequest, 50);
+            var firstNodeDownloader = new HandlingFetchRequest(fetchRequest, 50);
             var secondNodeListener = new ProviderSessionListener(connectionPair.second_node);
             secondNodeListener.StartListening();
             secondNodeListener.SourceChain = generatedChainTail;
+            firstNodeDownloader.ChainFetched += (result) =>
+            {
+                var isChainEquals = IsChainsEqual(result.DownloadedChain, generatedChainTail);
+                Assert.True(isChainEquals, "Download chain isn't equal to source chain");
+            };
             var chainDownloadSucess = firstNodeDownloader.StartHandling(connectionPair.first_node, firstNodeChain, CancellationToken.None).Result;
             Assert.True(chainDownloadSucess, "Chain download isn't sucessful");
-            var isChainEquals = IsChainsEqual(firstNodeDownloader.DownloadedChain, generatedChainTail);
-            Assert.True(chainDownloadSucess, "Download chain isn't equal to source chain");
         }
 
         private bool IsChainsEqual(AbstractChain first, AbstractChain second)

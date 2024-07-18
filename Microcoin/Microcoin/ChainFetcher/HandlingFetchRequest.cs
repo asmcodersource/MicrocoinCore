@@ -12,17 +12,16 @@ using static Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession.Fetc
 
 namespace Microcoin.Microcoin.ChainFetcher
 {
-    public class FetchRequestHandler
+    public class HandlingFetchRequest
     {
         public readonly int ChainBranchBlocksCount;
         public readonly FetchRequest Request;
-        public event Action<MutableChain>? ChainFetched;
+        public event Action<ChainDownloadingResult>? ChainFetched;
         public event Action? ChainIsntFetched;
         public event Action<INodeConnection>? SessionFinishedSuccesful;
         public event Action<INodeConnection>? SessionFinishedFaulty;
-        public MutableChain? DownloadedChain { get; private set; }
 
-        public FetchRequestHandler(FetchRequest fetchRequest, int chainBranchBlocksCount) 
+        public HandlingFetchRequest(FetchRequest fetchRequest, int chainBranchBlocksCount) 
         {
             Request = fetchRequest;
             ChainBranchBlocksCount = chainBranchBlocksCount;
@@ -44,8 +43,8 @@ namespace Microcoin.Microcoin.ChainFetcher
                         if (connectionResult is ConnectionResult.Connected)
                         {
                             var fetcherSession = new FetcherSession(session, sourceChain, Request, ChainBranchBlocksCount);
-                            DownloadedChain = await fetcherSession.StartDonwloadingProccess(cancellationToken);
-                            ChainFetched?.Invoke(DownloadedChain);
+                            var fetchResult = await fetcherSession.StartDonwloadingProccess(cancellationToken);
+                            ChainFetched?.Invoke(fetchResult);
                             SessionFinishedSuccesful?.Invoke(connection);
                             return true;
                         }
