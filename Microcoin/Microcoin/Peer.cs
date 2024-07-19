@@ -5,23 +5,40 @@ using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Mining;
 using Microcoin.Microcoin.Blockchain.Chain;
+using Microcoin.Microcoin.ChainFetcher;
 using NodeNet.NodeNet;
+using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListener;
+using SimpleInjector;
 
 namespace Microcoin.Microcoin
 {
     public class Peer
     {
-        public BlocksPool BlocksPool { get; protected set; } = new BlocksPool();
-        public TransactionsPool TransactionsPool { get; protected set; } = new TransactionsPool();
+        public BlocksPool BlocksPool { get; protected set; }
+        public TransactionsPool TransactionsPool { get; protected set; } 
+        public ProviderSessionListener ProviderSessionListener { get; protected set; }
         public PeerNetworking PeerNetworking { get; protected set; }
         public PeerWalletKeys PeerWalletKeys { get; protected set; }
         public PeerChain PeerChain { get; protected set; }
         public PeerMining PeerMining { get; protected set; } 
         public ChainFetcher.ChainFetcher ChainFetcher { get; protected set; }
-
-
         public string WalletPublicKey { get { return PeerWalletKeys.TransactionSigner.SignOptions.PublicKey; } }
+        public Container ServicesContainer { get; protected set; }
 
+        public Peer(Container servicesContainer)
+        {
+            ServicesContainer = servicesContainer;
+            ChainFetcher = servicesContainer.GetInstance<ChainFetcher.ChainFetcher>();
+            PeerWalletKeys = servicesContainer.GetInstance<PeerWalletKeys>();
+            TransactionsPool = servicesContainer.GetInstance<TransactionsPool>();
+            BlocksPool = servicesContainer.GetInstance<BlocksPool>();
+            PeerNetworking = new PeerNetworking(servicesContainer);
+            PeerMining = new PeerMining(servicesContainer);
+            ProviderSessionListener = new ProviderSessionListener(servicesContainer);
+            PeerChain = new PeerChain(servicesContainer, this);
+            ConnectComponents();
+        }
+ 
         public Transaction CreateTransaction(string receiverPublicKey, double coinsCount)
         {
             var transaction = new Transaction();
@@ -42,100 +59,25 @@ namespace Microcoin.Microcoin
             return transaction;
         }
 
-        public void InitializeChain()
+        private void ConnectComponents()
         {
-            PeerChain = new PeerChain(PeerMining.Miner);
-            var chainsStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
-            chainsStorage.FetchChains();
-            if (chainsStorage.CountOfChainsHeaders() == 0)
-                PeerChain.InitByInitialChain();
-            else
-                PeerChain.InitByMostComprehensive();
-            PeerChain.ChainReceiveNextBlock += (block) => ResetBlockMiningHandler(block);
-            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) chain initialized");
-        }
-
-        public void InitializeAcceptancePools()
-        {
-            TransactionsPool.InitializeHandlerPipeline();
-            BlocksPool.InitializeHandlerPipeline(TransactionsPool.HandlePipeline);
-            BlocksPool.OnBlockReceived += (pool, block) => PeerChain.ChainController.AcceptBlock(block);
-        }
-
-        public void InitializeMining(bool miningEnable = true)
-        {
-            var complexityRule = new ComplexityRule();
-            var rewardRule = new RewardRule();
-            var miningRules = new MiningRules(complexityRule, rewardRule);
-            Miner miner = new Miner();
-            miner.SetRules(miningRules);
-            PeerMining = new PeerMining();
-            PeerMining.InizializeMiner(miner, WalletPublicKey, TransactionsPool);
-            PeerMining.BlockMined += BlockMinedHandler;
-            if (miningEnable)
-                PeerMining.StartMining();
-
-            TransactionsPool.OnTransactionReceived += (transaction) => PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
-            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) mining initialized");
-        }
-
-        public void InitializeNetworking(Node nodeNet)
-        {
-            PeerNetworking = new PeerNetworking(nodeNet);
-            PeerNetworking.CreateDefaultRouting();
-            var chainVerificator = new ChainVerificator(PeerMining.Miner);
-            ChainFetcher = new ChainFetcher.ChainFetcher(PeerNetworking.NetworkNode, chainVerificator);
-            PeerChain.SetChainFetcher(ChainFetcher);
+            PeerMining.LinkToTransactionsPool(TransactionsPool);
+            PeerChain.ChainReceiveNextBlock += (chain, block) => PeerMining.ResetBlockMiningHandler(chain, WalletPublicKey);
+            PeerMining.BlockMined += async (block) => await BlockMinedHandler(block);
             PeerNetworking.TransactionReceived += async (transaction) => await TransactionsPool.HandleTransaction(transaction);
             PeerNetworking.BlockReceived += async (block) => await BlocksPool.HandleBlock(block);
-            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) network initialized");
-            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) listening on port: {this.PeerNetworking.NetworkNode.GetNodeTcpPort()}");
+            BlocksPool.OnBlockReceived += async (pool, block) => await PeerChain.TryAcceptBlock(block);
+            TransactionsPool.OnTransactionReceived += (transaction) => PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), WalletPublicKey);
         }
 
-        public void InitializeNetworking(int portForNodeNet = 0)
-        {
-            PeerNetworking = new PeerNetworking();
-            PeerNetworking.CreateDefaultNode(portForNodeNet);
-            PeerNetworking.CreateDefaultRouting();
-            PeerNetworking.PostInitialize();
-            PeerNetworking.TransactionReceived += (transaction) => TransactionsPool.HandleTransaction(transaction);
-            PeerNetworking.BlockReceived += (block) => BlocksPool.HandleBlock(block);
-            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) network initialized");
-            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) listening on port: {this.PeerNetworking.NetworkNode.GetNodeTcpPort()}");
-        }
 
-        public void LoadOrCreateWalletKeys(string filePath = "wallet.keys")
+        protected async Task BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
         {
-            PeerWalletKeys = new PeerWalletKeys();
-            if (File.Exists(filePath))
+            var blockAccepted = await PeerChain.TryAcceptBlock(block);
+            if (blockAccepted)
             {
-                PeerWalletKeys.LoadKeys(filePath);
-            }
-            else
-            {
-                PeerWalletKeys.CreateKeys();
-                PeerWalletKeys.SaveKeys(filePath);
-            }
-            Serilog.Log.Information($"Microcoin peer | Peer({this.GetHashCode()}) keys initialized");
-        }
-
-        protected void BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
-        {
-            PeerNetworking.SendBlockToNetwork(block);
-            PeerChain.ChainController.AcceptBlock(block).Wait();
-            ResetBlockMiningHandler(block);
-        }
-
-        protected void ResetBlockMiningHandler(Block block)
-        {
-            try
-            {
-                PeerMining.CancelCurrentMiningProcess();
-                PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
-            }
-            catch (Exception ex)
-            {
-                Serilog.Log.Warning($"Microcoin peer | Something bad happend with mining reset = ${ex.Message}");
+                PeerNetworking.SendBlockToNetwork(block);
+                PeerMining.ResetBlockMiningHandler(PeerChain.GetChainTail(), WalletPublicKey);
             }
         }
     }

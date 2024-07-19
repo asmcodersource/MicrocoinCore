@@ -2,6 +2,7 @@
 using Microcoin.Microcoin.Mining;
 using System;
 using System.Collections.Generic;
+using SimpleInjector;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,18 +14,16 @@ namespace Microcoin.Microcoin.Blockchain.Chain
     /// </summary>
     public class ChainVerificator
     {
-        private readonly TransactionsPool.TransactionsPool transactionsVerificationPool = new TransactionsPool.TransactionsPool();
-        private readonly BlocksPool.BlocksPool blocksVerificationPool = new BlocksPool.BlocksPool();
-        public readonly IMiner Miner;
+        public Container ServicesContainer { get; set; }
+        private readonly BlocksPool.BlocksPool blocksVerificationPool;
  
-        public ChainVerificator(IMiner miner) 
+        public ChainVerificator(Container servicesContainer) 
         {
-            Miner = miner;
-            transactionsVerificationPool.InitializeHandlerPipeline();
-            blocksVerificationPool.InitializeHandlerPipeline(transactionsVerificationPool.HandlePipeline); 
+            ServicesContainer = servicesContainer;
+            blocksVerificationPool = servicesContainer.GetInstance<BlocksPool.BlocksPool>(); 
         }
 
-        
+
         public async Task<bool> VerifyChain(AbstractChain chain, Block.Block startingBlock)
         {
             if (startingBlock.MiningBlockInfo.BlockId == 0)
@@ -37,7 +36,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
              */
             var blocksToVerifyEnumerator = chain.GetEnumerable(startingBlock).GetEnumerator();
             var trancatedChain = chain.CreateTrunkedChain(startingBlock);
-            var chainController = new ChainController.ChainController(trancatedChain, Miner);
+            var chainController = new ChainController.ChainController(trancatedChain, ServicesContainer);
             chainController.DefaultInitialize();
             chainController.ChainBranchBlocksCount = int.MaxValue;
             while (blocksToVerifyEnumerator.MoveNext())

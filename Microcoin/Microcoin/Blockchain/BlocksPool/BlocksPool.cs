@@ -8,6 +8,13 @@ namespace Microcoin.Microcoin.Blockchain.BlocksPool
         public IHandlePipeline<Block.Block> HandlePipeline { get; set; } = new EmptyPipeline<Microcoin.Blockchain.Block.Block>();
         public HashSet<Transaction.Transaction> PresentedTransactions { get; protected set; } = new HashSet<Transaction.Transaction>();
 
+        public BlocksPool(TransactionsPool.TransactionsPool transactionsPool)
+        {
+            HandlePipeline = new HandlePipeline<Block.Block>();
+            HandlePipeline.AddHandlerToPipeline(new VerifyBlockFields());
+            HandlePipeline.AddHandlerToPipeline(new VerifyBlockTransactions(transactionsPool.HandlePipeline));
+        }
+
         public async Task<bool> HandleBlock(Block.Block block)
         {
             // Handle block on verifing pipeline
@@ -21,13 +28,6 @@ namespace Microcoin.Microcoin.Blockchain.BlocksPool
             Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()}) succesfully passed handle pipeline");
             OnBlockReceived?.Invoke(this, block);
             return true;
-        }
-
-        public void InitializeHandlerPipeline(IHandlePipeline<Transaction.Transaction> transactionVerifyPipeline)
-        {
-            HandlePipeline = new HandlePipeline<Block.Block>();
-            HandlePipeline.AddHandlerToPipeline(new VerifyBlockFields());
-            HandlePipeline.AddHandlerToPipeline(new VerifyBlockTransactions(transactionVerifyPipeline));
         }
     }
 }

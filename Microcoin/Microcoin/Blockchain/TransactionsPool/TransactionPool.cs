@@ -5,10 +5,18 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     public class TransactionsPool
     {
-        public event Action<TransactionsPool> OnTransactionReceived;
+        public event Action<TransactionsPool>? OnTransactionReceived;
         public List<Transaction.Transaction> Pool { get; protected set; } = new List<Transaction.Transaction>();
         public HashSet<Transaction.Transaction> PresentedTransactions { get; protected set; } = new HashSet<Transaction.Transaction>();
         public IHandlePipeline<Transaction.Transaction> HandlePipeline { get; set; } = new EmptyPipeline<Transaction.Transaction>();
+
+        public TransactionsPool()
+        {
+            HandlePipeline = new HandlePipeline<Transaction.Transaction>();
+            HandlePipeline.AddHandlerToPipeline(new VerifyTransactionSign());
+            HandlePipeline.AddHandlerToPipeline(new VerifyTransactionFields());
+            HandlePipeline.AddHandlerToPipeline(new VerifyTransactionDuplication());
+        }
 
         public List<Transaction.Transaction> TakeTransactions(int countToTake)
         {
@@ -35,14 +43,6 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
             AddTransaction(transaction);
             Serilog.Log.Verbose($"Microcoin peer | Transaction({transaction.GetHashCode()}) succesfully passed handle pipeline");
             return true;
-        }
-
-        public void InitializeHandlerPipeline()
-        {
-            HandlePipeline = new HandlePipeline<Transaction.Transaction>();
-            HandlePipeline.AddHandlerToPipeline(new VerifyTransactionSign());
-            HandlePipeline.AddHandlerToPipeline(new VerifyTransactionFields());
-            HandlePipeline.AddHandlerToPipeline(new VerifyTransactionDuplication());
         }
 
         protected void AddTransaction(Transaction.Transaction transaction)

@@ -1,6 +1,7 @@
 ﻿using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Mining;
+using SimpleInjector;
 
 
 namespace Microcoin.Microcoin.Blockchain.ChainController
@@ -8,7 +9,8 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
     public class ChainController
     {
         protected CancellationTokenSource currentChainOperationsCTS;
-        public event Action<Microcoin.Blockchain.Block.Block> ChainReceivedNextBlock;
+        public event Action<AbstractChain>? ChainHasNewTailPart;
+        public event Action<MutableChain, Microcoin.Blockchain.Block.Block>? ChainReceivedNextBlock;
         public ChainFetcher.ChainFetcher ChainFetcher { get; protected set; }
         public Chain.MutableChain ChainTail { get; protected set; }
         public IMiner Miner { get; protected set; }
@@ -16,15 +18,19 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
         public IDeepTransactionsVerify DeepTransactionsVerify { get; protected set; }
         public IFetchableChainRule FetchableChainRule { get; protected set; }
         public int ChainBranchBlocksCount { get; set; } = 50;
+        public bool IsAllowChainFetchingRequests { get; set; } = false;
+        public Container ServicesContainer { get; protected set; }
 
-        public ChainController(Chain.MutableChain chainTail, IMiner miner, ChainFetcher.ChainFetcher chainLoader = null)
+        public ChainController(Chain.MutableChain chainTail, Container servicesContainer)
         {
-            // ChainControllers without chainLoader can't load chain from network
-            // This is done to avoid loading threads inside loading threads.
             ChainTail = chainTail;
-            ChainFetcher = chainLoader;
-            Miner = miner;
+            ChainFetcher = servicesContainer.GetInstance<ChainFetcher.ChainFetcher>();
+            Miner = servicesContainer.GetInstance<IMiner>();
+            NextBlockRule = servicesContainer.GetInstance<INextBlockRule>();
+            DeepTransactionsVerify = servicesContainer.GetInstance<IDeepTransactionsVerify>();
+            FetchableChainRule = servicesContainer.GetInstance<IFetchableChainRule>();
             currentChainOperationsCTS = new CancellationTokenSource();
+            ServicesContainer = servicesContainer;
         }
 
         public void DefaultInitialize()
@@ -32,11 +38,6 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             NextBlockRule = new NextBlockRule();
             DeepTransactionsVerify = new DeepTransactionsVerify();
             FetchableChainRule = new FetchableChainRule();
-        }
-
-        public void SetChainFetcher(ChainFetcher.ChainFetcher chainFetcher)
-        {
-            ChainFetcher = chainFetcher;
         }
 
         public async Task<bool> AcceptBlock(Microcoin.Blockchain.Block.Block block)
@@ -57,7 +58,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 }
                 catch (TaskCanceledException) { return false; /* This block did not have time to pass the inspection, most likely another block was accepted as the final one. */ }
             }
-            else if (ChainFetcher != null && FetchableChainRule.IsPossibleChainUpgrade(ChainTail, block))
+            else if (IsAllowChainFetchingRequests is true && FetchableChainRule.IsPossibleChainUpgrade(ChainTail, block))
             {
                 // Essentially, with this call we only request that the chain be loaded, but not necessarily that it will be loaded.
                 // We don't care about everything else inside the chain.
@@ -80,12 +81,12 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 // is block still continues to this chain?
                 if (NextBlockRule.IsBlockNextToChain(block, ChainTail) is not true)
                     return false;
+                if (ChainTail.GetBlocksList().Count > ChainBranchBlocksCount)
+                    BranchToNexthChainPart();
                 ChainTail.AddTailBlock(block);
                 currentChainOperationsCTS.Cancel();
                 currentChainOperationsCTS = new CancellationTokenSource();
-                ChainReceivedNextBlock?.Invoke(block);
-                if (ChainTail.GetBlocksList().Count >= ChainBranchBlocksCount)
-                    BranchToNexthChainPart();
+                ChainReceivedNextBlock?.Invoke(ChainTail,block);
                 Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as tail block of chain, current blocks in chain: {ChainTail.BlocksDictionary.Count()}");
                 return true;
             }
@@ -129,10 +130,11 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
         {
             Serilog.Log.Debug($"Microcoin peer | Chain has branched");
             var nextChainPart = new Chain.MutableChain();
-            nextChainPart.LinkPreviousChain(nextChainPart);
+            nextChainPart.LinkPreviousChain(ChainTail);
             ChainTail = nextChainPart;
-            var chainsStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
+            var chainsStorage = ServicesContainer.GetInstance<ChainStorage.ChainStorage>();
             chainsStorage.AddNewChainToStorage(nextChainPart);
+            ChainHasNewTailPart?.Invoke(ChainTail);
         }
     }
 }

@@ -104,9 +104,9 @@ namespace Tests.Generators
             var peers = new List<Peer>();
             for (int i = 0; i < peersListLength; i++)
             {
-                var peer = new Peer();
-                peer.LoadOrCreateWalletKeys("NUL");
-                peer.InitializeAcceptancePools();
+                var peerBuilder = new PeerBuilder();
+                peerBuilder.AddDebugServices();
+                var peer = peerBuilder.Build();
                 peers.Add(peer);
             }
             return peers;

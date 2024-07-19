@@ -2,6 +2,7 @@
 using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.ChainStorage;
 using Microcoin.Microcoin.Mining;
+using SimpleInjector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +15,7 @@ namespace Microcoin
     public class InitialChainCreator
     {
         public Peer InitialPeer { get; protected set; }
-        public MutableChain InitialChain { get; protected set; }
-
-
-        public InitialChainCreator()
-        {
-            InitialPeer = new Peer();
-            InitialPeer.LoadOrCreateWalletKeys("initial-peer-wallet.keys");
-            InitialPeer.InitializeAcceptancePools();
-            InitialPeer.InitializeMining();
-        }
+        public MutableChain? InitialChain { get; protected set; }
 
         /// <summary>
         /// Peer should be initilized, at least peer mining, acceptance pools, and mining
@@ -34,7 +26,7 @@ namespace Microcoin
             InitialPeer = peer;
         }
 
-        public  void CreateInitialialChain()
+        public MutableChain CreateInitialialChain()
         {
             var miner = InitialPeer.PeerMining.Miner;
             var zeroChain = new MutableChain();
@@ -50,6 +42,7 @@ namespace Microcoin
             zeroBlock.Hash = miner.StartBlockMining(zeroChain, zeroBlock, zeroTransactionPeer.WalletPublicKey, CancellationToken.None).Result;
             zeroChain.AddTailBlock(zeroBlock);
             InitialChain = zeroChain;
+            return InitialChain;
         }
 
         /// <summary>
@@ -58,7 +51,7 @@ namespace Microcoin
         /// <param name="peer"></param>
         public void StoreInitialChainToFile()
         {
-            var chainStorage = DepencyInjection.Container.GetInstance<ChainStorage>();
+            var chainStorage = InitialPeer.ServicesContainer.GetInstance<ChainStorage>();
             StoreInitialChainToFile(chainStorage);
         }
 

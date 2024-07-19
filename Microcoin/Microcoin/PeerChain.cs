@@ -4,52 +4,80 @@ using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Mining;
 using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.ChainFetcher;
+using SimpleInjector;
+using Microcoin.Microcoin.ChainStorage;
 
 namespace Microcoin.Microcoin
 {
     // Represent current chain, and operations with it
     public class PeerChain
     {
-        public Action<Block> ChainReceiveNextBlock;
-        protected ChainStorage.ChainStorage ChainStorage { get; set; }
+        public Action<MutableChain, Block>? ChainReceiveNextBlock;
+        protected ChainStorage.ChainStorage ChainsStorage { get; set; }
+        public AbstractChain? ChainTail { get; protected set; }
         public ChainController? ChainController { get; protected set; }
         public ChainFetcher.ChainFetcher ChainFetcher { get; protected set; }
-        public INextBlockRule NextBlockRule { get; protected set; }
-        public IMiner Miner { get; set; }
+        public Container ServicesContainer { get; protected set; }
 
-        public PeerChain(IMiner miner)
+        public PeerChain(Container servicesContainer, Peer? parentPeer = null)
         {
-            Miner = miner;
-            ChainStorage = DepencyInjection.Container.GetInstance<ChainStorage.ChainStorage>();
+            ServicesContainer = servicesContainer;
+            ChainsStorage = servicesContainer.GetInstance<ChainStorage.ChainStorage>();
+            ChainFetcher = servicesContainer.GetInstance<ChainFetcher.ChainFetcher>();
+            Initialize(parentPeer);
         }
 
-        public AbstractChain GetChainTail()
+        public void Initialize(Peer? initiatorPeer = null)
         {
-            return ChainController.ChainTail;
+            ChainsStorage.FetchChains();
+            if (ChainsStorage.CountOfChainsHeaders() == 0 && initiatorPeer is not null)
+                InitByInitialChain(initiatorPeer);
+            else if (ChainsStorage.CountOfChainsHeaders() > 0)
+                InitByMostComprehensive();
+            else
+                throw new Exception("It is not possible to create a new chain or load an existing one from the repository");
+        }
+
+        public void SetSpecificChain(MutableChain newChain)
+        {
+            CreateChainContext(newChain);
         }
        
         public void InitByMostComprehensive()
         {
-            var mostComprehensiveChain = ChainStorage.LoadMostComprehensiveChain();
-            ChainController = new ChainController(mostComprehensiveChain.Chain, Miner, ChainFetcher);
-            ChainController.DefaultInitialize();
-            ChainController.ChainReceivedNextBlock += (block) => ChainReceiveNextBlock?.Invoke(block);
+            var mostComprehensiveChain = ChainsStorage.LoadMostComprehensiveChain();
+            if (mostComprehensiveChain is null || mostComprehensiveChain?.Chain is null )
+                throw new Exception("Chain storage return null chain context or null chain");
+            CreateChainContext(mostComprehensiveChain.Chain);
         }
 
-        public void InitByInitialChain()
+        public void InitByInitialChain(Peer initiatorPeer)
         {
-            var initialChainCreator = new InitialChainCreator();
-            initialChainCreator.CreateInitialialChain();
-            var initialChain = initialChainCreator.InitialChain;
-            ChainController = new ChainController(initialChain, Miner, ChainFetcher);
-            ChainController.DefaultInitialize();
-            ChainController.ChainReceivedNextBlock += (block) => ChainReceiveNextBlock?.Invoke(block);
+            var initialChainCreator = new InitialChainCreator(initiatorPeer);
+            var initialChain = initialChainCreator.CreateInitialialChain();
+            ChainsStorage.AddNewChainToStorage(initialChain);
+            CreateChainContext(initialChain);
         }
 
-        public void SetChainFetcher(ChainFetcher.ChainFetcher chainFetcher)
+        public async Task<bool> TryAcceptBlock(Block block)
         {
-            ChainFetcher = chainFetcher;
-            ChainController.SetChainFetcher(chainFetcher);
+            if (ChainController is null)
+                throw new Exception("Chain controlled dont initialized");
+            return await ChainController.AcceptBlock(block);
+        }
+
+        public AbstractChain GetChainTail()
+        {
+            if (ChainController is null || ChainController.ChainTail is null)
+                throw new Exception("Chain controller or chain controller tail is null");
+            return ChainController.ChainTail;
+        }
+
+        private void CreateChainContext(MutableChain chain)
+        {
+            ChainController = new ChainController(chain, ServicesContainer);
+            ChainController.DefaultInitialize();
+            ChainController.ChainReceivedNextBlock += (chain, block) => ChainReceiveNextBlock?.Invoke(chain, block);
         }
     }
 }

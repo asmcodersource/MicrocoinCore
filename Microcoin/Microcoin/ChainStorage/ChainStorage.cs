@@ -42,7 +42,7 @@ namespace Microcoin.Microcoin.ChainStorage
                     mostComprehensiveChainHeader = chainHeader;
             ChainContext chainContext = new ChainContext(headersFiles[mostComprehensiveChainHeader]);
             chainContext.Fetch();
-            Serilog.Log.Debug("Microcoin | Most comprehensive chain loaded from chain");
+            Serilog.Log.Debug("Microcoin | Most comprehensive chain loaded from storage");
             return chainContext;
         }
 
@@ -122,7 +122,7 @@ namespace Microcoin.Microcoin.ChainStorage
         {
             headersFiles.Add(chainHeader, chainHeaderFile);
             fetchedHeaders.Add(chainHeader);
-            chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader);
+            chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader); // TODO: fix error with multiple fetches
         }
     }
 }

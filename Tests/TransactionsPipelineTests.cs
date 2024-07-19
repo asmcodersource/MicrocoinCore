@@ -21,7 +21,6 @@ namespace Tests
         {
             // Create default transactions pool
             TransactionsPool transactionsPool = new TransactionsPool();
-            transactionsPool.InitializeHandlerPipeline();
             return transactionsPool;
         }
 

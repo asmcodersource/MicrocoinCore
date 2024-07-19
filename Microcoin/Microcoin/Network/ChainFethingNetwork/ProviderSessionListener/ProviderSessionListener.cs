@@ -8,6 +8,8 @@ using NodeNet.NodeNetSession.Session;
 using NodeNet.NodeNetSession.SessionListener;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession;
 using Microcoin.Microcoin.Blockchain.Chain;
+using SimpleInjector;
+using NodeNet.NodeNet.Communication;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListener
 {
@@ -18,9 +20,9 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListene
         private readonly Node communicationNode;
         private readonly SessionListener sessionListener;
 
-        public ProviderSessionListener(Node communicationNode)
+        public ProviderSessionListener(Container servicesContainer)
         {
-            this.communicationNode = communicationNode;
+            this.communicationNode = servicesContainer.GetInstance<Node>();
             sessionListener = new SessionListener(communicationNode, "chain-fetching");
             sessionListener.NewSessionCreated += NewSessionHandler;
         }

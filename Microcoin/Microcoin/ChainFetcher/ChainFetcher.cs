@@ -5,7 +5,9 @@ using NodeNet.NodeNet.NetworkExplorer.Requests;
 using System.Collections.Concurrent;
 using NodeNet.NodeNet;
 using System.Collections.Generic;
+using Microcoin.Microcoin.Mining;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
+using SimpleInjector;
 
 namespace Microcoin.Microcoin.ChainFetcher { 
     public record FetchRequest(Blockchain.Block.Block RequestedBlock, DateTime HandleAfterTime, int NumberOfRetries);
@@ -32,12 +34,13 @@ public class ChainFetcher
         private List<ActiveHandlingFetchRequest> HandlingRequests = new List<ActiveHandlingFetchRequest>();
         private LinkedList<FetchRequest> RequestLinkedList = new LinkedList<FetchRequest>();
 
-        public event Action<MutableChain> ChainFetchCompleted;
-        public event Action<Block> ChainFetchFail;
+        public event Action<MutableChain>? ChainFetchCompleted;
+        public event Action<Block>? ChainFetchFail;
 
-        public ChainFetcher(Node communcationNode, ChainVerificator chainVerificator)
+        public ChainFetcher(Container servicesContainer)
         {
-            CommunicationNode = communcationNode;
+            CommunicationNode = servicesContainer.GetInstance<Node>();
+            ChainVerificator = new ChainVerificator(servicesContainer);
         }
 
         public void SetChainBranchValue(int chainBranchBlocksCount)
@@ -65,7 +68,18 @@ public class ChainFetcher
                 var newFetchRequest = new FetchRequest(block, handleTime, 5);
                 BlocksInFetchSystem.Add(block);
                 AddFetchRequestToList(newFetchRequest);
+                TryHandleNextRequest();
                 return true;
+            }
+        }
+
+        public bool TryHandleNextRequest()
+        {
+            lock (this)
+            {
+                if( HandlingRequests.Count < MaxHandlingConcurrentTask )
+                    return HandleNextRequest();
+                return false;
             }
         }
 
@@ -84,15 +98,15 @@ public class ChainFetcher
                 // Create task that will handle this request
                 var newHandlingRequest = new ActiveHandlingFetchRequest(
                     peekFetchRequest,
-                    new HandlingFetchRequest(peekFetchRequest, ChainBranchBlocksCount),
+                    new HandlingFetchRequest(peekFetchRequest, ChainBranchBlocksCount, ChainProvidersRating),
                     new CancellationTokenSource()
                 );
                 if (SourceChain is null)
                     throw new Exception("Source chain isn't initialized");
                 newHandlingRequest.RequestHandler.ChainIsntFetched += () => OnChainFetchFaulted(newHandlingRequest);
                 newHandlingRequest.RequestHandler.ChainFetched += async (result) => await OnNewResult(newHandlingRequest, result);
-                newHandlingRequest.RequestHandler.SessionFinishedSuccesful += (connection) => ChainProvidersRating.ChainFetchSuccesful(connection.OppositeSidePublicKey);
-                newHandlingRequest.RequestHandler.SessionFinishedFaulty += (connection) => ChainProvidersRating.ChainFetchFailed(connection.OppositeSidePublicKey);
+                newHandlingRequest.RequestHandler.SessionFinishedSuccesful += (provider) => ChainProvidersRating.ChainFetchSuccesful(provider);
+                newHandlingRequest.RequestHandler.SessionFinishedFaulty += (provider) => ChainProvidersRating.ChainFetchFailed(provider);
                 Task.Run(() => newHandlingRequest.RequestHandler.StartHandling(CommunicationNode, SourceChain, newHandlingRequest.cts.Token));
                 HandlingRequests.Add(newHandlingRequest);
                 return true;
@@ -152,6 +166,7 @@ public class ChainFetcher
                 BlocksInFetchSystem.Remove(finishedFetchRequest.Request.RequestedBlock);
             }
             ChainFetchCompleted?.Invoke(result.DownloadedChain);
+            TryHandleNextRequest();
         }
 
         private void OnChainFetchFaulted(ActiveHandlingFetchRequest finishedFetchRequest)
@@ -169,6 +184,7 @@ public class ChainFetcher
             {
                 ChainFetchFail?.Invoke(finishedFetchRequest.Request.RequestedBlock);
             }
+            TryHandleNextRequest();
         }
 
         private async Task<bool> VerifyFetchResult(ChainDownloadingResult result)

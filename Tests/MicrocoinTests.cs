@@ -5,6 +5,8 @@ using Xunit;
 using Xunit.Abstractions;
 using Tests.Generators;
 using Microcoin.Microcoin.Blockchain.Block;
+using NodeNet.NodeNet;
+using System.Xml.Linq;
 
 namespace Tests
 {
@@ -22,18 +24,25 @@ namespace Tests
 
         static MicrocoinTests()
         {
-            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "test-chains"));
-            DirectoryInfo dir = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "test-chains"));
+            Logging.InitializeLogger();
+            CleanChainsDirectory();
+            PeerBuilder peerBuilder = new PeerBuilder();
+            peerBuilder.AddDefaultMiner();
+            peerBuilder.AddDefaultAcceptancePools();
+            peerBuilder.AddDefaultRules();
+            peerBuilder.AddNetworkNode(0);
+            peerBuilder.AddChainsStorage("chains");
+            peerBuilder.AddChainsFetcher();
+            peerBuilder.AddWalletKeysFromFileOrCreate(InitialPeerWalletKeys);
+            peerBuilder.Build();
+        }
+
+        static void CleanChainsDirectory()
+        {
+            Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), "chains"));
+            DirectoryInfo dir = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "chains"));
             foreach (var file in dir.GetFiles())
                 file.Delete();
-
-            Logging.InitializeLogger();
-            DepencyInjection.CreateContainer();
-            DepencyInjection.AddChainsStorage(Path.Combine(Directory.GetCurrentDirectory(), "test-chains"));
-            var initialChainCreator = new InitialChainCreator();
-            initialChainCreator.CreateInitialialChain();
-            initialChainCreator.StoreInitialChainToFile();
-            initialChainCreator.InitialPeer.PeerWalletKeys.SaveKeys(InitialPeerWalletKeys);
         }
 
         // This shit works bad, but anyway it works!
@@ -41,12 +50,11 @@ namespace Tests
         public void SinglePeerIntegrationTest()
         {
             // Create and initialize peer
-            Peer peer = new Peer();
-            peer.LoadOrCreateWalletKeys(InitialPeerWalletKeys);
-            peer.InitializeAcceptancePools();
-            peer.InitializeMining();
-            peer.InitializeChain();
-            peer.InitializeNetworking();
+            var peerBuilder = new PeerBuilder();
+            peerBuilder.AddDebugServices();
+            var peer = peerBuilder.Build();
+            peer.PeerMining.StartMining();
+
             // I create transactions and mine them with the same peer
             for (int i = 0; i < 40; i++)
             {
@@ -66,14 +74,18 @@ namespace Tests
             nodeNetNetworkConnections.PerformRandomConnections(0);
             // Create many peers on test network nodes
             List<Peer> peers = new List<Peer>();
-            foreach(var node in nodeNetNetworkConnections.Nodes)
+            foreach(var node in nodeNetNetworkConnections.Nodes.Skip(1))
             {
-                Peer peer = new Peer();
-                peer.LoadOrCreateWalletKeys("nul");
-                peer.InitializeAcceptancePools();
-                peer.InitializeMining();
-                peer.InitializeChain();
-                peer.InitializeNetworking(node);
+                PeerBuilder peerBuilder = new PeerBuilder();
+                peerBuilder.AddDefaultMiner();
+                peerBuilder.AddDefaultAcceptancePools();
+                peerBuilder.AddDefaultRules();
+                peerBuilder.AddNetworkNode(node);
+                peerBuilder.AddChainsStorage("chains");
+                peerBuilder.AddChainsFetcher();
+                peerBuilder.AddWalletKeys();
+                var peer = peerBuilder.Build();
+                peer.PeerMining.StartMining();
                 peers.Add(peer);
 
                 //peer.TransactionsPool.OnTransactionReceived += (transaction) => output.WriteLine($"Peer [{peer.GetHashCode()}] accepted transaction [{transaction.GetHashCode()}]");
@@ -83,8 +95,18 @@ namespace Tests
                 //peer.PeerNetworking.BlockReceived += (block) => output.WriteLine($"Peer [{peer.GetHashCode()}] receive block [{block.GetMiningBlockHash()}] from network");
             }
             // Set first peers as initial peer
-            peers[0].LoadOrCreateWalletKeys(InitialPeerWalletKeys);
-            DoPeerCoinsCount(peers[0], 0.1);
+            PeerBuilder zeroTransactionPeerBuilder = new PeerBuilder();
+            zeroTransactionPeerBuilder.AddDefaultMiner();
+            zeroTransactionPeerBuilder.AddDefaultAcceptancePools();
+            zeroTransactionPeerBuilder.AddDefaultRules();
+            zeroTransactionPeerBuilder.AddNetworkNode(nodeNetNetworkConnections.Nodes.First());
+            zeroTransactionPeerBuilder.AddChainsStorage("chains");
+            zeroTransactionPeerBuilder.AddChainsFetcher();
+            zeroTransactionPeerBuilder.AddWalletKeysFromFile(InitialPeerWalletKeys);
+            var zeroTransactionPeer = zeroTransactionPeerBuilder.Build();
+            zeroTransactionPeer.PeerMining.StartMining();
+            peers.Add(zeroTransactionPeer);
+            DoPeerCoinsCount(peers.Last(), 0.1);
             output.WriteLine("Network and peers created");
 
             // Sending coins by peers to another peers
@@ -93,6 +115,11 @@ namespace Tests
                 Peer peerSender, peerReceiver;
                 peerSender = peersCoins.ElementAt(Random.Shared.Next(peersCoins.Count)).Key;
                 peerReceiver = peers.ElementAt(Random.Shared.Next(peers.Count));
+                if (peerSender == peerReceiver)
+                {
+                    i--;
+                    continue;
+                }
                 double coinsToSend = peersCoins[peerSender] / 1000; 
                 var transaction = peerSender.SendCoins(peerReceiver.WalletPublicKey, coinsToSend);
                 DoPeerCoinsCount(peerSender, -coinsToSend);
