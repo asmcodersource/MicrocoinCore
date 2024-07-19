@@ -39,11 +39,12 @@ namespace Microcoin.Microcoin
         {
             lock (this)
             {
-                if (MiningThread is not null && MiningCancellationTokenSource is not null)
+                // I use temporary variable, to prevent some concurrency error
+                var temp = MiningThread;
+                if (temp is not null)
                 {
-                    MiningCancellationTokenSource.Cancel();
-                    MiningThread.Join();
-                    MiningThread = null;
+                    MiningCancellationTokenSource?.Cancel();
+                    temp.Join();
                     return true;
                 }
                 return false;
@@ -57,6 +58,7 @@ namespace Microcoin.Microcoin
             {
                 if (MiningThread is not null || IsMiningEnabled is not true )
                     return;
+                Serilog.Log.Debug($"Microcoin peer | Starting to mine new block");
                 MiningCancellationTokenSource = new CancellationTokenSource();
                 StartMineBlock(tailChain, deepTransactionsVerify, MiningCancellationTokenSource.Token);
             }
@@ -76,17 +78,19 @@ namespace Microcoin.Microcoin
         }
 
 
-        protected async Task MineBlock(AbstractChain tailChain, Microcoin.Blockchain.Block.Block block, IDeepTransactionsVerify deepTransactionsVerify, CancellationToken cancellationToken)
+        protected void MineBlock(AbstractChain tailChain, Microcoin.Blockchain.Block.Block block, IDeepTransactionsVerify deepTransactionsVerify, CancellationToken cancellationToken)
         {
             try
             {
                 (Miner as IMiner).LinkBlockToChain(tailChain, block);
-                block.Hash = await Miner.StartBlockMining(tailChain, block, MinerWaller, cancellationToken);
+                block.Hash = Miner.StartBlockMining(tailChain, block, MinerWaller, cancellationToken).Result;
                 if (cancellationToken.IsCancellationRequested is not true )
-                    await Task.Run(() => BlockMined.Invoke(block));
+                    Task.Run(() => BlockMined.Invoke(block));
             }
-            catch (OperationCanceledException) { }
-            finally { MiningThread = null; }
+            catch { }
+            finally {
+                MiningThread = null;
+            }
         }
     }
 }

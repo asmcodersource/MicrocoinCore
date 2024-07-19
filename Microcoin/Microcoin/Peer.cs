@@ -128,8 +128,15 @@ namespace Microcoin.Microcoin
 
         protected void ResetBlockMiningHandler(Block block)
         {
-            PeerMining.CancelCurrentMiningProcess();
-            PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
+            try
+            {
+                PeerMining.CancelCurrentMiningProcess();
+                PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), new DeepTransactionsVerify());
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning($"Microcoin peer | Something bad happend with mining reset = ${ex.Message}");
+            }
         }
     }
 }
