@@ -120,9 +120,11 @@ namespace Microcoin.Microcoin.ChainStorage
         
         protected void AddChainToFetched(string chainHeaderFile, ChainHeader chainHeader)
         {
-            headersFiles.Add(chainHeader, chainHeaderFile);
+            if (chainsDictionary.ContainsKey(chainHeader.ChainIdentifier))
+                return;
             fetchedHeaders.Add(chainHeader);
-            chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader); // TODO: fix error with multiple fetches
+            headersFiles.Add(chainHeader, chainHeaderFile);
+            chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader); 
         }
     }
 }
