@@ -14,8 +14,8 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             var currentTailBlock = chain.GetLastBlock();
             if (currentTailBlock == null)
                 throw new Exception("Chain shouldn't be empty");
-            //int minimumComplexityToSwitch = Convert.ToInt32(currentTailBlock.MiningBlockInfo.ChainComplexity * 1.0);
-            if (currentTailBlock.MiningBlockInfo.ChainComplexity < block.MiningBlockInfo.ChainComplexity)
+            int minimumComplexityToSwitch = Convert.ToInt32(currentTailBlock.MiningBlockInfo.ChainComplexity * 1.15);
+            if (minimumComplexityToSwitch < block.MiningBlockInfo.ChainComplexity)
                 return true;
             else
                 return false;

@@ -30,7 +30,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
         public readonly AbstractChain SourceChain;
         public readonly Block StartingBlock;
         public readonly Block TargetBlock;
-        private IEnumerator<Block> downloadingBlocks;
+        private IEnumerator<Block>? downloadingBlocks;
 
         public ChainDownloadingHandler(ProviderSession providerSession, AbstractChain sourceChain, Block startingBlock, Block targetBlock, int maxBlocksPerMessage = 50)
         {
@@ -66,8 +66,8 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 IsAccepted = true,
                 RejectReason = null,
             };
-            ProviderSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(response));
             downloadingBlocks = SourceChain.GetEnumerable(StartingBlock).GetEnumerator();
+            ProviderSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(response));
             return true;
         }
 
@@ -76,11 +76,13 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
             var requestMsg = await ProviderSession.WrappedSession.WaitForMessage(cancellationToken);
             var requestSessionMsg = MessageContextHelper.GetSessionMessageData(requestMsg);
             var request = JsonTypedWrapper.Deserialize<RequestNextPartOfBlocks>(requestSessionMsg);
-            if (request is null)
-                throw new Exception("Wrong message received due chain downloading communication");
             var blocksToSend = new List<Block>();
-            for( int i = 0; i < MaxBlocksPerMessage && downloadingBlocks.MoveNext(); i++)
+            for (int i = 0; i < MaxBlocksPerMessage && downloadingBlocks.MoveNext(); i++)
+            {
+                if (downloadingBlocks.Current == null)
+                    break;
                 blocksToSend.Add(downloadingBlocks.Current);
+            }
             ProviderSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize<ICollection<Block>>(blocksToSend));
             return blocksToSend.Count > 0;
         }

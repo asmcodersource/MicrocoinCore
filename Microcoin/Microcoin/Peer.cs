@@ -64,11 +64,13 @@ namespace Microcoin.Microcoin
             PeerMining.LinkToTransactionsPool(TransactionsPool);
             ChainFetcher.ChangeSourceChain(PeerChain.GetChainTail());
             ProviderSessionListener.ChangeSourceChain(PeerChain.GetChainTail());
+            ChainFetcher.ChainFetchCompleted += PeerChain.ReplaceByMoreComprehinsive;
             PeerMining.BlockMined += async (block) => await BlocksPool.HandleBlock(block);
+            PeerMining.BlockMined += (block) => PeerNetworking.SendBlockToNetwork(block);
             PeerChain.ChainTailPartChanged += ChainFetcher.ChangeSourceChain;
             PeerChain.ChainTailPartChanged += ProviderSessionListener.ChangeSourceChain;
+            PeerChain.ChainTailPartChanged += (chain) => PeerMining.ResetBlockMiningHandler(chain, WalletPublicKey);
             PeerChain.ChainReceiveNextBlock += (chain, block) => PeerMining.ResetBlockMiningHandler(chain, WalletPublicKey);
-            PeerChain.ChainReceiveNextBlock += (chain, block) => PeerNetworking.SendBlockToNetwork(block);
             PeerNetworking.TransactionReceived += async (transaction) => await TransactionsPool.HandleTransaction(transaction);
             PeerNetworking.BlockReceived += async (block) => await BlocksPool.HandleBlock(block);
             BlocksPool.OnBlockReceived += async (pool, block) => await PeerChain.TryAcceptBlock(block);

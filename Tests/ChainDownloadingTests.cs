@@ -82,7 +82,7 @@ namespace Tests
             var peer2 = CreatePeer(nodeNetConnection.second_node);
 
             var chainGenerator = new MicrocoinTestChainsGenerator();
-            var generatedChainTail = chainGenerator.CreateChain(5, 5, 10);
+            var generatedChainTail = chainGenerator.CreateChain(4, 50, 1);
             var firstNodeChain = new MutableChain();
             var countOfAvailableBlocks = Random.Shared.Next(1, generatedChainTail.EntireChainLength);
             var blockTakenFromGeneratedChain = generatedChainTail
@@ -103,9 +103,9 @@ namespace Tests
                 isChainFetched = true;
                 fetchedChain = chain;
             };
-            peer1.ChainFetcher.RequestChainFetch(secondNodeChain.GetLastBlock()!);
+            peer1.ChainFetcher.RequestChainFetch(secondNodeChain.GetBlockFromHead(Random.Shared.Next(firstNodeChain.EntireChainLength, generatedChainTail.EntireChainLength))!);
             
-            Thread.Sleep(10000);
+            Thread.Sleep(3000);
             Assert.True(isChainFetched, "Chain isn't fetched");
             Assert.True(IsChainsEqual(fetchedChain, secondNodeChain), "Chains isn't equals");
         }

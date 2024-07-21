@@ -1,7 +1,9 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading.Tasks.Dataflow;
+using System.Linq;
 
 namespace Microcoin.Microcoin.Blockchain.Chain
 {
@@ -14,33 +16,34 @@ namespace Microcoin.Microcoin.Blockchain.Chain
     public abstract class AbstractChain
     {
         public ImmutableChain? PreviousChain { get; protected set; }
-        public IReadOnlyDictionary<string, double> WalletsCoins { get; protected set; }
-        public IReadOnlyCollection<Transaction.Transaction> TransactionsSet { get; protected set; }
-        public IReadOnlyDictionary<string, Microcoin.Blockchain.Block.Block> BlocksDictionary { get; protected set; }
-        public IReadOnlyList<Microcoin.Blockchain.Block.Block> BlocksList { get; protected set; }
+        public IReadOnlyDictionary<string, double> WalletsCoins { get; protected set; } = new Dictionary<string, double>();
+        public IReadOnlyCollection<Transaction.Transaction> TransactionsSet { get; protected set; } = new HashSet<Transaction.Transaction>();
+        public IReadOnlyDictionary<string, Block.Block> BlocksDictionary { get; protected set; } = new Dictionary<string, Block.Block>();
+        public IReadOnlyList<Block.Block> BlocksList { get; protected set; } = new List<Block.Block>();
         public int EntireChainLength { get; protected set; } = 0;
 
+        public IReadOnlyList<Block.Block> GetBlocksList() => BlocksList;
 
-        public IReadOnlyList<Microcoin.Blockchain.Block.Block> GetBlocksList()
-            => BlocksList;
-
-        public bool IsChainHasTransaction(Transaction.Transaction transaction)
-            => TransactionsSet.Contains(transaction);
+        public bool IsChainHasTransaction(Transaction.Transaction transaction) => TransactionsSet.Contains(transaction);
 
         public double GetWalletCoins(string walletPublicKey)
         {
-            AbstractChain? currentChain = this;
-            double walletsCoins = 0;
-            while (currentChain is not null )
+            var currentChain = this;
+            double walletCoins = 0;
+
+            while (currentChain != null)
             {
-                walletsCoins += currentChain.WalletsCoins.ContainsKey(walletPublicKey) ? currentChain.WalletsCoins[walletPublicKey] : 0;
+                if (currentChain.WalletsCoins.TryGetValue(walletPublicKey, out var coins))
+                {
+                    walletCoins += coins;
+                }
                 currentChain = currentChain.PreviousChain;
             }
-            return walletsCoins;
+
+            return walletCoins;
         }
 
-        public Microcoin.Blockchain.Block.Block? GetLastBlock()
-            => GetBlockFromTail(0);
+        public Block.Block? GetLastBlock() => GetBlockFromTail(0);
 
         public Microcoin.Blockchain.Block.Block? GetBlockFromTail(int blockIdFromTail)
         {
@@ -53,9 +56,9 @@ namespace Microcoin.Microcoin.Blockchain.Chain
 
         public Microcoin.Blockchain.Block.Block? GetBlockFromHead(int blockIdFromHead)
         {
-            if( blockIdFromHead < EntireChainLength && blockIdFromHead >= EntireChainLength - BlocksList.Count())
+            if (blockIdFromHead < EntireChainLength && blockIdFromHead >= EntireChainLength - BlocksList.Count())
                 return BlocksList[blockIdFromHead - (EntireChainLength - BlocksList.Count())];
-            else if ( PreviousChain is not null )
+            else if (PreviousChain is not null)
                 return PreviousChain.GetBlockFromHead(blockIdFromHead);
             else
                 return null;
@@ -64,64 +67,68 @@ namespace Microcoin.Microcoin.Blockchain.Chain
         public IEnumerable<Block.Block> GetEnumerable(Block.Block? startingBlock = null, Block.Block? endingBlock = null)
         {
             // Find starting point of downloading
-            // find last part of chain, that need to be taken from source
             var currentChain = this;
-            Stack<AbstractChain> chainQueue = new Stack<AbstractChain>();
-            if (startingBlock is not null)
+            var chainQueue = new Stack<AbstractChain>();
+
+            while (currentChain != null)
             {
-                do
-                {
-                    if (currentChain is null)
-                        throw new Exception("Something wen't wrong with finding last chain");
-                    chainQueue.Push(currentChain);
-                    currentChain = currentChain.PreviousChain;
-                } while ((currentChain.EntireChainLength - 1) > startingBlock.MiningBlockInfo.BlockId);
-            }
-            else
-            {
-                do
-                {
-                    chainQueue.Push(currentChain);
-                    currentChain = currentChain.PreviousChain;
-                } while (currentChain is not null);
+                chainQueue.Push(currentChain);
+                currentChain = currentChain.PreviousChain;
             }
 
-            // We return blocks through the yield generator, either to the end of the chain,
-            // or to the requested block, depending on the parameter
+            // Yield blocks from the chains
             while (chainQueue.Count > 0)
             {
                 var chain = chainQueue.Pop();
+
                 foreach (var block in chain.BlocksList)
                 {
-                    if (startingBlock is not null && block.MiningBlockInfo.BlockId <= startingBlock.MiningBlockInfo.BlockId)
+                    if (startingBlock != null && block.MiningBlockInfo.BlockId <= startingBlock.MiningBlockInfo.BlockId)
                         continue;
+
                     yield return block;
-                    if (endingBlock is not null && block.MiningBlockInfo.BlockId == endingBlock.MiningBlockInfo.BlockId)
+
+                    if (endingBlock != null && block.MiningBlockInfo.BlockId == endingBlock.MiningBlockInfo.BlockId)
                         yield break;
                 }
             }
-            yield break;
         }
 
         public MutableChain CreateTrunkedChain(Block.Block lastBlock)
         {
-            // find last part of chain, that need to be taken from source
-            AbstractChain endingChain = this;
-            while (endingChain is not null )
+            if (lastBlock == null)
             {
-                if (endingChain.BlocksList.Contains(lastBlock))
-                    break;
-                endingChain = endingChain.PreviousChain;
+                throw new ArgumentNullException(nameof(lastBlock));
             }
+
+            var currentChain = this;
+            while (currentChain != null && !currentChain.BlocksList.Contains(lastBlock))
+            {
+                currentChain = currentChain.PreviousChain;
+            }
+
+            if (currentChain == null)
+            {
+                throw new InvalidOperationException("Last block don't found for truncking");
+            }
+
             var forkedEndChain = new MutableChain();
-            if (endingChain.PreviousChain is not null)
-                forkedEndChain.LinkPreviousChain(endingChain.PreviousChain);
-            var endingChainBlocks = endingChain.GetBlocksList();
-            var firstBlock = endingChainBlocks.First();
-            var numberOfBlocksToAppend = lastBlock.MiningBlockInfo.BlockId - firstBlock.MiningBlockInfo.BlockId;
-            for (int i = 0; i <= numberOfBlocksToAppend; i++)
-                forkedEndChain.AddTailBlock(endingChainBlocks[i]);
+            if (currentChain.PreviousChain != null)
+            {
+                forkedEndChain.LinkPreviousChain(currentChain.PreviousChain);
+            }
+
+            foreach (var block in currentChain.BlocksList)
+            {
+                forkedEndChain.AddTailBlock(block);
+                if (block == lastBlock)
+                {
+                    break;
+                }
+            }
+
             return forkedEndChain;
         }
+
     }
 }

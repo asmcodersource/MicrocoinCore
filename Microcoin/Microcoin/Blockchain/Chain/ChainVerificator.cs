@@ -26,8 +26,6 @@ namespace Microcoin.Microcoin.Blockchain.Chain
 
         public async Task<bool> VerifyChain(AbstractChain chain, Block.Block startingBlock)
         {
-            if (startingBlock.MiningBlockInfo.BlockId == 0)
-                throw new ArgumentException("Zero block cannot be verified in chain verificator");
             /*
              * I'm too lazy to do a normal verification, so I'll just run the blocks through the entire processing pipeline, 
              * as if they came from the network, and build a new chain. If it can’t complete the chain, 
@@ -37,7 +35,6 @@ namespace Microcoin.Microcoin.Blockchain.Chain
             var blocksToVerifyEnumerator = chain.GetEnumerable(startingBlock).GetEnumerator();
             var trancatedChain = chain.CreateTrunkedChain(startingBlock);
             var chainController = new ChainController.ChainController(trancatedChain, ServicesContainer);
-            chainController.DefaultInitialize();
             chainController.ChainBranchBlocksCount = int.MaxValue;
             while (blocksToVerifyEnumerator.MoveNext())
             {

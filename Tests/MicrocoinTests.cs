@@ -27,7 +27,7 @@ namespace Tests
             Logging.InitializeLogger();
             CleanChainsDirectory();
             PeerBuilder peerBuilder = new PeerBuilder();
-            peerBuilder.AddDebugMiner();
+            peerBuilder.AddDefaultMiner();
             peerBuilder.AddDefaultAcceptancePools();
             peerBuilder.AddDefaultRules();
             peerBuilder.AddNetworkNode(0);
@@ -51,7 +51,7 @@ namespace Tests
         {
             // Create and initialize peer
             var peerBuilder = new PeerBuilder();
-            peerBuilder.AddDebugServices();
+            peerBuilder.AddDefaultMiner();
             var peer = peerBuilder.Build();
             peer.PeerMining.StartMining();
 
@@ -77,7 +77,7 @@ namespace Tests
             foreach(var node in nodeNetNetworkConnections.Nodes.Skip(1))
             {
                 PeerBuilder peerBuilder = new PeerBuilder();
-                peerBuilder.AddDebugMiner();
+                peerBuilder.AddDefaultMiner();
                 peerBuilder.AddDefaultAcceptancePools();
                 peerBuilder.AddDefaultRules();
                 peerBuilder.AddNetworkNode(node);
@@ -97,7 +97,7 @@ namespace Tests
             }
             // Set first peers as initial peer
             PeerBuilder zeroTransactionPeerBuilder = new PeerBuilder();
-            zeroTransactionPeerBuilder.AddDebugMiner();
+            zeroTransactionPeerBuilder.AddDefaultMiner();
             zeroTransactionPeerBuilder.AddDefaultAcceptancePools();
             zeroTransactionPeerBuilder.AddDefaultRules();
             zeroTransactionPeerBuilder.AddNetworkNode(nodeNetNetworkConnections.Nodes.First());

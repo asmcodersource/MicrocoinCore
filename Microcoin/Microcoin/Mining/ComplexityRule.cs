@@ -13,7 +13,7 @@ namespace Microcoin.Microcoin.Mining
     public class ComplexityRule : IComplexityRule
     {
         protected Dictionary<ComplexityWindowIdentifier, int> complexityWindowCache = new Dictionary<ComplexityWindowIdentifier, int>();
-        protected int defaultComplexity =  5;
+        protected int defaultComplexity =  18;
         protected int targetTime = 10;
         protected int avgWindow = 20;
 

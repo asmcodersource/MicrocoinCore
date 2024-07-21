@@ -39,9 +39,18 @@ namespace Microcoin.Microcoin
                 throw new Exception("It is not possible to create a new chain or load an existing one from the repository");
         }
 
+        public void ReplaceByMoreComprehinsive(MutableChain chain)
+        {
+            if (chain.GetLastBlock().MiningBlockInfo.Complexity > GetChainTail().GetLastBlock().MiningBlockInfo.Complexity)
+            {
+                SetChainContext(chain);
+                Serilog.Log.Debug("Microin peer | Chain replaced by more comprehensive");
+            }
+        }
+
         public void SetSpecificChain(MutableChain newChain)
         {
-            CreateChainContext(newChain);
+            SetChainContext(newChain);
         }
        
         public void InitByMostComprehensive()
@@ -49,7 +58,7 @@ namespace Microcoin.Microcoin
             var mostComprehensiveChain = ChainsStorage.LoadMostComprehensiveChain();
             if (mostComprehensiveChain is null || mostComprehensiveChain?.Chain is null )
                 throw new Exception("Chain storage return null chain context or null chain");
-            CreateChainContext(mostComprehensiveChain.Chain);
+            SetChainContext(mostComprehensiveChain.Chain);
         }
 
         public void InitByInitialChain(Peer initiatorPeer)
@@ -57,7 +66,7 @@ namespace Microcoin.Microcoin
             var initialChainCreator = new InitialChainCreator(initiatorPeer);
             var initialChain = initialChainCreator.CreateInitialialChain();
             ChainsStorage.AddNewChainToStorage(initialChain);
-            CreateChainContext(initialChain);
+            SetChainContext(initialChain);
         }
 
         public async Task<bool> TryAcceptBlock(Block block)
@@ -74,10 +83,11 @@ namespace Microcoin.Microcoin
             return ChainController.ChainTail;
         }
 
-        private void CreateChainContext(MutableChain chain)
+        private void SetChainContext(MutableChain chain)
         {
+            if( ChainController is not null )
+                ChainController.IsAllowChainFetchingRequests = false;
             ChainController = new ChainController(chain, ServicesContainer);
-            ChainController.DefaultInitialize();
             ChainController.ChainReceivedNextBlock += (chain, block) => ChainReceiveNextBlock?.Invoke(chain, block);
             ChainController.ChainHasNewTailPart += ChainTailPartChanged;
             ChainController.IsAllowChainFetchingRequests = true;

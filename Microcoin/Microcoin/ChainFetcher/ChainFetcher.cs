@@ -8,32 +8,31 @@ using System.Collections.Generic;
 using Microcoin.Microcoin.Mining;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
 using SimpleInjector;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 
-namespace Microcoin.Microcoin.ChainFetcher { 
-    public record FetchRequest(Blockchain.Block.Block RequestedBlock, DateTime HandleAfterTime, int NumberOfRetries);
+namespace Microcoin.Microcoin.ChainFetcher
+{
+    public record FetchRequest(Block RequestedBlock, DateTime HandleAfterTime, int NumberOfRetries);
     public record ActiveHandlingFetchRequest(FetchRequest Request, HandlingFetchRequest RequestHandler, CancellationTokenSource cts);
     public record FetchResult(HandlingFetchRequest HandlingFetchRequest, ChainContext? ChainContext);
 
-/// <summary>
-/// Part of blockchain realizations, responsible to loading long chains of blocks
-/// Chain defined by two blocks on start and end of loading part
-/// Loading allowen only by direct peer to peer connection
-/// </summary>
-public class ChainFetcher
+    public class ChainFetcher
     {
-        public readonly Node CommunicationNode;
-        public AbstractChain? SourceChain { get; set; } 
-        public int MaxFetchQueueSize { get; set; } = 50;
-        public int MaxHandlingConcurrentTask { get; set; } = 5;
-        public int ChainBranchBlocksCount { get; private set; }
-        public int MinutesBetweenRetries { get; private set; } = 5;
+        public Node CommunicationNode { get; }
+        public AbstractChain? SourceChain { get; set; }
+        public int MaxFetchQueueSize { get; set; } = 1000;
+        public int MaxHandlingConcurrentTask { get; set; } = 1000;
+        public int ChainBranchBlocksCount { get; private set; } = 5;
+        public int MinutesBetweenRetries { get; private set; } = 10;
         public ChainProvidersRating ChainProvidersRating { get; protected set; } = new ChainProvidersRating();
         public ChainVerificator ChainVerificator { get; protected set; }
 
-        private Timer TryAcceptNextRequestTimer;
-        private HashSet<Blockchain.Block.Block> BlocksInFetchSystem = new HashSet<Blockchain.Block.Block>();
-        private List<ActiveHandlingFetchRequest> HandlingRequests = new List<ActiveHandlingFetchRequest>();
-        private LinkedList<FetchRequest> RequestLinkedList = new LinkedList<FetchRequest>();
+        private readonly Timer _tryAcceptNextRequestTimer;
+        private readonly HashSet<Block> _blocksInFetchSystem = new();
+        private readonly List<ActiveHandlingFetchRequest> _handlingRequests = new();
+        private LinkedList<FetchRequest> _requestLinkedList = new();
 
         public event Action<MutableChain>? ChainFetchCompleted;
         public event Action<Block>? ChainFetchFail;
@@ -42,10 +41,7 @@ public class ChainFetcher
         {
             CommunicationNode = servicesContainer.GetInstance<Node>();
             ChainVerificator = new ChainVerificator(servicesContainer);
-            TryAcceptNextRequestTimer = new Timer((state) =>
-            {
-                TryHandleNextRequest();
-            }, null, 0, 1000);
+            _tryAcceptNextRequestTimer = new Timer(_ => TryHandleNextRequest(), null, 0, 1000);
         }
 
         public void SetChainBranchValue(int chainBranchBlocksCount)
@@ -60,25 +56,21 @@ public class ChainFetcher
             SourceChain = sourceChain;
         }
 
-        public bool RequestChainFetch(Microcoin.Blockchain.Block.Block block)
+        public bool RequestChainFetch(Block block)
         {
             return RequestChainFetch(block, DateTime.UtcNow);
         }
 
-        public bool RequestChainFetch(Microcoin.Blockchain.Block.Block block, DateTime handleTime)
+        public bool RequestChainFetch(Block block, DateTime handleTime)
         {
-            // Lets assume this part of code as transaction
-            // It prevent from adding more than 'MaxFetchQueueSize' requests
             lock (this)
             {
-                if (RequestLinkedList.Count >= MaxFetchQueueSize)
+                if (_requestLinkedList.Count >= MaxFetchQueueSize || _blocksInFetchSystem.Contains(block))
                     return false;
-                if (BlocksInFetchSystem.Contains(block))
-                    return false;
+
                 var newFetchRequest = new FetchRequest(block, handleTime, 3);
-                BlocksInFetchSystem.Add(block);
+                _blocksInFetchSystem.Add(block);
                 AddFetchRequestToList(newFetchRequest);
-                TryHandleNextRequest();
                 return true;
             }
         }
@@ -87,9 +79,9 @@ public class ChainFetcher
         {
             try
             {
-                while (HandleNextRequest() && HandlingRequests.Count() < MaxHandlingConcurrentTask) ;
+                while (HandleNextRequest() && _handlingRequests.Count < MaxHandlingConcurrentTask) ;
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 Serilog.Log.Error(e.Message);
             }
@@ -97,103 +89,139 @@ public class ChainFetcher
 
         public bool HandleNextRequest()
         {
-            // Get first request, if it ready, then handle it, in other case return false
             lock (this)
             {
-                if (RequestLinkedList.Count == 0)
+                if (!_requestLinkedList.Any())
                     return false;
-                FetchRequest peekFetchRequest = RequestLinkedList.First();
-                if( peekFetchRequest.HandleAfterTime >= DateTime.UtcNow )
-                    return false;
-                RequestLinkedList.RemoveFirst();
 
-                // Create task that will handle this request
+                var peekFetchRequest = _requestLinkedList.First!.Value;
+                if (peekFetchRequest.HandleAfterTime >= DateTime.UtcNow)
+                    return false;
+
+                _requestLinkedList.RemoveFirst();
+
+                if (SourceChain == null)
+                    throw new Exception("Source chain isn't initialized");
+
                 var newHandlingRequest = new ActiveHandlingFetchRequest(
                     peekFetchRequest,
                     new HandlingFetchRequest(peekFetchRequest, ChainBranchBlocksCount, ChainProvidersRating),
                     new CancellationTokenSource()
                 );
-                if (SourceChain is null)
-                    throw new Exception("Source chain isn't initialized");
-                Serilog.Log.Debug($"Chain fetched started ${newHandlingRequest.Request.RequestedBlock.GetHashCode()} ${newHandlingRequest.Request.RequestedBlock.Hash}");
+
+                Serilog.Log.Debug($"Chain fetch started {newHandlingRequest.Request.RequestedBlock.GetHashCode()} {newHandlingRequest.Request.RequestedBlock.Hash}");
+
                 newHandlingRequest.RequestHandler.ChainIsntFetched += () => OnChainFetchFaulted(newHandlingRequest);
-                newHandlingRequest.RequestHandler.ChainFetched += async (result) => await OnNewResult(newHandlingRequest, result);
-                newHandlingRequest.RequestHandler.SessionFinishedSuccesful += (provider) => ChainProvidersRating.ChainFetchSuccesful(provider);
-                newHandlingRequest.RequestHandler.SessionFinishedFaulty += (provider) => ChainProvidersRating.ChainFetchFailed(provider);
+                newHandlingRequest.RequestHandler.ChainFetched += async result => await OnNewResult(newHandlingRequest, result);
+                newHandlingRequest.RequestHandler.SessionFinishedSuccesful += provider => ChainProvidersRating.ChainFetchSuccesful(provider);
+                newHandlingRequest.RequestHandler.SessionFinishedFaulty += provider => ChainProvidersRating.ChainFetchFailed(provider);
+
                 Task.Run(() => newHandlingRequest.RequestHandler.StartHandling(CommunicationNode, SourceChain, newHandlingRequest.cts.Token));
-                HandlingRequests.Add(newHandlingRequest);
+                _handlingRequests.Add(newHandlingRequest);
                 return true;
             }
         }
 
-        /// <summary>
-        /// It is necessary to add a new request to the list, in the correct place, 
-        /// which is determined by the time after which it should be processed (in ascending order).
-        /// </summary>
         private void AddFetchRequestToList(FetchRequest fetchRequest)
         {
             lock (this)
             {
-                var current = RequestLinkedList.First;
-                while (current is not null && current.Value.HandleAfterTime < fetchRequest.HandleAfterTime)
+                var current = _requestLinkedList.First;
+                while (current != null && current.Value.HandleAfterTime < fetchRequest.HandleAfterTime)
                     current = current.Next;
-                if (current is not null)
-                    RequestLinkedList.AddBefore(current, fetchRequest);
+
+                if (current != null)
+                    _requestLinkedList.AddBefore(current, fetchRequest);
                 else
-                    RequestLinkedList.AddLast(fetchRequest);
+                    _requestLinkedList.AddLast(fetchRequest);
             }
         }
 
         private async Task OnNewResult(ActiveHandlingFetchRequest finishedFetchRequest, ChainDownloadingResult result)
         {
-            if (await VerifyFetchResult(result) is true)
-                OnChainFetchCompleted(finishedFetchRequest, result);
+            if (await VerifyFetchResult(result))
+                CompleteFetchRequest(finishedFetchRequest, result);
         }
 
-        private void OnChainFetchCompleted(ActiveHandlingFetchRequest finishedFetchRequest, ChainDownloadingResult result)
+        private void CompleteFetchRequest(ActiveHandlingFetchRequest finishedFetchRequest, ChainDownloadingResult result)
         {
-            Serilog.Log.Debug($"Chain fetched succesful ${finishedFetchRequest.Request.RequestedBlock.GetHashCode()} ${finishedFetchRequest.Request.RequestedBlock.Hash}");
-            lock (this)
-            {
-                foreach (var handlingRequest in HandlingRequests)
-                {
-                    if (handlingRequest == finishedFetchRequest)
-                        continue;
-                    if (handlingRequest.Request.RequestedBlock.MiningBlockInfo.BlockId <= result.DownloadedChain.EntireChainLength)
-                    {
-                        BlocksInFetchSystem.Remove(handlingRequest.Request.RequestedBlock);
-                        handlingRequest.cts.Cancel();
-                    }
-                    
-                }
-                var requestToRemove = RequestLinkedList.Where(request => request.RequestedBlock.MiningBlockInfo.BlockId <= result.DownloadedChain.EntireChainLength);
-                RequestLinkedList = new LinkedList<FetchRequest>(RequestLinkedList.Except(requestToRemove));
-                BlocksInFetchSystem.Remove(finishedFetchRequest.Request.RequestedBlock);
-            }
+            Serilog.Log.Debug($"Chain fetched successfully {finishedFetchRequest.Request.RequestedBlock.GetHashCode()} {finishedFetchRequest.Request.RequestedBlock.Hash}");
             ChainFetchCompleted?.Invoke(result.DownloadedChain);
+
+            RemoveHandledRequests(result.DownloadedChain.EntireChainLength);
+            RemoveFetchRequest(finishedFetchRequest.Request.RequestedBlock);
         }
 
         private void OnChainFetchFaulted(ActiveHandlingFetchRequest finishedFetchRequest)
         {
-            if ( finishedFetchRequest.Request.NumberOfRetries > 0)
+            if (finishedFetchRequest.Request.NumberOfRetries > 0)
             {
-                var fetchRequest = new FetchRequest(
-                    finishedFetchRequest.Request.RequestedBlock,
-                    DateTime.UtcNow + new TimeSpan(0, MinutesBetweenRetries, 0),
-                    finishedFetchRequest.Request.NumberOfRetries - 1
-                );
-                Serilog.Log.Debug($"Chain fetched retry ${finishedFetchRequest.Request.RequestedBlock.GetHashCode()} ${finishedFetchRequest.Request.RequestedBlock.Hash}");
-                AddFetchRequestToList(fetchRequest);
-            } else
+                RetryFetchRequest(finishedFetchRequest);
+            }
+            else
             {
-                Serilog.Log.Debug($"Chain fetched faulted ${finishedFetchRequest.Request.RequestedBlock.GetHashCode()} ${finishedFetchRequest.Request.RequestedBlock.Hash}");
+                Serilog.Log.Debug($"Chain fetch faulted {finishedFetchRequest.Request.RequestedBlock.GetHashCode()} {finishedFetchRequest.Request.RequestedBlock.Hash}");
+                RemoveFetchRequest(finishedFetchRequest.Request.RequestedBlock);
                 ChainFetchFail?.Invoke(finishedFetchRequest.Request.RequestedBlock);
+            }
+        }
+
+        private void RetryFetchRequest(ActiveHandlingFetchRequest finishedFetchRequest)
+        {
+            var fetchRequest = new FetchRequest(
+                finishedFetchRequest.Request.RequestedBlock,
+                DateTime.UtcNow.AddMinutes(MinutesBetweenRetries),
+                finishedFetchRequest.Request.NumberOfRetries - 1
+            );
+
+            Serilog.Log.Debug($"Chain fetch retry {finishedFetchRequest.Request.RequestedBlock.GetHashCode()} {finishedFetchRequest.Request.RequestedBlock.Hash}");
+            RemoveFetchRequest(finishedFetchRequest);
+            AddFetchRequestToList(fetchRequest);
+        }
+
+        private void RemoveHandledRequests(int chainComplexity)
+        {
+            lock (this)
+            {
+                foreach (var handlingRequest in _handlingRequests.ToList())
+                {
+                    if (handlingRequest.Request.RequestedBlock.MiningBlockInfo.ChainComplexity <= chainComplexity)
+                    {
+                        _blocksInFetchSystem.Remove(handlingRequest.Request.RequestedBlock);
+                        _handlingRequests.Remove(handlingRequest);
+                        handlingRequest.cts.Cancel();
+                    }
+                }
+            }
+        }
+
+        private void RemoveFetchRequest(ActiveHandlingFetchRequest handlingFetchRequest)
+        {
+            lock (this)
+            {
+                _handlingRequests.Remove(handlingFetchRequest);
+            }
+        }
+
+        private void RemoveFetchRequest(Block block)
+        {
+            lock (this)
+            {
+                _blocksInFetchSystem.Remove(block);
             }
         }
 
         private async Task<bool> VerifyFetchResult(ChainDownloadingResult result)
         {
-            return await ChainVerificator.VerifyChain(result.DownloadedChain, result.LastBlockFromSource);
+            try
+            {
+                return await ChainVerificator.VerifyChain(result.DownloadedChain, result.LastBlockFromSource);
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error($"Verify fetch result exception: {ex.Message}");
+                throw;
+            }
         }
     }
 }

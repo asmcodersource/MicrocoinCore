@@ -33,13 +33,6 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             ServicesContainer = servicesContainer;
         }
 
-        public void DefaultInitialize()
-        {
-            NextBlockRule = new NextBlockRule();
-            DeepTransactionsVerify = new DeepTransactionsVerify();
-            FetchableChainRule = new FetchableChainRule();
-        }
-
         public async Task<bool> AcceptBlock(Microcoin.Blockchain.Block.Block block)
         {
             CancellationToken cancellationToken = GetChainOperationCancellationToken();
