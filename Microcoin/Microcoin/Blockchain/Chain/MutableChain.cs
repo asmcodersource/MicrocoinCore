@@ -23,14 +23,14 @@ namespace Microcoin.Microcoin.Blockchain.Chain
             base.BlocksDictionary = BlocksDictionary;
         }
 
-        public MutableChain(ImmutableChain immutableChain)
+        public MutableChain(AbstractChain chainToCopy)
         {
-            EntireChainLength = immutableChain.EntireChainLength;
-            PreviousChain = immutableChain.PreviousChain;
-            BlocksList = new List<Microcoin.Blockchain.Block.Block>(immutableChain.BlocksList);
-            BlocksDictionary = new Dictionary<string, Microcoin.Blockchain.Block.Block>(immutableChain.BlocksDictionary);
-            TransactionsSet = new HashSet<Transaction.Transaction>(immutableChain.TransactionsSet);
-            WalletsCoins = new Dictionary<string, double>(immutableChain.WalletsCoins);
+            EntireChainLength = chainToCopy.EntireChainLength;
+            PreviousChain = chainToCopy.PreviousChain;
+            BlocksList = new List<Microcoin.Blockchain.Block.Block>(chainToCopy.BlocksList);
+            BlocksDictionary = new Dictionary<string, Microcoin.Blockchain.Block.Block>(chainToCopy.BlocksDictionary);
+            TransactionsSet = new HashSet<Transaction.Transaction>(chainToCopy.TransactionsSet);
+            WalletsCoins = new Dictionary<string, double>(chainToCopy.WalletsCoins);
             // I also initialize the interface of the abstract chain with references to mutable instances
             base.BlocksList = BlocksList;
             base.WalletsCoins = WalletsCoins;

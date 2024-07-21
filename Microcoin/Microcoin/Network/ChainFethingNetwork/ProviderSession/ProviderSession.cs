@@ -16,9 +16,10 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
         public readonly Session WrappedSession;
         public AbstractChain SourceChain { get; set; }
 
-        public ProviderSession(Session session)
+        public ProviderSession(Session session, AbstractChain chain)
         {
             WrappedSession = session;
+            SourceChain = new MutableChain(chain);
         }
 
         public async Task<bool> StartUploadingProcess(CancellationToken generalCancellationToken)

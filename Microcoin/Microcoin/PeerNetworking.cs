@@ -64,7 +64,7 @@ namespace Microcoin.Microcoin
             };
             var messageJson = Newtonsoft.Json.JsonConvert.SerializeObject(messageDTO);
             lock (this)
-                NetworkNode.SendMessage(messageJson);
+                NetworkNode.SendMessage(messageJson, null, false, 1);
         }
 
         private void PostInitialize()

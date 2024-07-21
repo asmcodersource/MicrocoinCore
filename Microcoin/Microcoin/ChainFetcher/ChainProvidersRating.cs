@@ -16,17 +16,32 @@ namespace Microcoin.Microcoin.ChainFetcher
 
         public void ChainFetchSuccesful(string providerPublicKey)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                Ratings[providerPublicKey]++;
+            }
         }
 
         public void ChainFetchFailed(string providerPublicKey)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                Ratings[providerPublicKey]--;
+            }
         }
 
         public ICollection<string> GetRatingSortedProviders(ICollection<string> providers)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                foreach (var provider in providers)
+                    Ratings.TryAdd(provider, 0);
+                return Ratings
+                    .Where(p => providers.Contains(p.Key))
+                    .OrderByDescending(p => p.Value)
+                    .Select(p => p.Key)
+                    .ToList();
+            }
         }
     }
 }

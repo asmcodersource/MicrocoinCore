@@ -37,10 +37,14 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSessionListene
             sessionListener.StopListening();
         }
 
+        public void ChangeSourceChain(AbstractChain sourceChain)
+        {
+            SourceChain = sourceChain;
+        }
         protected void NewSessionHandler(Session newSession)
         {
-            var providerSession = new ProviderSession.ProviderSession(newSession);
-            providerSession.SourceChain = SourceChain;
+            Serilog.Log.Debug("New provider session created");
+            var providerSession = new ProviderSession.ProviderSession(newSession, SourceChain);
             providerSession.StartUploadingProcess(CancellationToken.None);
             NewProviderSessionCreated?.Invoke(providerSession);
         }

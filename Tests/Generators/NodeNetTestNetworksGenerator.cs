@@ -36,6 +36,7 @@ namespace Tests.Generators
                 new NodeNet.NodeNet.TcpCommunication.TcpListenerOptions(PortEnumerator++)
             );
             IsConnectionSuccess = first_node.Connect($"127.0.0.1:{PortEnumerator-1}");
+            Assert.True(IsConnectionSuccess, "Connection faulted");
         }
 
         public void Dispose()

@@ -9,7 +9,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
     public class ChainController
     {
         protected CancellationTokenSource currentChainOperationsCTS;
-        public event Action<AbstractChain>? ChainHasNewTailPart;
+        public event Action<MutableChain>? ChainHasNewTailPart;
         public event Action<MutableChain, Microcoin.Blockchain.Block.Block>? ChainReceivedNextBlock;
         public ChainFetcher.ChainFetcher ChainFetcher { get; protected set; }
         public Chain.MutableChain ChainTail { get; protected set; }
@@ -87,7 +87,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 currentChainOperationsCTS.Cancel();
                 currentChainOperationsCTS = new CancellationTokenSource();
                 ChainReceivedNextBlock?.Invoke(ChainTail,block);
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as tail block of chain, current blocks in chain: {ChainTail.BlocksDictionary.Count()}");
+                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as tail block of chain, current blocks in chain: {ChainTail.EntireChainLength}");
                 return true;
             }
         }
@@ -131,9 +131,10 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             Serilog.Log.Debug($"Microcoin peer | Chain has branched");
             var nextChainPart = new Chain.MutableChain();
             nextChainPart.LinkPreviousChain(ChainTail);
+            var prewChainTail = ChainTail;
             ChainTail = nextChainPart;
             var chainsStorage = ServicesContainer.GetInstance<ChainStorage.ChainStorage>();
-            chainsStorage.AddNewChainToStorage(nextChainPart);
+            chainsStorage.AddNewChainToStorage(prewChainTail);
             ChainHasNewTailPart?.Invoke(ChainTail);
         }
     }

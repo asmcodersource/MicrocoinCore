@@ -51,6 +51,7 @@ namespace Microcoin.Microcoin.ChainFetcher
                         {
                             var fetcherSession = new FetcherSession(session, sourceChain, Request, ChainBranchBlocksCount);
                             var fetchResult = await fetcherSession.StartDonwloadingProccess(cancellationToken);
+                            Serilog.Log.Debug("Some chain fetched!");
                             ChainFetched?.Invoke(fetchResult);
                             SessionFinishedSuccesful?.Invoke(provider);
                             return true;
@@ -58,15 +59,16 @@ namespace Microcoin.Microcoin.ChainFetcher
                     }
                     catch (ChainDownloadingException ex)
                     {
+                        Serilog.Log.Error(ex.Message);
                         SessionFinishedFaulty?.Invoke(provider);
                     }
                 }
             }
-            catch( OperationCanceledException) { }
-            finally
+            catch (Exception ex )
             {
-                ChainIsntFetched?.Invoke();
+                Serilog.Log.Error(ex.Message);
             }
+            ChainIsntFetched?.Invoke();
             return false;
         }
     }

@@ -61,7 +61,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                     currentChain.AddTailBlock(block);
                 }
             } while (cancellationToken.IsCancellationRequested is not true);
-            return StartingChain;
+            return currentChain;
         }
 
 

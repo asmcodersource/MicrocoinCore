@@ -12,6 +12,7 @@ namespace Microcoin.Microcoin
     // Represent current chain, and operations with it
     public class PeerChain
     {
+        public Action<MutableChain> ChainTailPartChanged;
         public Action<MutableChain, Block>? ChainReceiveNextBlock;
         protected ChainStorage.ChainStorage ChainsStorage { get; set; }
         public AbstractChain? ChainTail { get; protected set; }
@@ -78,6 +79,9 @@ namespace Microcoin.Microcoin
             ChainController = new ChainController(chain, ServicesContainer);
             ChainController.DefaultInitialize();
             ChainController.ChainReceivedNextBlock += (chain, block) => ChainReceiveNextBlock?.Invoke(chain, block);
+            ChainController.ChainHasNewTailPart += ChainTailPartChanged;
+            ChainController.IsAllowChainFetchingRequests = true;
+            ChainTailPartChanged?.Invoke(chain);
         }
     }
 }

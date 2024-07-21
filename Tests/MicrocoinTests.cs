@@ -27,7 +27,7 @@ namespace Tests
             Logging.InitializeLogger();
             CleanChainsDirectory();
             PeerBuilder peerBuilder = new PeerBuilder();
-            peerBuilder.AddDefaultMiner();
+            peerBuilder.AddDebugMiner();
             peerBuilder.AddDefaultAcceptancePools();
             peerBuilder.AddDefaultRules();
             peerBuilder.AddNetworkNode(0);
@@ -77,7 +77,7 @@ namespace Tests
             foreach(var node in nodeNetNetworkConnections.Nodes.Skip(1))
             {
                 PeerBuilder peerBuilder = new PeerBuilder();
-                peerBuilder.AddDefaultMiner();
+                peerBuilder.AddDebugMiner();
                 peerBuilder.AddDefaultAcceptancePools();
                 peerBuilder.AddDefaultRules();
                 peerBuilder.AddNetworkNode(node);
@@ -86,6 +86,7 @@ namespace Tests
                 peerBuilder.AddWalletKeys();
                 var peer = peerBuilder.Build();
                 peer.PeerMining.StartMining();
+                peer.ProviderSessionListener.StartListening();
                 peers.Add(peer);
 
                 //peer.TransactionsPool.OnTransactionReceived += (transaction) => output.WriteLine($"Peer [{peer.GetHashCode()}] accepted transaction [{transaction.GetHashCode()}]");
@@ -96,7 +97,7 @@ namespace Tests
             }
             // Set first peers as initial peer
             PeerBuilder zeroTransactionPeerBuilder = new PeerBuilder();
-            zeroTransactionPeerBuilder.AddDefaultMiner();
+            zeroTransactionPeerBuilder.AddDebugMiner();
             zeroTransactionPeerBuilder.AddDefaultAcceptancePools();
             zeroTransactionPeerBuilder.AddDefaultRules();
             zeroTransactionPeerBuilder.AddNetworkNode(nodeNetNetworkConnections.Nodes.First());
@@ -105,12 +106,13 @@ namespace Tests
             zeroTransactionPeerBuilder.AddWalletKeysFromFile(InitialPeerWalletKeys);
             var zeroTransactionPeer = zeroTransactionPeerBuilder.Build();
             zeroTransactionPeer.PeerMining.StartMining();
+            zeroTransactionPeer.ProviderSessionListener.StartListening();
             peers.Add(zeroTransactionPeer);
             DoPeerCoinsCount(peers.Last(), 0.1);
             output.WriteLine("Network and peers created");
 
             // Sending coins by peers to another peers
-            for( int i = 0; i < 32*32; i++)
+            for( int i = 0; i < 512*512; i++)
             {
                 Peer peerSender, peerReceiver;
                 peerSender = peersCoins.ElementAt(Random.Shared.Next(peersCoins.Count)).Key;

@@ -57,9 +57,9 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             }
             if (centralBlock is null)
                 throw new ChainDownloadingException("Something wen't wrong");
-            if ( await BlockPresentRequest( centralBlock, cancellationToken) )
-                throw new ChainDownloadingException();
-            ClaimBlockAsClosest( centralBlock, cancellationToken);
+/*            if ( await BlockPresentRequest(centralBlock, cancellationToken) is not true )
+                throw new ChainDownloadingException("Block not found by binary algorithm");*/
+            ClaimBlockAsClosest(centralBlock, cancellationToken);
             return centralBlock;
         }
 
@@ -73,10 +73,10 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
             var responseMsgContext = await FetcherSession.WrappedSession.WaitForMessage(cancellationToken);
             if (responseMsgContext is null)
-                throw new ChainDownloadingException();
+                throw new ChainDownloadingException("Bad response in block present request");
             var responseObject = MessageContextHelper.Parse<ChainBlockPresentResponseDTO>(responseMsgContext);
             if( responseObject is null )
-                throw new ChainDownloadingException();
+                throw new ChainDownloadingException("Bad response in block present request");
             return responseObject.IsPresented;
         }
 

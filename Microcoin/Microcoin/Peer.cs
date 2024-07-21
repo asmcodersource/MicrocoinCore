@@ -62,23 +62,17 @@ namespace Microcoin.Microcoin
         private void ConnectComponents()
         {
             PeerMining.LinkToTransactionsPool(TransactionsPool);
+            ChainFetcher.ChangeSourceChain(PeerChain.GetChainTail());
+            ProviderSessionListener.ChangeSourceChain(PeerChain.GetChainTail());
+            PeerMining.BlockMined += async (block) => await BlocksPool.HandleBlock(block);
+            PeerChain.ChainTailPartChanged += ChainFetcher.ChangeSourceChain;
+            PeerChain.ChainTailPartChanged += ProviderSessionListener.ChangeSourceChain;
             PeerChain.ChainReceiveNextBlock += (chain, block) => PeerMining.ResetBlockMiningHandler(chain, WalletPublicKey);
-            PeerMining.BlockMined += async (block) => await BlockMinedHandler(block);
+            PeerChain.ChainReceiveNextBlock += (chain, block) => PeerNetworking.SendBlockToNetwork(block);
             PeerNetworking.TransactionReceived += async (transaction) => await TransactionsPool.HandleTransaction(transaction);
             PeerNetworking.BlockReceived += async (block) => await BlocksPool.HandleBlock(block);
             BlocksPool.OnBlockReceived += async (pool, block) => await PeerChain.TryAcceptBlock(block);
             TransactionsPool.OnTransactionReceived += (transaction) => PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), WalletPublicKey);
-        }
-
-
-        protected async Task BlockMinedHandler(Microcoin.Blockchain.Block.Block block)
-        {
-            var blockAccepted = await PeerChain.TryAcceptBlock(block);
-            if (blockAccepted)
-            {
-                PeerNetworking.SendBlockToNetwork(block);
-                PeerMining.ResetBlockMiningHandler(PeerChain.GetChainTail(), WalletPublicKey);
-            }
         }
     }
 }

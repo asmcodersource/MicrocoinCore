@@ -39,7 +39,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
             var response = await FetcherSession.WrappedSession.WaitForMessage(cancellationToken);
             var result = MessageContextHelper.Parse<ChainBlockPresentResponseDTO>(response);
             if (result is null)
-                throw new OperationCanceledException();
+                throw new ChainDownloadingException("Bad response in block present request");
             return result.IsPresented;
         }
     }
