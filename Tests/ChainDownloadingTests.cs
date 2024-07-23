@@ -19,7 +19,10 @@ namespace Tests
         [Fact]
         public void DownloadFromZeroBlock_Test()
         {
-           /* var connectionPair = new NodeNetConnection();
+            NodeNetConnection nodeNetConnection = new NodeNetConnection();
+            var peer1 = CreatePeer(nodeNetConnection.first_node);
+            var peer2 = CreatePeer(nodeNetConnection.second_node);
+
             var chainGenerator = new MicrocoinTestChainsGenerator();
             var generatedChainTail = chainGenerator.CreateChain(5, 5, 10);
 
@@ -28,25 +31,18 @@ namespace Tests
             var secondNodeChain = new MutableChain();
             secondNodeChain = generatedChainTail;
 
-            var fetchRequest = new FetchRequest(generatedChainTail.GetBlockFromTail(0)!, DateTime.UtcNow, 1);
-            var firstNodeDownloader = new HandlingFetchRequest(fetchRequest, 50);
-            var secondNodeListener = new ProviderSessionListener(connectionPair.second_node);
-            secondNodeListener.StartListening();
-            secondNodeListener.SourceChain = generatedChainTail;
-            firstNodeDownloader.ChainFetched += (result) =>
-            {
-                var isChainEquals = IsChainsEqual(result.DownloadedChain, generatedChainTail);
-                Assert.True(isChainEquals, "Download chain isn't equal to source chain");
-            };
-            var chainDownloadSucess = firstNodeDownloader.StartHandling(connectionPair.first_node, firstNodeChain, CancellationToken.None).Result;
-            Assert.True(chainDownloadSucess, "Chain download isn't sucessful");*/
-
+            peer1.PeerChain.SetSpecificChain(firstNodeChain);
+            peer2.PeerChain.SetSpecificChain(secondNodeChain);
+            ArrangeAndActSection(firstNodeChain, peer1, secondNodeChain, peer2);
         }
 
         [Fact]
         public void DownloadFromMiddleBlock_Test()
         {
-/*          var connectionPair = new NodeNetConnection();
+            NodeNetConnection nodeNetConnection = new NodeNetConnection();
+            var peer1 = CreatePeer(nodeNetConnection.first_node);
+            var peer2 = CreatePeer(nodeNetConnection.second_node);
+
             var chainGenerator = new MicrocoinTestChainsGenerator();
             var generatedChainTail = chainGenerator.CreateChain(5, 5, 10);
 
@@ -60,18 +56,25 @@ namespace Tests
             var secondNodeChain = new MutableChain();
             secondNodeChain = generatedChainTail;
 
-            var fetchRequest = new FetchRequest(generatedChainTail.GetBlockFromTail(0)!, DateTime.UtcNow, 1);
-            var firstNodeDownloader = new HandlingFetchRequest(fetchRequest, 50);
-            var secondNodeListener = new ProviderSessionListener(connectionPair.second_node);
+            peer1.PeerChain.SetSpecificChain(firstNodeChain);
+            peer2.PeerChain.SetSpecificChain(secondNodeChain);
+            ArrangeAndActSection(firstNodeChain, peer1, secondNodeChain, peer2);
+        }
+
+        private void ArrangeAndActSection(MutableChain firstChain, Peer firstPeer, MutableChain secondChain, Peer secondPeer)
+        {
+            var fetchRequest = new FetchRequest(secondChain.GetBlockFromTail(0)!, DateTime.UtcNow, 1);
+            var firstNodeDownloader = new HandlingFetchRequest(fetchRequest, 50, new ChainProvidersRating());
+            var secondNodeListener = new ProviderSessionListener(secondPeer.ServicesContainer);
             secondNodeListener.StartListening();
-            secondNodeListener.SourceChain = generatedChainTail;
+            secondNodeListener.SourceChain = secondChain;
             firstNodeDownloader.ChainFetched += (result) =>
             {
-                var isChainEquals = IsChainsEqual(result.DownloadedChain, generatedChainTail);
+                var isChainEquals = IsChainsEqual(result.DownloadedChain, secondChain);
                 Assert.True(isChainEquals, "Download chain isn't equal to source chain");
             };
-            var chainDownloadSucess = firstNodeDownloader.StartHandling(connectionPair.first_node, firstNodeChain, CancellationToken.None).Result;
-            Assert.True(chainDownloadSucess, "Chain download isn't sucessful");*/
+            var chainDownloadSucess = firstNodeDownloader.StartHandling(firstPeer.PeerNetworking.NetworkNode, firstChain, CancellationToken.None).Result;
+            Assert.True(chainDownloadSucess, "Chain download isn't sucessful");
         }
 
         [Fact]

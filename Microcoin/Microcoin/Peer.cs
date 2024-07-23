@@ -54,8 +54,7 @@ namespace Microcoin.Microcoin
                 throw new NullReferenceException("Peer is not initialized");
 
             var transaction = CreateTransaction(receiverPublicKey, coinsCount);
-            PeerNetworking.SendTransactionToNetwork(transaction);
-            TransactionsPool.HandleTransaction(transaction).Wait();
+            TransactionsPool.HandleTransaction(transaction);
             return transaction;
         }
 
@@ -65,16 +64,17 @@ namespace Microcoin.Microcoin
             ChainFetcher.ChangeSourceChain(PeerChain.GetChainTail());
             ProviderSessionListener.ChangeSourceChain(PeerChain.GetChainTail());
             ChainFetcher.ChainFetchCompleted += PeerChain.ReplaceByMoreComprehinsive;
-            PeerMining.BlockMined += async (block) => await BlocksPool.HandleBlock(block);
-            PeerMining.BlockMined += (block) => PeerNetworking.SendBlockToNetwork(block);
+            PeerMining.BlockMined += (block) => BlocksPool.HandleBlock(block);
+            PeerMining.BlockMined += async (block) => await PeerNetworking.SendBlockToNetwork(block);
             PeerChain.ChainTailPartChanged += ChainFetcher.ChangeSourceChain;
             PeerChain.ChainTailPartChanged += ProviderSessionListener.ChangeSourceChain;
             PeerChain.ChainTailPartChanged += (chain) => PeerMining.ResetBlockMiningHandler(chain, WalletPublicKey);
             PeerChain.ChainReceiveNextBlock += (chain, block) => PeerMining.ResetBlockMiningHandler(chain, WalletPublicKey);
-            PeerNetworking.TransactionReceived += async (transaction) => await TransactionsPool.HandleTransaction(transaction);
-            PeerNetworking.BlockReceived += async (block) => await BlocksPool.HandleBlock(block);
-            BlocksPool.OnBlockReceived += async (pool, block) => await PeerChain.TryAcceptBlock(block);
+            PeerNetworking.TransactionsReceived += (transactions) => TransactionsPool.HandleTransactions(transactions);
+            PeerNetworking.BlockReceived += (block) => BlocksPool.HandleBlock(block);
+            BlocksPool.OnBlockReceived += (pool, block) => PeerChain.TryAcceptBlock(block);
             TransactionsPool.OnTransactionReceived += (transaction) => PeerMining.TryStartMineBlock(PeerChain.GetChainTail(), WalletPublicKey);
+            TransactionsPool.TransactionsBag.OnTransactionsBagReady += async (transactions) => await PeerNetworking.SendTransactionsToNetwork(transactions);
         }
     }
 }

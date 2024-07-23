@@ -5,7 +5,7 @@ namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     public class BlocksAcceptor : IAcceptor
     {
-        public event Action<Blockchain.Block.Block> BlockReceived;
+        public event Action<Blockchain.Block.Block>? BlockReceived;
 
         public virtual async Task Handle(MessageContext messageContext)
         {

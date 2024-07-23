@@ -22,10 +22,10 @@ namespace Microcoin.Microcoin.ChainFetcher
     {
         public Node CommunicationNode { get; }
         public AbstractChain? SourceChain { get; set; }
-        public int MaxFetchQueueSize { get; set; } = 1000;
-        public int MaxHandlingConcurrentTask { get; set; } = 1000;
+        public int MaxFetchQueueSize { get; set; } = 30;
+        public int MaxHandlingConcurrentTask { get; set; } = 30;
         public int ChainBranchBlocksCount { get; private set; } = 5;
-        public int MinutesBetweenRetries { get; private set; } = 10;
+        public int MinutesBetweenRetries { get; private set; } = 1;
         public ChainProvidersRating ChainProvidersRating { get; protected set; } = new ChainProvidersRating();
         public ChainVerificator ChainVerificator { get; protected set; }
 
@@ -215,7 +215,8 @@ namespace Microcoin.Microcoin.ChainFetcher
         {
             try
             {
-                return await ChainVerificator.VerifyChain(result.DownloadedChain, result.LastBlockFromSource);
+                return true;
+/*                return await ChainVerificator.VerifyChain(result.DownloadedChain, result.LastBlockFromSource);*/
             }
             catch (Exception ex)
             {

@@ -13,11 +13,11 @@ namespace Microcoin.Microcoin.Blockchain.BlocksPool
             this.transactionVerifyPipeline = transactionVerifyPipeline;
         }
 
-        public async Task<bool> Handle(Block.Block block)
+        public bool Handle(Block.Block block)
         {
             foreach (var transaction in block.Transactions)
             {
-                var handleResult = await transactionVerifyPipeline.Handle(transaction);
+                var handleResult = transactionVerifyPipeline.Handle(transaction);
                 if (handleResult.IsHandleSuccesful is not true)
                     return false;
             }

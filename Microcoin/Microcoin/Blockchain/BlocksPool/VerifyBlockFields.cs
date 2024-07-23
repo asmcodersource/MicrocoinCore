@@ -5,7 +5,7 @@ namespace Microcoin.Microcoin.Blockchain.BlocksPool
 {
     public class VerifyBlockFields : IPipelineHandler<Block.Block>
     {
-        public async Task<bool> Handle(Block.Block block)
+        public bool Handle(Block.Block block)
         {
             if (block.Transactions == null || block.Transactions.Count == 0)
                 return false;

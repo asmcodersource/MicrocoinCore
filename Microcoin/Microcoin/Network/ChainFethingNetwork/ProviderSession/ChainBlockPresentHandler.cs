@@ -31,7 +31,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
         public async Task<bool> CreateHandleTask(CancellationToken cancellationToken)
         {
             var requestMessage = await ProviderSession.WrappedSession.WaitForMessage(cancellationToken);
-            var request = MessageContextHelper.Parse<ChainBlockPresentRequestDTO>(requestMessage);
+            var request = JsonSerializer.Deserialize<ChainBlockPresentRequestDTO>(requestMessage.SessionMessage.Data);
             if (request is null)
                 throw new OperationCanceledException();
             var storedBlock = ProviderSession.SourceChain.GetBlockFromHead(request.RequestedBlockId);
@@ -46,7 +46,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 TargetBlock = storedBlock;
                 response.IsPresented = true;
             }
-            ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(response));
+            await ProviderSession.WrappedSession.SendMessageAsync(JsonSerializer.Serialize(response));
             return response.IsPresented;
         }
     }

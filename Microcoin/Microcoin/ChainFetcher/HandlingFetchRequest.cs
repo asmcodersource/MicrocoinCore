@@ -76,7 +76,7 @@ namespace Microcoin.Microcoin.ChainFetcher
                     var fetcherSession = new FetcherSession(session, sourceChain, Request, ChainBranchBlocksCount);
                     var fetchResult = await fetcherSession.StartDonwloadingProccess(cancellationToken);
 
-                    Log.Debug("Chain fetched.");
+                    Serilog.Log.Debug("Chain fetched.");
                     ChainFetched?.Invoke(fetchResult);
                     SessionFinishedSuccesful?.Invoke(provider);
                     return true;

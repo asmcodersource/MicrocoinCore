@@ -20,7 +20,7 @@ namespace Microcoin.Microcoin
         public TransactionsAcceptor TransactionsAcceptor { get; protected set; }
 
         public event Action<Microcoin.Blockchain.Block.Block>? BlockReceived;
-        public event Action<Transaction>? TransactionReceived;
+        public event Action<List<Transaction>>? TransactionsReceived;
 
         public PeerNetworking(Container servicesContainer)
         {
@@ -37,11 +37,11 @@ namespace Microcoin.Microcoin
         public virtual void CreateDefaultRouting()
         {
             BlocksAcceptor.BlockReceived += (block) => BlockReceived?.Invoke(block);
-            TransactionsAcceptor.TransactionReceived += (transaction) => TransactionReceived?.Invoke(transaction);
+            TransactionsAcceptor.TransactionsReceived += (transactions) => TransactionsReceived?.Invoke(transactions);
             NetworkNode.MessageReceived += (messageContext) => EntryAcceptor.Handle(messageContext);
         }
 
-        public void SendTransactionToNetwork(Transaction transaction)
+        public async Task SendTransactionsToNetwork(List<Transaction> transaction)
         {
             var messageDTO = new
             {
@@ -50,11 +50,10 @@ namespace Microcoin.Microcoin
                 type = "WalletTransaction"
             };
             var messageJson = Newtonsoft.Json.JsonConvert.SerializeObject(messageDTO);
-            lock (this)
-                NetworkNode.SendMessage(messageJson);
+            await NetworkNode.SendMessageAsync(messageJson, null, false, 128);
         }
 
-        public void SendBlockToNetwork(Microcoin.Blockchain.Block.Block block)
+        public async Task SendBlockToNetwork(Microcoin.Blockchain.Block.Block block)
         {
             var messageDTO = new
             {
@@ -63,8 +62,7 @@ namespace Microcoin.Microcoin
                 type = "ChainBlock"
             };
             var messageJson = Newtonsoft.Json.JsonConvert.SerializeObject(messageDTO);
-            lock (this)
-                NetworkNode.SendMessage(messageJson, null, false, 128);
+            await NetworkNode.SendMessageAsync(messageJson, null, false, 128);
         }
 
         private void PostInitialize()

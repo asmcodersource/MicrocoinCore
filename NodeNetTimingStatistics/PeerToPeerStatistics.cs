@@ -39,7 +39,7 @@ namespace NodeNetTimingStatistics
         public void SynchronousSending()
         {
             for (int i = 0; i < MessagesCount; i++)
-                first_node.SendMessage(data);
+                first_node.SendMessageAsync(data);
         }
 
         /*[Benchmark]

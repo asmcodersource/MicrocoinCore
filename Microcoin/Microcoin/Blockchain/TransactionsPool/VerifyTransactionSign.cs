@@ -6,7 +6,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     public class VerifyTransactionSign : IPipelineHandler<Transaction.Transaction>
     {
-        public async Task<bool> Handle(Transaction.Transaction transaction)
+        public bool Handle(Transaction.Transaction transaction)
         {
             IReceiverSignOptions receiverSignOptions = TransactionValidator.GetReceiverValidateOptions(transaction);
             ITransactionValidator transactionValidator = new TransactionValidator();

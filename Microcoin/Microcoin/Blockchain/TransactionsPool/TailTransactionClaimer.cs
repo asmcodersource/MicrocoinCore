@@ -23,7 +23,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                 if (blockTransactions.Count > maxTransactionsCount)
                     break;
                 blockTransactions.Add(transaction);
-                var isSuccess = deepTransactionsVerify.Verify(chain, blockTransactions, CancellationToken.None).Result;
+                var isSuccess = deepTransactionsVerify.Verify(chain, blockTransactions, CancellationToken.None);
                 if (isSuccess is not true)
                 {
                     removeTransations.Add(transaction);

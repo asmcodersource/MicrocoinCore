@@ -30,7 +30,7 @@ namespace Tests
             var transactionsPool = CreateDefaultTransactionsPool();
             var transactionTheories = TransactionTheoriesGenerator.GetValidTransactionsTheories(peers, theoriesListLenght);
             foreach (var theorie in transactionTheories)
-                Assert.Equal(theorie.IsTransactionValid, await transactionsPool.HandleTransaction(theorie.Transaction));
+                Assert.Equal(theorie.IsTransactionValid, transactionsPool.HandleTransaction(theorie.Transaction));
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Tests
             var transactionsPool = CreateDefaultTransactionsPool();
             var transactionTheories = TransactionTheoriesGenerator.GetInvalidTransactionsTheories(peers, theoriesListLenght);
             foreach (var theorie in transactionTheories)
-                Assert.Equal(theorie.IsTransactionValid, transactionsPool.HandleTransaction(theorie.Transaction).Result);
+                Assert.Equal(theorie.IsTransactionValid, transactionsPool.HandleTransaction(theorie.Transaction));
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace Tests
                 transactionTheories[shuffle] = temp;
             }
             foreach (var theorie in transactionTheories)
-                Assert.Equal(theorie.IsTransactionValid, await transactionsPool.HandleTransaction(theorie.Transaction));
+                Assert.Equal(theorie.IsTransactionValid, transactionsPool.HandleTransaction(theorie.Transaction));
         }
     }
 }

@@ -4,7 +4,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     public class VerifyTransactionFields : IPipelineHandler<Transaction.Transaction>
     {
-        public async Task<bool> Handle(Transaction.Transaction transaction)
+        public bool Handle(Transaction.Transaction transaction)
         {
             if (transaction.TransferAmount <= 0) // Someone may try to transfer negative or zero count of coins ;) 
                 return false;

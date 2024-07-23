@@ -3,6 +3,8 @@ using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Blockchain.BlocksPool;
 using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Mining;
+using NodeNet.NodeNet;
+using System.Reflection.PortableExecutable;
 using Tests.Generators;
 
 namespace Tests
@@ -40,9 +42,17 @@ namespace Tests
             var miningRules = new MiningRules(complexityRule, rewardRule);
             Miner miner = new Miner();
             miner.SetRules(miningRules);
-            /*var chainVerificator = new ChainVerificator(miner);
+            PeerBuilder peerBuilder =  new PeerBuilder();
+            peerBuilder.AddDebugMiner();
+            peerBuilder.AddDefaultAcceptancePools();
+            peerBuilder.AddDefaultRules();
+            peerBuilder.AddNetworkNode(0);
+            peerBuilder.AddChainsStorage("chains");
+            peerBuilder.AddChainsFetcher();
+            peerBuilder.AddWalletKeys();
+            var chainVerificator = new ChainVerificator(peerBuilder.ServicesContainer);
             bool isChainValid = chainVerificator.VerifyChain(generatedChainTail, verificationFromBlock).Result;
-            Assert.True(isChainValid, "Chain wasn't verified as right chain");*/
+            Assert.True(isChainValid, "Chain wasn't verified as right chain");
 
         }
     }

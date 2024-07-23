@@ -7,17 +7,16 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
         //  Since this is a long operation, I use a cancel token in case it is no longer needed between complex operations.
         //  cancellationToken.ThrowIfCancellationRequested();
 
-        public async Task<bool> Verify(AbstractChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken)
+        public bool Verify(AbstractChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken)
         {
             var verifyTransferAmountsTask = VerifyTransferAmmounts(chain, transactions, cancellationToken);
             var verifyTransactionsDuplication = VerifyTransationUniqueness(chain, transactions, cancellationToken);
-            await Task.WhenAll(verifyTransactionsDuplication, verifyTransferAmountsTask);
-            if (verifyTransferAmountsTask.Result is true && verifyTransactionsDuplication.Result is true)
+            if (verifyTransferAmountsTask is true && verifyTransactionsDuplication is true)
                 return true;
             return false;
         }
 
-        public async Task<bool> VerifyTransferAmmounts(AbstractChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken)
+        public bool VerifyTransferAmmounts(AbstractChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken)
         {
             // Count summary coins difference after this block
             cancellationToken.ThrowIfCancellationRequested();
@@ -38,7 +37,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             return true;
         }
 
-        public async Task<bool> VerifyTransationUniqueness(AbstractChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken)
+        public bool VerifyTransationUniqueness(AbstractChain chain, List<Transaction.Transaction> transactions, CancellationToken cancellationToken)
         {
             // TODO:
             // I think I can do something better here.

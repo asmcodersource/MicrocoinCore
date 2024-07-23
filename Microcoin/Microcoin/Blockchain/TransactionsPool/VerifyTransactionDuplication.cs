@@ -7,7 +7,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
     // but I need this because something can change from receiving one or multiple block from network
     public class VerifyTransactionDuplication : IPipelineHandler<Transaction.Transaction>
     {
-        public async Task<bool> Handle(Transaction.Transaction transaction)
+        public bool Handle(Transaction.Transaction transaction)
         {
             return true;
         }

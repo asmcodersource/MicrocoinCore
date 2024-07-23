@@ -6,6 +6,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
     public class TransactionsPool
     {
         public event Action<TransactionsPool>? OnTransactionReceived;
+        public TransactionsBag TransactionsBag { get; protected set; } = new TransactionsBag();
         public List<Transaction.Transaction> Pool { get; protected set; } = new List<Transaction.Transaction>();
         public HashSet<Transaction.Transaction> PresentedTransactions { get; protected set; } = new HashSet<Transaction.Transaction>();
         public IHandlePipeline<Transaction.Transaction> HandlePipeline { get; set; } = new EmptyPipeline<Transaction.Transaction>();
@@ -33,16 +34,22 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                 RemoveTransaction(transaction);
         }
 
-        public async Task<bool> HandleTransaction(Transaction.Transaction transaction)
+        public bool HandleTransaction(Transaction.Transaction transaction)
         {
             // Handle transaction on verifing pipeline
-            var handleResult = await Task.Run(() => HandlePipeline.Handle(transaction));
+            var handleResult = HandlePipeline.Handle(transaction);
             if (handleResult.IsHandleSuccesful is not true)
                 return false;
             // If transaction succesfully pass pipeline, add it to pool
             AddTransaction(transaction);
             Serilog.Log.Verbose($"Microcoin peer | Transaction({transaction.GetHashCode()}) succesfully passed handle pipeline");
             return true;
+        }
+
+        public void HandleTransactions(List<Transaction.Transaction> transactions)
+        {
+            foreach(var transaction in transactions)
+                HandleTransaction(transaction);
         }
 
         protected void AddTransaction(Transaction.Transaction transaction)
@@ -53,6 +60,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
                     return;
                 Pool.Add(transaction);
                 PresentedTransactions.Add(transaction);
+                TransactionsBag.AddTransaction(transaction);
             }
             OnTransactionReceived?.Invoke(this);
         }

@@ -33,7 +33,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             ServicesContainer = servicesContainer;
         }
 
-        public async Task<bool> AcceptBlock(Microcoin.Blockchain.Block.Block block)
+        public bool AcceptBlock(Microcoin.Blockchain.Block.Block block)
         {
             CancellationToken cancellationToken = GetChainOperationCancellationToken();
             if (NextBlockRule.IsBlockNextToChain(block, ChainTail))
@@ -41,7 +41,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as possible next tail");
                 try
                 {
-                    var isBlockValid = await DeepBlockVerify(block, ChainTail, cancellationToken);
+                    var isBlockValid = DeepBlockVerify(block, ChainTail, cancellationToken);
                     if (isBlockValid is not true)
                     {
                         Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) bad transactions received");
@@ -85,14 +85,14 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             }
         }
 
-        protected async Task<bool> DeepBlockVerify(Microcoin.Blockchain.Block.Block block, AbstractChain chainTail, CancellationToken cancellationToken)
+        protected bool DeepBlockVerify(Microcoin.Blockchain.Block.Block block, AbstractChain chainTail, CancellationToken cancellationToken)
         {
             // verify block is corret itself
             var isShortBlockValid = ShortBlockVerify(block, chainTail, cancellationToken);
             if (isShortBlockValid is not true)
                 return false;
             // Verify each transactions to have correct count of coins
-            var isTransactionsCorrect = await DeepTransactionsVerify.Verify(chainTail, block.Transactions, cancellationToken);
+            var isTransactionsCorrect = DeepTransactionsVerify.Verify(chainTail, block.Transactions, cancellationToken);
             if (isTransactionsCorrect is not true)
                 return false;
             return true;

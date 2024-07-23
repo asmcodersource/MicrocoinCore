@@ -41,7 +41,7 @@ namespace Microcoin.Microcoin
 
         public void ReplaceByMoreComprehinsive(MutableChain chain)
         {
-            if (chain.GetLastBlock().MiningBlockInfo.Complexity > GetChainTail().GetLastBlock().MiningBlockInfo.Complexity)
+            if (chain.GetLastBlock().MiningBlockInfo.ChainComplexity > GetChainTail().GetLastBlock().MiningBlockInfo.ChainComplexity)
             {
                 SetChainContext(chain);
                 Serilog.Log.Debug("Microin peer | Chain replaced by more comprehensive");
@@ -69,11 +69,11 @@ namespace Microcoin.Microcoin
             SetChainContext(initialChain);
         }
 
-        public async Task<bool> TryAcceptBlock(Block block)
+        public bool TryAcceptBlock(Block block)
         {
             if (ChainController is null)
                 throw new Exception("Chain controlled dont initialized");
-            return await ChainController.AcceptBlock(block);
+            return ChainController.AcceptBlock(block);
         }
 
         public AbstractChain GetChainTail()

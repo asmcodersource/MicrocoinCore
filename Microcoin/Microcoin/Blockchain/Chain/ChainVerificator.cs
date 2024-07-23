@@ -39,10 +39,10 @@ namespace Microcoin.Microcoin.Blockchain.Chain
             while (blocksToVerifyEnumerator.MoveNext())
             {
                 var block = blocksToVerifyEnumerator.Current;
-                bool isBlockValidItSelf = await blocksVerificationPool.HandleBlock(block);
+                bool isBlockValidItSelf = blocksVerificationPool.HandleBlock(block);
                 if (isBlockValidItSelf is not true)
                     return false;
-                bool isBlockSuccesfulAddedToChain = await chainController.AcceptBlock(block);
+                bool isBlockSuccesfulAddedToChain = chainController.AcceptBlock(block);
                 if( isBlockSuccesfulAddedToChain is not true )
                     return false;
             }

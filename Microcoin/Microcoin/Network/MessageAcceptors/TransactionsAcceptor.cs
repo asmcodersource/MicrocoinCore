@@ -2,12 +2,13 @@
 using Microcoin.Microcoin.Blockchain.Transaction;
 using Newtonsoft.Json.Linq;
 using Microcoin.Microcoin.Blockchain.Block;
+using System.Text.Json;
 
 namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     public class TransactionsAcceptor : IAcceptor
     {
-        public event Action<Transaction> TransactionReceived;
+        public event Action<List<Transaction>> TransactionsReceived;
 
         public virtual async Task Handle(MessageContext messageContext)
         {
@@ -16,10 +17,10 @@ namespace Microcoin.Microcoin.Network.MessageAcceptors
             if (jsonTransactionToken is null)
                 return;
             string transactionJsonString = jsonTransactionToken.ToString();
-            Transaction? transaction = Transaction.ParseTransactionFromJson(transactionJsonString);
+            List<Transaction> transaction = JsonSerializer.Deserialize<List<Transaction>>(transactionJsonString);
             if (transaction != null)
             {
-                TransactionReceived?.Invoke(transaction);
+                TransactionsReceived?.Invoke(transaction);
                 Serilog.Log.Verbose($"Microcoin peer | Transaction({transaction.GetHashCode()}) accepted from network");
             }
         }

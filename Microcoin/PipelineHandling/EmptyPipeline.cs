@@ -7,7 +7,7 @@
             throw new NotImplementedException();
         }
 
-        public Task<PipelineHandleResult<HandleType>> Handle(HandleType handleObject)
+        public PipelineHandleResult<HandleType> Handle(HandleType handleObject)
         {
             throw new NotImplementedException();
         }

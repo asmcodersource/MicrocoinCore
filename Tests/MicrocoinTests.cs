@@ -133,7 +133,7 @@ namespace Tests
             // Additional, we have logs, to read, what really happens behind
             // -- Log inside xUnit output ( less information )
             // -- Log file from run directory ( more information )
-            Thread.Sleep(30*60*1000);
+            Thread.Sleep(Timeout.Infinite);
         }
 
         protected void DoPeerCoinsCount(Peer peer, double coinsChange)

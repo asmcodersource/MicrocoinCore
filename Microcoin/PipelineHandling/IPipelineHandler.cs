@@ -2,6 +2,6 @@
 {
     public interface IPipelineHandler<HandleType>
     {
-        public Task<bool> Handle(HandleType handleObject);
+        public bool Handle(HandleType handleObject);
     }
 }

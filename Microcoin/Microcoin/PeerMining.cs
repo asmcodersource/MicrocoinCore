@@ -53,7 +53,6 @@ namespace Microcoin.Microcoin
                 if (temp is not null)
                 {
                     MiningCancellationTokenSource?.Cancel();
-                    temp.Join();
                     return true;
                 }
                 return false;
@@ -76,7 +75,6 @@ namespace Microcoin.Microcoin
             {
                 if (MiningThread is not null || IsMiningEnabled is not true )
                     return;
-                Serilog.Log.Debug($"Microcoin peer | Starting to mine new block");
                 MiningCancellationTokenSource = new CancellationTokenSource();
                 StartMineBlock(tailChain, minerWallet, MiningCancellationTokenSource.Token);
             }
@@ -105,11 +103,19 @@ namespace Microcoin.Microcoin
             {
                 (Miner as IMiner).LinkBlockToChain(tailChain, block);
                 block.Hash = Miner.StartBlockMining(tailChain, block, minerWaller, cancellationToken).Result;
-                if (cancellationToken.IsCancellationRequested is not true )
+                MiningThread = null;
+                if (cancellationToken.IsCancellationRequested is not true)
+                {
+                    Serilog.Log.Debug($"Microcoin peer | Mining finished block={block.GetHashCode()} id={block.MiningBlockInfo.BlockId} hash={block.Hash}");
                     Task.Run(() => BlockMined?.Invoke(block));
+                } else
+                {
+                    Serilog.Log.Debug($"Microcoin peer | Mining cancelled block={block.GetHashCode()} id={block.MiningBlockInfo.BlockId}");
+                }
             }
-            catch { }
-            finally {
+            catch (Exception ex)
+            {
+                Serilog.Log.Debug($"Microcoin peer | Mining exception block={block.GetHashCode()} id={block.MiningBlockInfo.BlockId}");
                 MiningThread = null;
             }
         }
