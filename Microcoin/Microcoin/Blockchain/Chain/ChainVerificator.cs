@@ -1,11 +1,4 @@
-﻿using Microcoin.Microcoin.Blockchain.ChainController;
-using Microcoin.Microcoin.Mining;
-using System;
-using System.Collections.Generic;
-using SimpleInjector;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleInjector;
 
 namespace Microcoin.Microcoin.Blockchain.Chain
 {
@@ -16,11 +9,11 @@ namespace Microcoin.Microcoin.Blockchain.Chain
     {
         public Container ServicesContainer { get; set; }
         private readonly BlocksPool.BlocksPool blocksVerificationPool;
- 
-        public ChainVerificator(Container servicesContainer) 
+
+        public ChainVerificator(Container servicesContainer)
         {
             ServicesContainer = servicesContainer;
-            blocksVerificationPool = servicesContainer.GetInstance<BlocksPool.BlocksPool>(); 
+            blocksVerificationPool = servicesContainer.GetInstance<BlocksPool.BlocksPool>();
         }
 
 
@@ -43,7 +36,7 @@ namespace Microcoin.Microcoin.Blockchain.Chain
                 if (isBlockValidItSelf is not true)
                     return false;
                 bool isBlockSuccesfulAddedToChain = chainController.AcceptBlock(block);
-                if( isBlockSuccesfulAddedToChain is not true )
+                if (isBlockSuccesfulAddedToChain is not true)
                     return false;
             }
             return true;

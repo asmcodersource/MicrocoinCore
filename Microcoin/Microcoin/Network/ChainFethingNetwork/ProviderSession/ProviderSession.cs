@@ -1,11 +1,4 @@
 ﻿using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
-using NodeNet.NodeNetSession.Session;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
 {
@@ -13,13 +6,13 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
     {
         public event Action<ProviderSession>? SessionFinishedSuccesful;
         public event Action<ProviderSession>? SessionFinishedFaulty;
-        public readonly Session WrappedSession;
+        public readonly ISessionConnection WrappedSession;
         public AbstractChain SourceChain { get; set; }
 
-        public ProviderSession(Session session, AbstractChain chain)
+        public ProviderSession(ISessionConnection session, AbstractChain sourceChain)
         {
             WrappedSession = session;
-            SourceChain = new MutableChain(chain);
+            SourceChain = sourceChain;
         }
 
         public async Task<bool> StartUploadingProcess(CancellationToken generalCancellationToken)

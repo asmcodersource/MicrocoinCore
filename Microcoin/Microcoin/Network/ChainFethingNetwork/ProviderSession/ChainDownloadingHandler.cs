@@ -1,12 +1,6 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Blockchain.Chain;
-using NodeNet.NodeNetSession.SessionMessage;
-using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microcoin.Json;
+using Microcoin.Microcoin.Json;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
@@ -14,8 +8,8 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
     public enum ChainDownloadRejectReason
     {
         Unknown,
-        RequestedChainTooLong
-    }
+        RequestedChainToLong,
+    };
 
     public record ChainDownloadResponseDTO
     {
@@ -44,66 +38,45 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
         public void SetMaxBlocksPerMessage(int maxBlocksPerMessage)
         {
             if (maxBlocksPerMessage <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(maxBlocksPerMessage), "Count of blocks per message must be more than zero");
-            }
+                throw new Exception("Count of blocks per message must be more than zero");
             MaxBlocksPerMessage = maxBlocksPerMessage;
         }
 
         public async Task CreateHandleTask(CancellationToken cancellationToken)
         {
-            if (!await AcceptDownloadingRequest(cancellationToken))
-            {
-                throw new OperationCanceledException("Downloading request not accepted.");
-            }
-
-            while (await AcceptBlocksDownloadingRequest(cancellationToken)) { }
+            var isAccepted = await AcceptDownloadingRequest(cancellationToken);
+            if (isAccepted is not true)
+                throw new OperationCanceledException();
+            while (await AcceptBlocksDownloadingRequest(cancellationToken)) ;
         }
 
         private async Task<bool> AcceptDownloadingRequest(CancellationToken cancellationToken)
         {
-            var requestMsg = await ProviderSession.WrappedSession.WaitForMessage(cancellationToken);
-            var request = JsonTypedWrapper.Deserialize<ChainDownloadRequestDTO>(requestMsg.SessionMessage.Data);
-
-            if (request == null)
-            {
-                return false;
-            }
-
-            var response = new ChainDownloadResponseDTO
+            var requestMsg = await ProviderSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
+            var request = JsonTypedWrapper.Deserialize<ChainDownloadRequestDTO>(requestMsg.Payload);
+            var response = new ChainDownloadResponseDTO()
             {
                 IsAccepted = true,
-                RejectReason = null
+                RejectReason = null,
             };
-
             downloadingBlocks = SourceChain.GetEnumerable(StartingBlock).GetEnumerator();
-            await ProviderSession.WrappedSession.SendMessageAsync(JsonTypedWrapper.Serialize(response));
+            ProviderSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(response));
             return true;
         }
 
         private async Task<bool> AcceptBlocksDownloadingRequest(CancellationToken cancellationToken)
         {
-            try
+            var requestMsg = await ProviderSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
+            var request = JsonTypedWrapper.Deserialize<RequestNextPartOfBlocks>(requestMsg.Payload);
+            var blocksToSend = new List<Block>();
+            for (int i = 0; i < MaxBlocksPerMessage && downloadingBlocks.MoveNext(); i++)
             {
-                var requestMsg = await ProviderSession.WrappedSession.WaitForMessage(cancellationToken);
-                var request = JsonTypedWrapper.Deserialize<RequestNextPartOfBlocks>(requestMsg.SessionMessage.Data);
-
-                if (request == null)
-                {
-                    return false;
-                }
-
-                var blocksToSend = new List<Block>();
-                for (int i = 0; i < MaxBlocksPerMessage && downloadingBlocks.MoveNext(); i++)
-                    blocksToSend.Add(downloadingBlocks.Current);
-
-                await ProviderSession.WrappedSession.SendMessageAsync(JsonTypedWrapper.Serialize(blocksToSend));
-                return blocksToSend.Count > 0;
-            } catch ( Exception ex )
-            {
-                Serilog.Log.Error($"Accept blocks downloading request error {ex.Message}");
-                throw;
+                if (downloadingBlocks.Current == null)
+                    break;
+                blocksToSend.Add(downloadingBlocks.Current);
             }
+            ProviderSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize<ICollection<Block>>(blocksToSend));
+            return blocksToSend.Count > 0;
         }
     }
 }

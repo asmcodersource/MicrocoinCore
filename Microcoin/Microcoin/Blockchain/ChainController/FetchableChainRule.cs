@@ -1,5 +1,4 @@
-﻿using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.Blockchain.Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
 namespace Microcoin.Microcoin.Blockchain.ChainController
 {

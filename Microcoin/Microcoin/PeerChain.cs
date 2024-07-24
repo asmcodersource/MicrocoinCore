@@ -1,11 +1,7 @@
-﻿using Microcoin.Microcoin.ChainFetcher;
-using Microcoin.Microcoin.Blockchain.ChainController;
+﻿using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.Mining;
-using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.ChainFetcher;
+using Microcoin.Microcoin.Blockchain.ChainController;
 using SimpleInjector;
-using Microcoin.Microcoin.ChainStorage;
 
 namespace Microcoin.Microcoin
 {
@@ -52,11 +48,11 @@ namespace Microcoin.Microcoin
         {
             SetChainContext(newChain);
         }
-       
+
         public void InitByMostComprehensive()
         {
             var mostComprehensiveChain = ChainsStorage.LoadMostComprehensiveChain();
-            if (mostComprehensiveChain is null || mostComprehensiveChain?.Chain is null )
+            if (mostComprehensiveChain is null || mostComprehensiveChain?.Chain is null)
                 throw new Exception("Chain storage return null chain context or null chain");
             SetChainContext(mostComprehensiveChain.Chain);
         }
@@ -85,7 +81,7 @@ namespace Microcoin.Microcoin
 
         private void SetChainContext(MutableChain chain)
         {
-            if( ChainController is not null )
+            if (ChainController is not null)
                 ChainController.IsAllowChainFetchingRequests = false;
             ChainController = new ChainController(chain, ServicesContainer);
             ChainController.ChainReceivedNextBlock += (chain, block) => ChainReceiveNextBlock?.Invoke(chain, block);

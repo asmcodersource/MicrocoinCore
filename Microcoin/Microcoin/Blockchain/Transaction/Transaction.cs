@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-
-namespace Microcoin.Microcoin.Blockchain.Transaction
+﻿namespace Microcoin.Microcoin.Blockchain.Transaction
 {
     [Serializable]
     public class Transaction
@@ -15,8 +13,5 @@ namespace Microcoin.Microcoin.Blockchain.Transaction
         {
             return string.Join("\n", new object[] { SenderPublicKey, ReceiverPublicKey, TransferAmount, Sign });
         }
-
-        public static Transaction? ParseTransactionFromJson(string transactionJson)
-            => JsonSerializer.Deserialize<Transaction>(transactionJson);
     }
 }

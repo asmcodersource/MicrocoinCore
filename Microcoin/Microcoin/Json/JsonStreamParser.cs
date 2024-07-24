@@ -2,7 +2,7 @@
 using System.Text.Json;
 
 
-namespace Microcoin.Json
+namespace Microcoin.Microcoin.Json
 {
     /// <summary>
     /// This thing simply reads data from a stream and tries to parse it as a Json serialized object. 
@@ -70,7 +70,7 @@ namespace Microcoin.Json
                     objectsQueue.Enqueue(parsedObject);
                     dataBuffer.Clear();
                 }
-                catch (System.Text.Json.JsonException) { /* This part isn't correct json */ }
+                catch (JsonException) { /* This part isn't correct json */ }
             }
         }
     }

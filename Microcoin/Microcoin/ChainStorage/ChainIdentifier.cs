@@ -1,6 +1,6 @@
 ﻿using Microcoin.Microcoin.Blockchain.Chain;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -23,7 +23,7 @@ namespace Microcoin.Microcoin.ChainStorage
             ChainComplexity = chainComplexity;
         }
 
-        public ChainIdentifier( AbstractChain chain ) 
+        public ChainIdentifier(AbstractChain chain)
         {
             var tailBlock = chain.GetLastBlock();
             if (tailBlock == null)

@@ -1,13 +1,6 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
-using NodeNet.NodeNetSession.SessionMessage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
 {
@@ -23,17 +16,15 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
         public readonly ProviderSession ProviderSession;
         public Block TargetBlock { get; private set; } = null!;
 
-        public ChainBlockPresentHandler( ProviderSession providerSession )
+        public ChainBlockPresentHandler(ProviderSession providerSession)
         {
             ProviderSession = providerSession;
         }
 
         public async Task<bool> CreateHandleTask(CancellationToken cancellationToken)
         {
-            var requestMessage = await ProviderSession.WrappedSession.WaitForMessage(cancellationToken);
-            var request = JsonSerializer.Deserialize<ChainBlockPresentRequestDTO>(requestMessage.SessionMessage.Data);
-            if (request is null)
-                throw new OperationCanceledException();
+            var requestMsg = await ProviderSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
+            var request = JsonSerializer.Deserialize<ChainBlockPresentRequestDTO>(requestMsg.Payload);
             var storedBlock = ProviderSession.SourceChain.GetBlockFromHead(request.RequestedBlockId);
             var response = new ChainBlockPresentResponseDTO()
             {
@@ -46,7 +37,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
                 TargetBlock = storedBlock;
                 response.IsPresented = true;
             }
-            await ProviderSession.WrappedSession.SendMessageAsync(JsonSerializer.Serialize(response));
+            ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(response));
             return response.IsPresented;
         }
     }

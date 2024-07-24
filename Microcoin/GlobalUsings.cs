@@ -1,3 +1,2 @@
-﻿global using NodeNet;
+﻿global using Microcoin.Microcoin;
 global using Serilog;
-global using Microcoin.Microcoin;

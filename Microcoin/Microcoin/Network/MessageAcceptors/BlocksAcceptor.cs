@@ -1,25 +1,17 @@
-﻿using NodeNet.NodeNet.Message;
-using Newtonsoft.Json.Linq;
+﻿using Microcoin.Microcoin.Blockchain.Block;
+using System.Text.Json;
 
 namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     public class BlocksAcceptor : IAcceptor
     {
-        public event Action<Blockchain.Block.Block>? BlockReceived;
+        public event Action<Block>? BlockReceived;
 
-        public virtual async Task Handle(MessageContext messageContext)
+        public void Handle(IBroadcastMessage message)
         {
-            JObject jsonRequestObject = JObject.Parse(messageContext.Message.Data);
-            JToken? jsonBlockToken = jsonRequestObject["block"];
-            if (jsonBlockToken is null)
-                return;
-            string blockJsonString = jsonBlockToken.ToString();
-            Blockchain.Block.Block? block = Blockchain.Block.Block.ParseBlockFromJson(blockJsonString);
-            if (block != null)
-            {
-                BlockReceived?.Invoke(block);
-                Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted from network");
-            }
+            Block block = JsonSerializer.Deserialize<Block>(message.Payload);
+            Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted from network");
+            BlockReceived?.Invoke(block);
         }
     }
 }

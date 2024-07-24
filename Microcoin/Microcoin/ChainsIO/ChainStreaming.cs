@@ -1,5 +1,5 @@
-﻿using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.Blockchain.Block;
+﻿using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.Blockchain.Chain;
 using System.Text.Json;
 
 
@@ -31,7 +31,7 @@ namespace Microcoin.Microcoin.ChainsIO
                 if (block is null)
                     throw new Exception("Deserialized object has wrong type, must be 'Block'");
                 blocks.Add(block);
-            }   
+            }
             return blocks;
         }
 

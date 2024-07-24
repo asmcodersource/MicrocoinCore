@@ -1,7 +1,7 @@
-﻿using System.Security.Cryptography;
-using Microcoin.Microcoin.Mining;
-using System.Text.Json;
+﻿using Microcoin.Microcoin.Mining;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace Microcoin.Microcoin.Blockchain.Block
 {
@@ -12,14 +12,14 @@ namespace Microcoin.Microcoin.Blockchain.Block
         public byte[] MiningBlockInfoBytes { get; protected set; }
 
 
-        public ImmutableTransactionsBlock(Block block) 
+        public ImmutableTransactionsBlock(Block block)
         {
             InnerBlock = block;
             GetTransactionsHash(InnerBlock.Transactions);
             ChangeMiningBlockInfo(InnerBlock.MiningBlockInfo);
         }
 
-        public void ChangeMiningBlockInfo( MiningBlockInfo miningBlockInfo)
+        public void ChangeMiningBlockInfo(MiningBlockInfo miningBlockInfo)
         {
             InnerBlock.MiningBlockInfo = miningBlockInfo;
             MiningBlockInfoBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(InnerBlock.MiningBlockInfo));

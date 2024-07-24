@@ -1,9 +1,4 @@
-﻿using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Collections.Immutable;
 
 namespace Microcoin.Microcoin.Blockchain.Chain
 {

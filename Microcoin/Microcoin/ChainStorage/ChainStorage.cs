@@ -7,7 +7,7 @@ namespace Microcoin.Microcoin.ChainStorage
         public string ChainHeaderExtension { get; set; } = "header";
         public string ChainChainExtension { get; set; } = "chain";
         public string WorkingDirectory { get; set; } = "./ChainsStorage";
-        protected HashSet<ChainHeader> fetchedHeaders = new HashSet<ChainHeader>(); 
+        protected HashSet<ChainHeader> fetchedHeaders = new HashSet<ChainHeader>();
         protected Dictionary<ChainHeader, string> headersFiles = new Dictionary<ChainHeader, string>();
         protected Dictionary<ChainIdentifier, ChainHeader> chainsDictionary = new Dictionary<ChainIdentifier, ChainHeader>();
 
@@ -19,9 +19,9 @@ namespace Microcoin.Microcoin.ChainStorage
         {
             fetchedHeaders.Clear();
             headersFiles.Clear();
-            chainsDictionary.Clear();   
+            chainsDictionary.Clear();
             var chainHeaderFiles = Directory.GetFiles(WorkingDirectory, $"*.{ChainHeaderExtension}");
-            foreach( var chainHeaderFile in chainHeaderFiles)
+            foreach (var chainHeaderFile in chainHeaderFiles)
             {
                 var chainHeader = ChainHeader.LoadFromFile(chainHeaderFile);
                 AddChainToFetched(chainHeaderFile, chainHeader);
@@ -33,7 +33,7 @@ namespace Microcoin.Microcoin.ChainStorage
         /// <returns>Tail chain object with linked pre-chains</returns>
         public ChainContext? LoadMostComprehensiveChain()
         {
-            if( fetchedHeaders.Count() == 0 )
+            if (fetchedHeaders.Count() == 0)
                 return null;
             //  TODO: Find a more beautiful expression of the same thing using HashSet methods.
             ChainHeader mostComprehensiveChainHeader = fetchedHeaders.First();
@@ -46,7 +46,7 @@ namespace Microcoin.Microcoin.ChainStorage
             return chainContext;
         }
 
-        public bool IsChainExist(ChainIdentifier chainIdentifier)   
+        public bool IsChainExist(ChainIdentifier chainIdentifier)
         {
             return chainsDictionary.ContainsKey(chainIdentifier);
         }
@@ -66,20 +66,20 @@ namespace Microcoin.Microcoin.ChainStorage
         public ChainHeader AddNewChainToStorage(AbstractChain chain)
         {
             var chainIdentifier = new ChainIdentifier(chain);
-            if( chainsDictionary.ContainsKey(chainIdentifier))
+            if (chainsDictionary.ContainsKey(chainIdentifier))
                 return chainsDictionary[chainIdentifier];
             // Since each subsequent part of the chain must refer to the previous one,
             // you need to recursively add all parts of the chain to the storage starting from the beginning;
             // those chains that are already present in the storage can be skipped.
             ChainHeader? previousChainHeader = null;
-            if( chain.PreviousChain is not null)
+            if (chain.PreviousChain is not null)
                 previousChainHeader = AddNewChainToStorage(chain.PreviousChain);
             var previousChainHeaderPath = previousChainHeader is null ? null : GetHeaderFileNameByIdentifier(previousChainHeader.ChainIdentifier);
             var headerFileName = GetHeaderFileNameByIdentifier(chainIdentifier);
             var storeChainHeader = new ChainHeader(
-                chainIdentifier, 
+                chainIdentifier,
                 Path.Combine(WorkingDirectory, GetChainFileNameByIdentifier(chainIdentifier)),
-                previousChainHeaderPath is null ? null: Path.Combine(WorkingDirectory, previousChainHeaderPath)
+                previousChainHeaderPath is null ? null : Path.Combine(WorkingDirectory, previousChainHeaderPath)
             );
 
             ChainContext chainContext = new ChainContext(Path.Combine(WorkingDirectory, headerFileName), chain, storeChainHeader);
@@ -117,15 +117,14 @@ namespace Microcoin.Microcoin.ChainStorage
         {
             return chainIdentifier.GetHashCode() + "." + ChainChainExtension;
         }
-        
+
         protected void AddChainToFetched(string chainHeaderFile, ChainHeader chainHeader)
         {
             if (chainsDictionary.ContainsKey(chainHeader.ChainIdentifier))
                 return;
             fetchedHeaders.Add(chainHeader);
             headersFiles.Add(chainHeader, chainHeaderFile);
-            chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader); 
+            chainsDictionary.Add(chainHeader.ChainIdentifier, chainHeader);
         }
     }
 }
-    

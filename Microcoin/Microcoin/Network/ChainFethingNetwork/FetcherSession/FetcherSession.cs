@@ -1,27 +1,19 @@
 ﻿using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.ChainFetcher;
-using Microcoin.Microcoin.Blockchain.Block;
-using NodeNet.NodeNetSession.Session;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microcoin.Microcoin.Blockchain.ChainController;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
     public class FetcherSession
     {
-        public readonly Session WrappedSession;
+        public readonly ISessionConnection WrappedSession;
         public readonly int ChainBranchBlocksCount;
         public readonly AbstractChain SourceChain;
         public readonly FetchRequest FetchRequest;
 
-        public FetcherSession(Session session, AbstractChain sourceChain, FetchRequest fetchRequest, int chainBranchBlocksCount)
+        public FetcherSession(ISessionConnection session, AbstractChain sourceChain, FetchRequest fetchRequest, int chainBranchBlocksCount)
         {
             WrappedSession = session;
-            SourceChain = new MutableChain(sourceChain);
+            SourceChain = sourceChain;
             FetchRequest = fetchRequest;
             ChainBranchBlocksCount = chainBranchBlocksCount;
         }
@@ -42,15 +34,12 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                 var downloadingChainRequest = new ChainDownloadingRequest(this, truncatedChain, FetchRequest.RequestedBlock, ChainBranchBlocksCount);
                 var downloadedChain = await downloadingChainRequest.CreateRequestTask(generalCancellationToken);
                 return new ChainDownloadingResult(downloadedChain, closestBlock);
-            } 
-            catch( OperationCanceledException ex)
-            {
-                throw new ChainDownloadingException("Operations cancelled exception");
             }
-            catch( Exception ex)
+            catch (Exception ex)
             {
                 Serilog.Log.Error($"Some error happend during fetch request {this.GetHashCode()}: {ex.Message}");
-                throw ex;
+                throw new ChainDownloadingException("Operations cancelled exception");
+                throw;
             }
         }
     }

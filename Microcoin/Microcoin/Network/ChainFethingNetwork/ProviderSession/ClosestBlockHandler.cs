@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.Blockchain.Chain;
-using NodeNet.NodeNetSession.SessionMessage;
-using Microcoin.Json;
+﻿using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.Json;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
+using System.Text.Json;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
 {
+    /// <summary>
+    /// Creates a task that will communicate through a session,
+    /// processing a request to find the nearest block serving as a common point from which to start loading the continuation of the chain.
+    /// </summary>
     public class ClosestBlockHandler
     {
         public readonly ProviderSession ProviderSession;
@@ -23,61 +20,56 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession
 
         public async Task<Block> CreateHandleTask(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            do
             {
-                var msgContext = await ProviderSession.WrappedSession.WaitForMessage(cancellationToken);
-                var msgType = JsonTypedWrapper.GetWrappedTypeName(msgContext.SessionMessage.Data);
-
+                var requestWaitingCTS = new CancellationTokenSource();
+                //requestWaitingCTS.CancelAfter(5000);
+                var requestMsg = await ProviderSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
+                var sessionMsgData = requestMsg.Payload;
+                var msgType = JsonTypedWrapper.GetWrappedTypeName(sessionMsgData);
                 switch (msgType)
                 {
                     case nameof(ChainBlockPresentRequestDTO):
-                        var blockPresentRequest = JsonTypedWrapper.Deserialize<ChainBlockPresentRequestDTO>(msgContext.SessionMessage.Data);
-                        if (blockPresentRequest == null)
-                        {
+                        var chainBlockPresentRequestDTO = JsonTypedWrapper.Deserialize<ChainBlockPresentRequestDTO>(sessionMsgData);
+                        if (chainBlockPresentRequestDTO is null)
                             throw new Exception("Invalid message received");
-                        }
-                        await BlockPresentRequestHandler(blockPresentRequest);
+                        BlockPresentRequestHandler(chainBlockPresentRequestDTO, cancellationToken);
                         break;
-
                     case nameof(ClaimBlockAsDownloadRootDTO):
-                        var claimBlockRequest = JsonTypedWrapper.Deserialize<ClaimBlockAsDownloadRootDTO>(msgContext.SessionMessage.Data);
-                        if (claimBlockRequest == null)
-                        {
+                        var chainBlockClaimRequestDTO = JsonTypedWrapper.Deserialize<ClaimBlockAsDownloadRootDTO>(sessionMsgData);
+                        if (chainBlockClaimRequestDTO is null)
                             throw new Exception("Invalid message received");
-                        }
-                        return BlockClaimRequestHandler(claimBlockRequest);
-
+                        return BlockClaimRequestHandler(chainBlockClaimRequestDTO, cancellationToken);
                     default:
                         throw new Exception("Unexpected message in closest block communications");
                 }
-            }
-
+            } while (cancellationToken.IsCancellationRequested is not true);
             throw new OperationCanceledException();
         }
 
-        private async Task BlockPresentRequestHandler(ChainBlockPresentRequestDTO blockPresentRequest)
+        private bool BlockPresentRequestHandler(ChainBlockPresentRequestDTO chainBlockPresentRequest, CancellationToken cancellationToken)
         {
-            var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(blockPresentRequest.RequestedBlockId);
-            var presentRequestResponse = new ChainBlockPresentResponseDTO
+            var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(chainBlockPresentRequest.RequestedBlockId);
+            var presentRequestResponse = new ChainBlockPresentResponseDTO()
             {
-                RequestedBlockHash = blockPresentRequest.RequestedBlockHash,
-                RequestedBlockId = blockPresentRequest.RequestedBlockId,
-                IsPresented = blockFromChain?.Hash == blockPresentRequest.RequestedBlockHash
+                RequestedBlockHash = chainBlockPresentRequest.RequestedBlockHash,
+                RequestedBlockId = chainBlockPresentRequest.RequestedBlockId,
             };
-
-            await ProviderSession.WrappedSession.SendMessageAsync(JsonSerializer.Serialize(presentRequestResponse));
+            if (blockFromChain is not null && blockFromChain.Hash == chainBlockPresentRequest.RequestedBlockHash)
+                presentRequestResponse.IsPresented = true;
+            else
+                presentRequestResponse.IsPresented = false;
+            ProviderSession.WrappedSession.SendMessage(JsonSerializer.Serialize(presentRequestResponse));
+            return presentRequestResponse.IsPresented;
         }
 
-        private Block BlockClaimRequestHandler(ClaimBlockAsDownloadRootDTO claimBlockRequest)
+        private Block BlockClaimRequestHandler(ClaimBlockAsDownloadRootDTO claimBlockAsDownloadingRoot, CancellationToken cancellationToken)
         {
-            var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(claimBlockRequest.ClaimBlockId);
-
-            if (blockFromChain == null)
-            {
-                throw new OperationCanceledException("Block not found in chain.");
-            }
-
-            return blockFromChain;
+            var blockFromChain = ProviderSession.SourceChain.GetBlockFromHead(claimBlockAsDownloadingRoot.ClaimBlockId);
+            if (blockFromChain is not null)
+                return blockFromChain;
+            else
+                throw new OperationCanceledException();
         }
     }
 }

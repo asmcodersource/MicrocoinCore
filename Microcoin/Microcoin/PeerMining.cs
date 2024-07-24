@@ -1,5 +1,4 @@
-﻿using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.Blockchain.Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.TransactionsPool;
 using Microcoin.Microcoin.Mining;
@@ -73,7 +72,7 @@ namespace Microcoin.Microcoin
             Serilog.Log.Verbose($"Microcoin peer | Trying to start mine new block");
             lock (this)
             {
-                if (MiningThread is not null || IsMiningEnabled is not true )
+                if (MiningThread is not null || IsMiningEnabled is not true)
                     return;
                 MiningCancellationTokenSource = new CancellationTokenSource();
                 StartMineBlock(tailChain, minerWallet, MiningCancellationTokenSource.Token);
@@ -108,7 +107,8 @@ namespace Microcoin.Microcoin
                 {
                     Serilog.Log.Debug($"Microcoin peer | Mining finished block={block.GetHashCode()} id={block.MiningBlockInfo.BlockId} hash={block.Hash}");
                     Task.Run(() => BlockMined?.Invoke(block));
-                } else
+                }
+                else
                 {
                     Serilog.Log.Debug($"Microcoin peer | Mining cancelled block={block.GetHashCode()} id={block.MiningBlockInfo.BlockId}");
                 }

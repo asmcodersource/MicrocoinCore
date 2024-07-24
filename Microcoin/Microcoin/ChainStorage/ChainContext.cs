@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.Microcoin.Blockchain.Chain;
+﻿using Microcoin.Microcoin.Blockchain.Chain;
 
 namespace Microcoin.Microcoin.ChainStorage
 {
@@ -42,7 +39,8 @@ namespace Microcoin.Microcoin.ChainStorage
             {
                 ChainHeader = ChainHeader.LoadFromFile(HeaderFilePath);
                 Chain = FetchChainFromFile(ChainHeader.ChainFilePath);
-            } catch
+            }
+            catch
             {
                 ChainHeader = null;
                 Chain = null;
@@ -57,7 +55,8 @@ namespace Microcoin.Microcoin.ChainStorage
                 Chain = FetchChainFromFile(ChainHeader.ChainFilePath);
                 string? lastChainHeaderFile = ChainHeader.PreviousChainHeaderPath;
                 var lastChainContext = this;
-                while (lastChainHeaderFile is not null) {
+                while (lastChainHeaderFile is not null)
+                {
                     var previousPartContext = new ChainContext(lastChainHeaderFile);
                     previousPartContext.FetchLastPart();
                     lastChainContext.Chain.LinkPreviousChain(previousPartContext.Chain);

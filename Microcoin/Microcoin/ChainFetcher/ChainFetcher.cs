@@ -1,16 +1,8 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.ChainStorage;
-using NodeNet.NodeNet.NetworkExplorer.Requests;
-using System.Collections.Concurrent;
-using NodeNet.NodeNet;
-using System.Collections.Generic;
-using Microcoin.Microcoin.Mining;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession;
 using SimpleInjector;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace Microcoin.Microcoin.ChainFetcher
 {
@@ -20,15 +12,15 @@ namespace Microcoin.Microcoin.ChainFetcher
 
     public class ChainFetcher
     {
-        public Node CommunicationNode { get; }
         public AbstractChain? SourceChain { get; set; }
-        public int MaxFetchQueueSize { get; set; } = 30;
-        public int MaxHandlingConcurrentTask { get; set; } = 30;
+        public int MaxFetchQueueSize { get; set; } = 1000;
+        public int MaxHandlingConcurrentTask { get; set; } = 1000;
         public int ChainBranchBlocksCount { get; private set; } = 5;
-        public int MinutesBetweenRetries { get; private set; } = 1;
+        public int MinutesBetweenRetries { get; private set; } = 10;
         public ChainProvidersRating ChainProvidersRating { get; protected set; } = new ChainProvidersRating();
         public ChainVerificator ChainVerificator { get; protected set; }
 
+        private readonly Container _servicesContainer;
         private readonly Timer _tryAcceptNextRequestTimer;
         private readonly HashSet<Block> _blocksInFetchSystem = new();
         private readonly List<ActiveHandlingFetchRequest> _handlingRequests = new();
@@ -39,8 +31,8 @@ namespace Microcoin.Microcoin.ChainFetcher
 
         public ChainFetcher(Container servicesContainer)
         {
-            CommunicationNode = servicesContainer.GetInstance<Node>();
             ChainVerificator = new ChainVerificator(servicesContainer);
+            _servicesContainer = servicesContainer;
             _tryAcceptNextRequestTimer = new Timer(_ => TryHandleNextRequest(), null, 0, 1000);
         }
 
@@ -105,18 +97,14 @@ namespace Microcoin.Microcoin.ChainFetcher
 
                 var newHandlingRequest = new ActiveHandlingFetchRequest(
                     peekFetchRequest,
-                    new HandlingFetchRequest(peekFetchRequest, ChainBranchBlocksCount, ChainProvidersRating),
+                    new HandlingFetchRequest(peekFetchRequest, _servicesContainer),
                     new CancellationTokenSource()
                 );
 
                 Serilog.Log.Debug($"Chain fetch started {newHandlingRequest.Request.RequestedBlock.GetHashCode()} {newHandlingRequest.Request.RequestedBlock.Hash}");
-
                 newHandlingRequest.RequestHandler.ChainIsntFetched += () => OnChainFetchFaulted(newHandlingRequest);
                 newHandlingRequest.RequestHandler.ChainFetched += async result => await OnNewResult(newHandlingRequest, result);
-                newHandlingRequest.RequestHandler.SessionFinishedSuccesful += provider => ChainProvidersRating.ChainFetchSuccesful(provider);
-                newHandlingRequest.RequestHandler.SessionFinishedFaulty += provider => ChainProvidersRating.ChainFetchFailed(provider);
-
-                Task.Run(() => newHandlingRequest.RequestHandler.StartHandling(CommunicationNode, SourceChain, newHandlingRequest.cts.Token));
+                Task.Run(() => newHandlingRequest.RequestHandler.StartHandling(SourceChain, newHandlingRequest.cts.Token));
                 _handlingRequests.Add(newHandlingRequest);
                 return true;
             }
@@ -215,8 +203,7 @@ namespace Microcoin.Microcoin.ChainFetcher
         {
             try
             {
-                return true;
-/*                return await ChainVerificator.VerifyChain(result.DownloadedChain, result.LastBlockFromSource);*/
+                return await ChainVerificator.VerifyChain(result.DownloadedChain, result.LastBlockFromSource);
             }
             catch (Exception ex)
             {

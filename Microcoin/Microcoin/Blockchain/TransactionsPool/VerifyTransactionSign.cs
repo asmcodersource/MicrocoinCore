@@ -1,6 +1,6 @@
-﻿using Microcoin.PipelineHandling;
-using Microcoin.RSAEncryptions;
-using Microcoin.Microcoin.Blockchain.Transaction;
+﻿using Microcoin.Microcoin.Blockchain.Transaction;
+using Microcoin.Microcoin.PipelineHandling;
+using Microcoin.Microcoin.RSAEncryptions;
 
 namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {

@@ -1,13 +1,8 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Blockchain.Chain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microcoin.Json;
-using NodeNet.NodeNetSession.SessionMessage;
+using Microcoin.Microcoin.Json;
 using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession;
+using System.Text.Json;
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
@@ -38,20 +33,15 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
         public async Task<MutableChain> CreateRequestTask(CancellationToken cancellationToken)
         {
             await RequestDownloading(cancellationToken);
-            ICollection<Block>? receivedBlocks;
+            ICollection<Block>? receivedBlocks = null;
             var currentChain = StartingChain;
-
-            while (!cancellationToken.IsCancellationRequested)
+            do
             {
                 receivedBlocks = await ReceiveBlocks(cancellationToken);
-                if (receivedBlocks == null)
-                {
+                if (receivedBlocks is null)
                     throw new ChainDownloadingException("Bad response while blocks downloading");
-                }
                 if (receivedBlocks.Count == 0)
-                {
                     break;
-                }
                 foreach (var block in receivedBlocks)
                 {
                     if (currentChain.BlocksList.Count >= ChainBranchBlocksCount)
@@ -62,41 +52,34 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                     }
                     currentChain.AddTailBlock(block);
                 }
-            }
+            } while (cancellationToken.IsCancellationRequested is not true);
             return currentChain;
         }
 
+
         private async Task RequestDownloading(CancellationToken cancellationToken)
         {
-            var request = new ChainDownloadRequestDTO
+            ChainDownloadRequestDTO request = new ChainDownloadRequestDTO
             {
                 StartingBlockId = StartingChain.GetLastBlock().MiningBlockInfo.BlockId,
                 TargetBlockId = TargetBlock.MiningBlockInfo.BlockId,
-                DownloadingTillChainEnd = true
+                DownloadingTillChainEnd = true,
             };
-
             try
             {
-                using var acceptTimeoutCTS = new CancellationTokenSource(10000);
-                using var linkedCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, acceptTimeoutCTS.Token);
-
-                await FetcherSession.WrappedSession.SendMessageAsync(JsonTypedWrapper.Serialize(request));
-                var responseMsg = await FetcherSession.WrappedSession.WaitForMessage(linkedCTS.Token);
-                var response = JsonTypedWrapper.Deserialize<ChainDownloadResponseDTO>(responseMsg.SessionMessage.Data);
-
-                if (response == null || !response.IsAccepted)
-                {
-                    throw new ChainDownloadingException("Chain downloading rejected or bad response received.");
-                }
-
-                Serilog.Log.Debug($"Downloading accepted {FetcherSession.GetHashCode()}");
+                CancellationTokenSource acceptTimeoutCTS = new CancellationTokenSource(10000);
+                var linkedCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, acceptTimeoutCTS.Token);
+                FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
+                var response = await FetcherSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
+                var result = JsonSerializer.Deserialize<ChainDownloadResponseDTO>(response.Payload);
+                if (result.IsAccepted is not true)
+                    throw new ChainDownloadingException("Chain downloading rejected");
+                Serilog.Log.Debug($"Downloading accepted {this.FetcherSession.GetHashCode()}");
             }
             catch (OperationCanceledException ex)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    Serilog.Log.Debug($"Downloading accept error due to timeout for transceive {FetcherSession.GetHashCode()}: {ex.Message}");
-                }
+                if (cancellationToken.IsCancellationRequested is not true)
+                    Serilog.Log.Debug($"Downloading accept error because of timeout for  transceive {this.FetcherSession.GetHashCode()}: {ex.Message}");
                 throw;
             }
         }
@@ -105,19 +88,17 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
         {
             try
             {
-                using var waitForBlocksTimeoutCTS = new CancellationTokenSource(180000);
-                using var linkedCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, waitForBlocksTimeoutCTS.Token);
+                CancellationTokenSource waitForBlocksTimeoutCTS = new CancellationTokenSource(30000);
+                var linkedCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, waitForBlocksTimeoutCTS.Token);
                 var request = new RequestNextPartOfBlocks();
-                await FetcherSession.WrappedSession.SendMessageAsync(JsonTypedWrapper.Serialize(request));
-                var responseMsg = await FetcherSession.WrappedSession.WaitForMessage(linkedCTS.Token);
-                return JsonTypedWrapper.Deserialize<List<Block>>(responseMsg.SessionMessage.Data);
+                FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
+                var response = await FetcherSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
+                return JsonTypedWrapper.Deserialize<ICollection<Block>>(response.Payload);
             }
             catch (OperationCanceledException ex)
             {
-                if (!cancellationToken.IsCancellationRequested)
-                {
-                    Serilog.Log.Debug($"Blocks receive error due to timeout for blocks part transceive {FetcherSession.GetHashCode()}: {ex.Message}");
-                }
+                if (cancellationToken.IsCancellationRequested is not true)
+                    Serilog.Log.Debug($"Blocks receive error because of timeout for blocks part transceive {this.FetcherSession.GetHashCode()}: {ex.Message}");
                 throw;
             }
         }

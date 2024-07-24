@@ -1,18 +1,19 @@
-﻿using Microcoin.PipelineHandling;
-using Microcoin.Microcoin.Blockchain.TransactionsPool;
+﻿using Microcoin.Microcoin.PipelineHandling;
 
 namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 {
     public class TransactionsPool
     {
         public event Action<TransactionsPool>? OnTransactionReceived;
-        public TransactionsBag TransactionsBag { get; protected set; } = new TransactionsBag();
+
+        public TransactionsBag TransactionsBag { get; }
         public List<Transaction.Transaction> Pool { get; protected set; } = new List<Transaction.Transaction>();
         public HashSet<Transaction.Transaction> PresentedTransactions { get; protected set; } = new HashSet<Transaction.Transaction>();
         public IHandlePipeline<Transaction.Transaction> HandlePipeline { get; set; } = new EmptyPipeline<Transaction.Transaction>();
 
         public TransactionsPool()
         {
+            TransactionsBag = new TransactionsBag(2048);
             HandlePipeline = new HandlePipeline<Transaction.Transaction>();
             HandlePipeline.AddHandlerToPipeline(new VerifyTransactionSign());
             HandlePipeline.AddHandlerToPipeline(new VerifyTransactionFields());
@@ -48,7 +49,7 @@ namespace Microcoin.Microcoin.Blockchain.TransactionsPool
 
         public void HandleTransactions(List<Transaction.Transaction> transactions)
         {
-            foreach(var transaction in transactions)
+            foreach (var transaction in transactions)
                 HandleTransaction(transaction);
         }
 

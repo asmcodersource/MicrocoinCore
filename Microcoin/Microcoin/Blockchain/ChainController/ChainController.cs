@@ -1,5 +1,4 @@
 ﻿using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Mining;
 using SimpleInjector;
 
@@ -17,7 +16,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
         public INextBlockRule NextBlockRule { get; protected set; }
         public IDeepTransactionsVerify DeepTransactionsVerify { get; protected set; }
         public IFetchableChainRule FetchableChainRule { get; protected set; }
-        public int ChainBranchBlocksCount { get; set; } = 50;
+        public int ChainBranchBlocksCount { get; set; }
         public bool IsAllowChainFetchingRequests { get; set; } = false;
         public Container ServicesContainer { get; protected set; }
 
@@ -29,6 +28,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
             NextBlockRule = servicesContainer.GetInstance<INextBlockRule>();
             DeepTransactionsVerify = servicesContainer.GetInstance<IDeepTransactionsVerify>();
             FetchableChainRule = servicesContainer.GetInstance<IFetchableChainRule>();
+            ChainBranchBlocksCount = servicesContainer.GetInstance<ChainBranchBlocksCount>().Value;
             currentChainOperationsCTS = new CancellationTokenSource();
             ServicesContainer = servicesContainer;
         }
@@ -57,7 +57,8 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 // We don't care about everything else inside the chain.
                 Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as possible chain fetch");
                 ChainFetcher.RequestChainFetch(block);
-            } else
+            }
+            else
             {
                 Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()} is not next tail or fetch possible");
                 Serilog.Log.Verbose($"Microcoin peer | Block({block.GetMiningBlockHash()} current id = {block.MiningBlockInfo.BlockId}, expected id = {ChainTail.GetLastBlock().MiningBlockInfo.BlockId + 1}, prew hash = {block.MiningBlockInfo.PreviousBlockHash}, expected prew hash = {ChainTail.GetLastBlock().Hash}");
@@ -79,7 +80,7 @@ namespace Microcoin.Microcoin.Blockchain.ChainController
                 ChainTail.AddTailBlock(block);
                 currentChainOperationsCTS.Cancel();
                 currentChainOperationsCTS = new CancellationTokenSource();
-                ChainReceivedNextBlock?.Invoke(ChainTail,block);
+                ChainReceivedNextBlock?.Invoke(ChainTail, block);
                 Serilog.Log.Debug($"Microcoin peer | Block({block.GetMiningBlockHash()}) accepted as tail block of chain, current blocks in chain: {ChainTail.EntireChainLength}");
                 return true;
             }

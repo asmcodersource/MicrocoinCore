@@ -1,15 +1,8 @@
 ﻿using Microcoin.Microcoin.Blockchain.Block;
 using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.ChainStorage;
 using Microcoin.Microcoin.Mining;
-using SimpleInjector;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Microcoin
+namespace Microcoin.Microcoin
 {
     // Used to create the very first chain, as well as the very first block in the chain. This is the point from where it is determined who will receive the first coins on the network.
     public class InitialChainCreator
@@ -21,7 +14,7 @@ namespace Microcoin
         /// Peer should be initilized, at least peer mining, acceptance pools, and mining
         /// </summary>
         /// <param name="peer"></param>
-        public InitialChainCreator(Peer peer) 
+        public InitialChainCreator(Peer peer)
         {
             InitialPeer = peer;
         }
@@ -51,11 +44,11 @@ namespace Microcoin
         /// <param name="peer"></param>
         public void StoreInitialChainToFile()
         {
-            var chainStorage = InitialPeer.ServicesContainer.GetInstance<ChainStorage>();
+            var chainStorage = InitialPeer.ServicesContainer.GetInstance<ChainStorage.ChainStorage>();
             StoreInitialChainToFile(chainStorage);
         }
 
-        public void StoreInitialChainToFile(ChainStorage chainStorage)
+        public void StoreInitialChainToFile(ChainStorage.ChainStorage chainStorage)
         {
             if (InitialChain is null)
                 throw new NullReferenceException("InitialChain is not initialized");

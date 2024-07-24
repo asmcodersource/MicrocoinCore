@@ -1,5 +1,5 @@
-﻿using Microcoin.Microcoin.Blockchain.Chain;
-using Microcoin.Microcoin.Blockchain.Block;
+﻿using Microcoin.Microcoin.Blockchain.Block;
+using Microcoin.Microcoin.Blockchain.Chain;
 
 namespace Microcoin.Microcoin.Mining
 {
@@ -13,13 +13,13 @@ namespace Microcoin.Microcoin.Mining
     public class ComplexityRule : IComplexityRule
     {
         protected Dictionary<ComplexityWindowIdentifier, int> complexityWindowCache = new Dictionary<ComplexityWindowIdentifier, int>();
-        protected int defaultComplexity =  18;
+        protected int defaultComplexity = 18;
         protected int targetTime = 5;
         protected int avgWindow = 20;
 
         public int Calculate(AbstractChain contextChain, Block block)
         {
-            if( contextChain.EntireChainLength < avgWindow )
+            if (contextChain.EntireChainLength < avgWindow)
                 return defaultComplexity;
 
             int windowBeginBlockId = (int)(contextChain.EntireChainLength / avgWindow) * avgWindow - avgWindow;
@@ -29,7 +29,7 @@ namespace Microcoin.Microcoin.Mining
             if (complexityWindowCache.ContainsKey(complexityWindowIdentifier))
                 return complexityWindowCache[complexityWindowIdentifier];
             double averageHashRatePerSeconds = 0;
-            for( int i = 0; i < avgWindow-1; i++ )
+            for (int i = 0; i < avgWindow - 1; i++)
             {
                 var windowCurrentBlock = contextChain.GetBlockFromHead(windowBeginBlockId + i);
                 var windowNextBlock = contextChain.GetBlockFromHead(windowBeginBlockId + i + 1);
@@ -59,7 +59,7 @@ namespace Microcoin.Microcoin.Mining
         public Block FirstBlock { get; protected set; }
         public Block LastBlock { get; protected set; }
 
-        public ComplexityWindowIdentifier(Block firstBlock, Block lastBlock) 
+        public ComplexityWindowIdentifier(Block firstBlock, Block lastBlock)
         {
             this.FirstBlock = firstBlock;
             this.LastBlock = lastBlock;
@@ -74,7 +74,7 @@ namespace Microcoin.Microcoin.Mining
         {
             if (base.Equals(obj) is true)
                 return true;
-            if( obj is ComplexityWindowIdentifier rangeIdentifier)
+            if (obj is ComplexityWindowIdentifier rangeIdentifier)
             {
                 if (this.FirstBlock == rangeIdentifier.FirstBlock && this.LastBlock == rangeIdentifier.LastBlock)
                     return true;

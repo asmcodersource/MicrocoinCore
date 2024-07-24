@@ -1,4 +1,4 @@
-﻿namespace Microcoin.RSAEncryptions
+﻿namespace Microcoin.Microcoin.RSAEncryptions
 {
     public class ReceiverSignOptions : IReceiverSignOptions
     {

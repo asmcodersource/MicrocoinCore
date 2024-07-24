@@ -1,4 +1,4 @@
-﻿namespace Microcoin.PipelineHandling
+﻿namespace Microcoin.Microcoin.PipelineHandling
 {
     public class HandlePipeline<HandleType> : IHandlePipeline<HandleType>
     {

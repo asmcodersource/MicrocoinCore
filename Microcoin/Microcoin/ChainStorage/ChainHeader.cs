@@ -31,7 +31,7 @@ namespace Microcoin.Microcoin.ChainStorage
         {
             ChainHeader chainHeader = null;
             using (var fileStream = File.OpenRead(filePath))
-                 chainHeader = JsonSerializer.Deserialize<ChainHeader>(fileStream as Stream);
+                chainHeader = JsonSerializer.Deserialize<ChainHeader>(fileStream as Stream);
             if (chainHeader is null)
                 throw new Exception("Loaded object is null");
             return chainHeader;

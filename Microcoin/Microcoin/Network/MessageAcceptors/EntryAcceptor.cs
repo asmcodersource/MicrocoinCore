@@ -1,12 +1,9 @@
-﻿using NodeNet.NodeNet.Message;
-using Newtonsoft.Json.Linq;
-
-namespace Microcoin.Microcoin.Network.MessageAcceptors
+﻿namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     public class EntryAcceptor : IAcceptor
     {
-        public TransactionsAcceptor TransactionsAcceptor { get; protected set; }
-        public BlocksAcceptor BlocksAcceptor { get; protected set; }
+        private readonly TransactionsAcceptor TransactionsAcceptor;
+        private readonly BlocksAcceptor BlocksAcceptor;
 
         public EntryAcceptor(TransactionsAcceptor transactionsAcceptor, BlocksAcceptor blocksAcceptor)
         {
@@ -14,18 +11,15 @@ namespace Microcoin.Microcoin.Network.MessageAcceptors
             BlocksAcceptor = blocksAcceptor;
         }
 
-        public async Task Handle(MessageContext messageContext)
+        public void Handle(IBroadcastMessage message)
         {
-            JObject jsonRequestObject = JObject.Parse(messageContext.Message.Data);
-            if (jsonRequestObject["application"]?.ToString() != "Microcoin")
-                return;
-            switch (jsonRequestObject["type"]?.ToString())
+            switch (message.PayloadType)
             {
-                case "WalletTransaction":
-                    await TransactionsAcceptor.Handle(messageContext);
+                case "transactions":
+                    TransactionsAcceptor.Handle(message);
                     break;
-                case "ChainBlock":
-                    await BlocksAcceptor.Handle(messageContext);
+                case "block":
+                    BlocksAcceptor.Handle(message);
                     break;
             }
         }

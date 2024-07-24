@@ -1,6 +1,4 @@
-﻿using NodeNet.NodeNet.Message;
-
-namespace Microcoin.Microcoin.Network.MessageAcceptors
+﻿namespace Microcoin.Microcoin.Network.MessageAcceptors
 {
     /// <summary>
     /// Acceptor it is entity that handle any type of NodeNet messages in context of Microcoin
@@ -8,6 +6,6 @@ namespace Microcoin.Microcoin.Network.MessageAcceptors
     /// </summary>
     public interface IAcceptor
     {
-        public Task Handle(MessageContext messageContext);
+        public void Handle(IBroadcastMessage messageContext);
     }
 }

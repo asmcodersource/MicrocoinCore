@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Microcoin.RSAEncryptions
+namespace Microcoin.Microcoin.RSAEncryptions
 {
     public class RSAEncryption
     {
@@ -15,7 +15,7 @@ namespace Microcoin.RSAEncryptions
             }
         }
 
-        public static String Sign(byte[] data, SenderSignOptions options)
+        public static string Sign(byte[] data, SenderSignOptions options)
         {
             RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
             rsa.FromXmlString(options.PrivateKey);

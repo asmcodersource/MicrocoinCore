@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Microcoin.Microcoin.Blockchain.ChainController;
-using Microcoin.Microcoin.Mining;
-using NodeNet.NodeNet;
-using NodeNet.NodeNet.TcpCommunication;
-using Microcoin.RSAEncryptions;
-using SimpleInjector;
-using Microcoin.Microcoin.Blockchain.TransactionsPool;
+﻿
 using Microcoin.Microcoin.Blockchain.BlocksPool;
 using Microcoin.Microcoin.Blockchain.Chain;
+using Microcoin.Microcoin.Blockchain.ChainController;
+using Microcoin.Microcoin.Blockchain.TransactionsPool;
+using Microcoin.Microcoin.Mining;
+using SimpleInjector;
 
 namespace Microcoin.Microcoin
 {
@@ -48,19 +40,6 @@ namespace Microcoin.Microcoin
         public void AddWalletKeysFromFileOrCreate(string file)
             => ServicesContainer.RegisterInstance(PeerWalletKeys.LoadOrCreateWalletKeys(file));
 
-
-        // -------------------------------------------------------------
-        // Node builder functions
-        public void AddNetworkNode(Node node)
-            => ServicesContainer.RegisterInstance(node);
-
-        public void AddNetworkNode(int port)
-        {
-            var senderEncryptionOptions = NodeNet.NodeNet.RSAEncryptions.RSAEncryption.CreateSignOptions();
-            var senderTcpOptions = new TcpListenerOptions(port);
-            var networkNode = Node.CreateRSAHttpNode(senderEncryptionOptions, senderTcpOptions);
-            ServicesContainer.RegisterInstance(networkNode);
-        }
 
         // -------------------------------------------------------------
         // Miner builder functions
@@ -135,7 +114,6 @@ namespace Microcoin.Microcoin
             AddDefaultMiner();
             AddDefaultAcceptancePools();
             AddDefaultRules();
-            AddNetworkNode(0);
             AddChainsStorage("chains");
             AddChainsFetcher();
             AddWalletKeys();
@@ -146,7 +124,6 @@ namespace Microcoin.Microcoin
             AddDebugMiner();
             AddDefaultAcceptancePools();
             AddDefaultRules();
-            AddNetworkNode(0);
             AddChainsStorage("chains");
             AddChainsFetcher();
             AddWalletKeys();

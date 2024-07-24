@@ -23,8 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microcoin\Microcoin.csproj" />
-    <ProjectReference Include="..\NodeNet\NodeNet\NodeNet.csproj" />
+    <ProjectReference Include="..\Microcoin\MicrocoinCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Generators\" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microcoin.Microcoin.Network;
+using System.Collections.Concurrent;
 
 namespace Microcoin.Microcoin.ChainFetcher
 {
@@ -10,38 +7,29 @@ namespace Microcoin.Microcoin.ChainFetcher
     /// Since some chain providers can make mistakes too often, it will be correct to keep track of the rating and turn to the best ones.
     /// This class represents a repository of ratings of providers.
     /// </summary>
-    public class ChainProvidersRating
+    public class ChainProvidersRating : IChainProvidersRating
     {
-        Dictionary<string, double> Ratings { get; set; } = new Dictionary<string, double>();
+        ConcurrentDictionary<CommunicationEndPoint, double> Ratings { get; set; } = new();
 
-        public void ChainFetchSuccesful(string providerPublicKey)
+        public void ChainFetchSuccesful(CommunicationEndPoint providerSession)
         {
-            lock (this)
-            {
-                Ratings[providerPublicKey]++;
-            }
+            Ratings[providerSession]++;
         }
 
-        public void ChainFetchFailed(string providerPublicKey)
+        public void ChainFetchFailed(CommunicationEndPoint providerSession)
         {
-            lock (this)
-            {
-                Ratings[providerPublicKey]--;
-            }
+            Ratings[providerSession]--;
         }
 
-        public ICollection<string> GetRatingSortedProviders(ICollection<string> providers)
+        public IEnumerable<CommunicationEndPoint> GetRatingSortedProviders(IEnumerable<CommunicationEndPoint> providerSessions)
         {
-            lock (this)
-            {
-                foreach (var provider in providers)
-                    Ratings.TryAdd(provider, 0);
-                return Ratings
-                    .Where(p => providers.Contains(p.Key))
-                    .OrderByDescending(p => p.Value)
-                    .Select(p => p.Key)
-                    .ToList();
-            }
+            foreach (var provider in providerSessions)
+                Ratings.TryAdd(provider, 0);
+            return Ratings
+                .Where(p => providerSessions.Contains(p.Key))
+                .OrderByDescending(p => p.Value)
+                .Select(p => p.Key)
+                .ToList();
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using Microcoin.Microcoin.Blockchain.Block;
-using Microcoin.PipelineHandling;
-
+﻿using Microcoin.Microcoin.PipelineHandling;
 
 namespace Microcoin.Microcoin.Blockchain.BlocksPool
 {

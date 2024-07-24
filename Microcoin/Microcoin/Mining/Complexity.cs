@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Microcoin.Microcoin.Mining
+﻿namespace Microcoin.Microcoin.Mining
 {
     public static class Complexity
     {
@@ -12,8 +6,8 @@ namespace Microcoin.Microcoin.Mining
 
         static Complexity()
         {
-            for( int i = 0; i < 256; i++ )
-                calculatedAvgIterationsToMine[i] = -1.0/ Math.Log((Math.Pow(2, i) - 1) / Math.Pow(2, i)) - 1.0; // 99.99% probality of overflow for big value of complexty
+            for (int i = 0; i < 256; i++)
+                calculatedAvgIterationsToMine[i] = -1.0 / Math.Log((Math.Pow(2, i) - 1) / Math.Pow(2, i)) - 1.0; // 99.99% probality of overflow for big value of complexty
         }
 
         static public double GetAverageIterationsToMine(int targetComplexity)
@@ -25,7 +19,7 @@ namespace Microcoin.Microcoin.Mining
 
         static public int GetClosestComplexity(double avgIterationsOfMine)
         {
-            for( int i = 1; i < 256; i++)
+            for (int i = 1; i < 256; i++)
             {
                 var firstAvgIterations = calculatedAvgIterationsToMine[i - 1];
                 var secondAvgIterations = calculatedAvgIterationsToMine[i + 0];

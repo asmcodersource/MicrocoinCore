@@ -1,5 +1,4 @@
 ﻿using Microcoin.Microcoin.Mining;
-using System.Text.Json;
 
 namespace Microcoin.Microcoin.Blockchain.Block
 {
@@ -33,8 +32,5 @@ namespace Microcoin.Microcoin.Blockchain.Block
             }
             return hashBytes.Length * 8;
         }
-
-        public static Block? ParseBlockFromJson(string blockJson)
-            => JsonSerializer.Deserialize<Block>(blockJson);
     }
 }

@@ -1,7 +1,5 @@
 ﻿using Microcoin.Microcoin.Network.ChainFethingNetwork.ProviderSession;
-using NodeNet.NodeNetSession.SessionMessage;
 using System.Text.Json;
-
 
 namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
 {
@@ -28,9 +26,9 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                 RequestedBlockId = requestBlock.MiningBlockInfo.BlockId,
                 RequestedBlockHash = requestBlock.Hash
             };
-            await FetcherSession.WrappedSession.SendMessageAsync(JsonSerializer.Serialize(requestDTO));
-            var response = await FetcherSession.WrappedSession.WaitForMessage(cancellationToken);
-            var result = JsonSerializer.Deserialize<ChainBlockPresentResponseDTO>(response.SessionMessage.Data);
+            FetcherSession.WrappedSession.SendMessage(requestDTO);
+            var response = await FetcherSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
+            var result = JsonSerializer.Deserialize<ChainBlockPresentResponseDTO>(response.Payload);
             if (result is null)
                 throw new ChainDownloadingException("Bad response in block present request");
             return result.IsPresented;
