@@ -45,7 +45,7 @@
                 sendTimer?.Dispose();
                 sendTimer = null;
             }
-            OnTransactionsBagReady?.Invoke(transactionsToSend);
+            Task.Run(() => OnTransactionsBagReady?.Invoke(transactionsToSend));
         }
     }
 }
