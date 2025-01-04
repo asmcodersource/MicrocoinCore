@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MockNetwork.Entities
 {
-    public class MockMessage : ISessionMessage
+    public class MockSessionMessage : ISessionMessage
     {
         public string Payload { get; set; }
         public string? PayloadType { get; set; }

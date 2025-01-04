@@ -9,19 +9,19 @@ namespace Microcoin.Microcoin.ChainFetcher
     /// </summary>
     public class ChainProvidersRating : IChainProvidersRating
     {
-        ConcurrentDictionary<CommunicationEndPoint, double> Ratings { get; set; } = new();
+        ConcurrentDictionary<ICommunicationEndPoint, double> Ratings { get; set; } = new();
 
-        public void ChainFetchSuccesful(CommunicationEndPoint providerSession)
+        public void ChainFetchSuccesful(ICommunicationEndPoint providerSession)
         {
             Ratings[providerSession]++;
         }
 
-        public void ChainFetchFailed(CommunicationEndPoint providerSession)
+        public void ChainFetchFailed(ICommunicationEndPoint providerSession)
         {
             Ratings[providerSession]--;
         }
 
-        public IEnumerable<CommunicationEndPoint> GetRatingSortedProviders(IEnumerable<CommunicationEndPoint> providerSessions)
+        public IEnumerable<ICommunicationEndPoint> GetRatingSortedProviders(IEnumerable<ICommunicationEndPoint> providerSessions)
         {
             foreach (var provider in providerSessions)
                 Ratings.TryAdd(provider, 0);

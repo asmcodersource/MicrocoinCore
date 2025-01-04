@@ -16,5 +16,13 @@ namespace Tests.MockNetworkTesting
                     return 5 * 1000;
             }
         }
+
+        public static int NetworkLevels {
+            get
+            {
+                // It should be at least two
+                return 4;
+            }
+        }
     }
 }

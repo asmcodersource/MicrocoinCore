@@ -1,9 +1,8 @@
 ﻿namespace Microcoin.Microcoin.Network
 {
-    internal interface ISessionManager
+    public interface ISessionManager
     {
-        Task<ISessionConnection> Connect(CommunicationEndPoint endPoint, string resource);
-        ISessionListener CreateListener(CommunicationEndPoint endPoint);
+        Task<ISessionConnection> Connect(ICommunicationEndPoint endPoint, string resource);
         ISessionListener CreateListener();
     }
 }

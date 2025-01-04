@@ -2,6 +2,6 @@
 {
     public interface IEndPointCollectionProvider
     {
-        public IEnumerable<CommunicationEndPoint> GetEndPoints();
+        public IEnumerable<ICommunicationEndPoint> GetEndPoints();
     }
 }

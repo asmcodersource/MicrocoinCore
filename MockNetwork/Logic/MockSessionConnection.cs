@@ -1,34 +1,74 @@
 ﻿using Microcoin.Microcoin.Network;
+using MockNetwork.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MockNetwork.Logic
 {
     public class MockSessionConnection : ISessionConnection
     {
-        public CommunicationEndPoint EndPoint => throw new NotImplementedException();
+        private readonly Queue<TaskCompletionSource<ISessionMessage>> _receiveBroadcastMessagesTasks = new Queue<TaskCompletionSource<ISessionMessage>>();
+        private readonly Queue<MockSessionMessage> _receivedBroadcastMessages = new Queue<MockSessionMessage>();
+        
+        public MockSessionConnection OppositeSideConnection { get; set; }
 
-        public IMessage ReceiveMessage()
+        public ICommunicationEndPoint EndPoint => throw new NotImplementedException();
+
+        public ISessionMessage ReceiveMessage()
         {
-            throw new NotImplementedException();
+            return ReceiveMessageAsync(CancellationToken.None).Result;
         }
 
-        public Task<IMessage> ReceiveMessageAsync(CancellationToken cancellationToken)
+        public Task<ISessionMessage> ReceiveMessageAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                if (_receivedBroadcastMessages.Any())
+                    return Task.FromResult(_receivedBroadcastMessages.Dequeue() as ISessionMessage);
+
+                var tcs = new TaskCompletionSource<ISessionMessage>();
+                _receiveBroadcastMessagesTasks.Enqueue(tcs);
+                return tcs.Task;
+            }
         }
 
         public bool SendMessage(object message)
         {
-            throw new NotImplementedException();
+            return SendMessageAsync(message, CancellationToken.None).Result;
         }
 
-        public Task<bool> SendMessageAsync(object message, CancellationToken cancellationToken)
+        public async Task<bool> SendMessageAsync(object message, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                var sessionMessage = new MockSessionMessage()
+                {
+                    Payload = message is string ? message as string : JsonSerializer.Serialize(message),
+                    PayloadType = "" // I don`t remember why this field exists, and never using...
+                };
+                Task.Run(() => OppositeSideConnection.HandleIncommingMessage(sessionMessage));
+            }
+            return true;
+        }
+
+        private void HandleIncommingMessage(MockSessionMessage message)
+        {
+            lock (this)
+            {
+                if (!_receiveBroadcastMessagesTasks.Any())
+                {
+                    _receivedBroadcastMessages.Enqueue(message);
+                }
+                else
+                {
+                    var tcs = _receiveBroadcastMessagesTasks.Dequeue();
+                    tcs.SetResult(message);
+                }
+            }
         }
     }
 }

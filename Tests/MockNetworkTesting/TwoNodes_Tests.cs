@@ -7,6 +7,7 @@ using Xunit;
 using Tests.NetworkTesting.TestNetworks;
 using Microcoin.Microcoin.Network;
 using Tests.MockNetworkTesting;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Resources;
 
 namespace Tests.NetworkTesting
 {
@@ -51,7 +52,7 @@ namespace Tests.NetworkTesting
                 {
                     for (int i = 0; i < 512; i++)
                     {
-                        var sendingNumber = 1;
+                        var sendingNumber = Random.Shared.Next(1);
                         Volatile.Write(ref secondNodeExpectedReceiveSum, secondNodeExpectedReceiveSum + sendingNumber);
                         await network.FirstNode.SendBroadcastMessageAsync(
                             sendingNumber.ToString(),
@@ -65,7 +66,7 @@ namespace Tests.NetworkTesting
                 {
                     for (int i = 0; i < 512; i++)
                     {
-                        var sendingNumber = 1;
+                        var sendingNumber = Random.Shared.Next(1);
                         Volatile.Write(ref firstNodeExpectedReceiveSum, firstNodeExpectedReceiveSum + sendingNumber);
                         await network.SecondNode.SendBroadcastMessageAsync(
                             sendingNumber.ToString(),
@@ -98,6 +99,127 @@ namespace Tests.NetworkTesting
 
             Assert.Equal(Volatile.Read(ref firstNodeReceiveSum), Volatile.Read(ref firstNodeExpectedReceiveSum));
             Assert.Equal(Volatile.Read(ref secondNodeReceiveSum), Volatile.Read(ref secondNodeExpectedReceiveSum));
+        }
+
+        [Fact]
+        public async Task Session_PingPong_Communication_Test()
+        {
+            string resource = "ping-pong";
+            string pingMessage = "ping";
+            string pongMessage = "pong";
+            var network = TwoNodesNetwork.Create();
+
+            // Start listening
+            var listener = network.FirstNode.CreateListener();
+            var listeningTask = listener.StartListeningAsync(SessionServerSideHandler, "ping-pong", CancellationToken.None);
+
+            // Connect to the server
+            var endpointToConnect = network.SecondNode.GetEndPoints().First();
+            var session = await network.SecondNode.Connect(endpointToConnect, resource);
+
+            // Start client side handler manually
+            var clientHandlerTask = SessionClientSideHandler(session);
+
+            // Wait for results
+            var awaitResult = await Task.WhenAny(clientHandlerTask, Task.Delay(Consts.TimeoutForCommunication));
+            Assert.True(awaitResult == clientHandlerTask, "Communication timeout");
+
+            async Task SessionClientSideHandler(ISessionConnection sessionConnection)
+            {
+                await session.SendMessageAsync(pingMessage, CancellationToken.None);
+                var messageFromServer = await session.ReceiveMessageAsync(CancellationToken.None);
+                Assert.Equal(pongMessage, messageFromServer.Payload);
+            }
+
+            async Task SessionServerSideHandler(ISessionConnection sessionConnection)
+            {
+                var messageFromClient = await sessionConnection.ReceiveMessageAsync(CancellationToken.None);
+                Assert.Equal(pingMessage, messageFromClient.Payload);
+                await sessionConnection.SendMessageAsync(pongMessage, CancellationToken.None);
+            }
+        }
+
+        [Fact]
+        public async Task Session_ReceivedSum_Communication_Test()
+        {
+            var network = TwoNodesNetwork.Create();
+            int clientNodeReceiveSum = 0;
+            int serverNodeReceiveSum = 0;
+            int clientNodeExpectedReceiveSum = 0;
+            int serverNodeExpectedReceiveSum = 0;
+
+            var communicationTestAction = async () =>
+            {
+                // Start listening
+                var listener = network.FirstNode.CreateListener();
+                var listeningTask = listener.StartListeningAsync(SessionServerSideHandler, "", CancellationToken.None);
+
+                // Connect to the server
+                var endpointToConnect = network.SecondNode.GetEndPoints().First();
+                var session = await network.SecondNode.Connect(endpointToConnect, "");
+
+                // Start client side handler manually
+                Task serverHandlerTask = null!;
+                var clientHandlerTask = SessionClientSideHandler(session);
+
+                async Task SessionClientSideHandler(ISessionConnection sessionConnection)
+                {
+                    var sendingTask = SessionClientSendingHandler();
+                    var receivingTask = SessionClientReceivingHandler();
+                    await Task.WhenAll(sendingTask, receivingTask);
+
+                    async Task SessionClientSendingHandler()
+                    {
+                        for (int i = 0; i < 512; i++)
+                        {
+                            var sendingNumber = 1;
+                            Volatile.Write(ref serverNodeExpectedReceiveSum, serverNodeExpectedReceiveSum + sendingNumber);
+                            await sessionConnection.SendMessageAsync(sendingNumber.ToString(), CancellationToken.None);
+                        }
+                    }
+                    async Task SessionClientReceivingHandler()
+                    {
+                        for (int i = 0; i < 512; i++)
+                        {
+                            var message = await sessionConnection.ReceiveMessageAsync(CancellationToken.None);
+                            Volatile.Write(ref clientNodeReceiveSum, clientNodeReceiveSum + Convert.ToInt32(message.Payload));
+                        }
+                    }
+                }
+
+                async Task SessionServerSideHandler(ISessionConnection sessionConnection)
+                {
+                    
+                    var sendingTask = SessionServerSendingHandler();
+                    var receivingTask = SessionServerReceivingHandler();
+                    serverHandlerTask = Task.WhenAll(sendingTask, receivingTask);
+
+                    async Task SessionServerSendingHandler()
+                    {
+                        for (int i = 0; i < 512; i++)
+                        {
+                            var sendingNumber = 1;
+                            Volatile.Write(ref clientNodeExpectedReceiveSum, clientNodeExpectedReceiveSum + sendingNumber);
+                            await sessionConnection.SendMessageAsync(sendingNumber.ToString(), CancellationToken.None);
+                        }
+                    }
+                    async Task SessionServerReceivingHandler()
+                    {
+                        for (int i = 0; i < 512; i++)
+                        {
+                            var message = await sessionConnection.ReceiveMessageAsync(CancellationToken.None);
+                            Volatile.Write(ref serverNodeReceiveSum, serverNodeReceiveSum + Convert.ToInt32(message.Payload));
+                        }
+                    }
+                }
+
+                while (serverHandlerTask == null) await Task.Yield();
+                await Task.WhenAll(clientHandlerTask, serverHandlerTask);
+            };
+            await Helpers.RunWithTimeout(communicationTestAction, Consts.TimeoutForCommunication, "Communication timeout");
+
+            Assert.Equal(Volatile.Read(ref clientNodeReceiveSum), Volatile.Read(ref clientNodeExpectedReceiveSum));
+            Assert.Equal(Volatile.Read(ref serverNodeReceiveSum), Volatile.Read(ref serverNodeExpectedReceiveSum));
         }
     }
 }

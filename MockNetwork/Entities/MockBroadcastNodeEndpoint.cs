@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MockNetwork.Entities
 {
-    public class MockBroadcastNodeEndpoint : CommunicationEndPoint
+    public class MockBroadcastNodeEndpoint : ICommunicationEndPoint
     {
         public MockBroadcastNode WrappedNode { get; init; }
 

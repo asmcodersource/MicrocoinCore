@@ -12,15 +12,25 @@ namespace MockNetwork.Logic
 {
     public class MockBroadcastNode : IBroadcastNode
     {
-        public event Action<IBroadcastMessage> OnMessageReceived;
-        private event Action<MockBroadcastMessage>? _onMessageSend;
-        
+        public static HashSet<MockBroadcastNode> Nodes = new HashSet<MockBroadcastNode>();
+
+        public event Action<IBroadcastMessage> OnMessageReceived = null!;
+        private event Action<MockBroadcastMessage>? _onMessageSend = null!;
+
+
         private readonly List<MockBroadcastNodeEndpoint> _connectedNodesEndpoints = new List<MockBroadcastNodeEndpoint>();
         private readonly Queue<TaskCompletionSource<IBroadcastMessage>> _receiveBroadcastMessagesTasks = new Queue<TaskCompletionSource<IBroadcastMessage>>();
         private readonly Queue<MockBroadcastMessage> _receivedBroadcastMessages = new Queue<MockBroadcastMessage>();
         private readonly HashSet<MockBroadcastMessage> _receivedMessages = new HashSet<MockBroadcastMessage>();
 
-        public IEnumerable<CommunicationEndPoint> GetEndPoints()
+        private MockSessionListener _mockSessionListener = null!;
+
+        public MockBroadcastNode()
+        {
+            Nodes.Add(this);
+        }
+
+        public IEnumerable<ICommunicationEndPoint> GetEndPoints()
         {
             return _connectedNodesEndpoints.ToList();
         }
@@ -101,6 +111,31 @@ namespace MockNetwork.Logic
                     tcs.SetResult(message);
                 }
                 Task.Run(async () => await BeaconBroadcastMessageAsync(message));
+            }
+        }
+
+        public async Task<ISessionConnection> Connect(ICommunicationEndPoint communicationEndpoint, string resource)
+        {
+            if (communicationEndpoint is MockBroadcastNodeEndpoint mockEndpoint)
+            {
+                var serverNode = mockEndpoint.WrappedNode;
+                if (serverNode._mockSessionListener is null)
+                    throw new InvalidOperationException("Server node session listener is not created");
+                return await MockSessionListener.HandleConnectionAttempt(serverNode._mockSessionListener, resource);
+            } else
+            {
+                throw new InvalidOperationException("Only MockBroadcastNodeEndpoint can be used for this type of IBroadcastNode");
+            }
+        }
+
+        public ISessionListener CreateListener()
+        {
+            lock (this)
+            {
+                if (_mockSessionListener is not null)
+                    throw new InvalidOperationException("One session listener already created");
+                _mockSessionListener = new MockSessionListener(this);
+                return _mockSessionListener;
             }
         }
     }

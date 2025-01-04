@@ -43,7 +43,7 @@ namespace Microcoin.Microcoin.ChainFetcher
         }
 
 
-        private async Task<bool> TryFetchChainFromProvider(CommunicationEndPoint endPoint, AbstractChain sourceChain, CancellationToken cancellationToken)
+        private async Task<bool> TryFetchChainFromProvider(ICommunicationEndPoint endPoint, AbstractChain sourceChain, CancellationToken cancellationToken)
         {
             try
             {

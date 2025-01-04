@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace MicrocoinCore.Microcoin.Network
 {
-    public interface IBroadcastNode: IBroadcastTransceiver, IEndPointCollectionProvider {}
+    public interface IBroadcastNode: IBroadcastTransceiver, ISessionManager, IEndPointCollectionProvider {}
 }
