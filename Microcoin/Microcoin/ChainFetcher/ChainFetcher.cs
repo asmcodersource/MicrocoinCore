@@ -16,7 +16,7 @@ namespace Microcoin.Microcoin.ChainFetcher
         public int MaxFetchQueueSize { get; set; } = 1000;
         public int MaxHandlingConcurrentTask { get; set; } = 1000;
         public int ChainBranchBlocksCount { get; private set; } = 5;
-        public int MinutesBetweenRetries { get; private set; } = 10;
+        public TimeSpan TimeBetweenRetries { get; private set; } = TimeSpan.FromSeconds(30);
         public ChainProvidersRating ChainProvidersRating { get; protected set; } = new ChainProvidersRating();
         public ChainVerificator ChainVerificator { get; protected set; }
 
@@ -158,7 +158,7 @@ namespace Microcoin.Microcoin.ChainFetcher
         {
             var fetchRequest = new FetchRequest(
                 finishedFetchRequest.Request.RequestedBlock,
-                DateTime.UtcNow.AddMinutes(MinutesBetweenRetries),
+                DateTime.UtcNow.AddSeconds(TimeBetweenRetries.TotalSeconds),
                 finishedFetchRequest.Request.NumberOfRetries - 1
             );
 

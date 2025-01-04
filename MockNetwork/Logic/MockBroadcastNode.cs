@@ -99,6 +99,7 @@ namespace MockNetwork.Logic
                 if (_receivedMessages.Contains(message))
                     return;
                 _receivedMessages.Add(message);
+                Task.Run(async () => await BeaconBroadcastMessageAsync(message));
                 OnMessageReceived?.Invoke(message);
 
                 if (!_receiveBroadcastMessagesTasks.Any())
@@ -110,7 +111,6 @@ namespace MockNetwork.Logic
                     var tcs = _receiveBroadcastMessagesTasks.Dequeue();
                     tcs.SetResult(message);
                 }
-                Task.Run(async () => await BeaconBroadcastMessageAsync(message));
             }
         }
 

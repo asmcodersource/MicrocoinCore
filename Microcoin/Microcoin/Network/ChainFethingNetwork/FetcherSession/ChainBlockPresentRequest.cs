@@ -26,7 +26,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                 RequestedBlockId = requestBlock.MiningBlockInfo.BlockId,
                 RequestedBlockHash = requestBlock.Hash
             };
-            FetcherSession.WrappedSession.SendMessage(requestDTO);
+            await FetcherSession.WrappedSession.SendMessageAsync(requestDTO, cancellationToken);
             var response = await FetcherSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
             var result = JsonSerializer.Deserialize<ChainBlockPresentResponseDTO>(response.Payload);
             if (result is null)

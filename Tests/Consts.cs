@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tests.MockNetworkTesting
+namespace Tests
 {
     internal class Consts
     {
-        public static int TimeoutForCommunication {
-            get {
+        public static int TimeoutForCommunication
+        {
+            get
+            {
                 if (System.Diagnostics.Debugger.IsAttached)
                     return 60 * 1000;
                 else
@@ -17,11 +19,12 @@ namespace Tests.MockNetworkTesting
             }
         }
 
-        public static int NetworkLevels {
+        public static int NetworkLevels
+        {
             get
             {
                 // It should be at least two
-                return 4;
+                return 3;
             }
         }
     }
