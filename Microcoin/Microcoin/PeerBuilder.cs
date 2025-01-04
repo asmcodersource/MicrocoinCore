@@ -3,7 +3,9 @@ using Microcoin.Microcoin.Blockchain.BlocksPool;
 using Microcoin.Microcoin.Blockchain.Chain;
 using Microcoin.Microcoin.Blockchain.ChainController;
 using Microcoin.Microcoin.Blockchain.TransactionsPool;
+using Microcoin.Microcoin.ChainFetcher;
 using Microcoin.Microcoin.Mining;
+using Microcoin.Microcoin.Network;
 using SimpleInjector;
 
 namespace Microcoin.Microcoin
@@ -40,6 +42,30 @@ namespace Microcoin.Microcoin
         public void AddWalletKeysFromFileOrCreate(string file)
             => ServicesContainer.RegisterInstance(PeerWalletKeys.LoadOrCreateWalletKeys(file));
 
+
+        // Consts registration
+        public void AddChainBranchBlocksCount(int branchValue)
+        {
+            ServicesContainer.RegisterInstance<ChainBranchBlocksCount>(new ChainBranchBlocksCount(branchValue));
+        }
+
+
+        // -------------------------------------------------------------
+        // Network services registration
+        public void AddBroadcastTransceiver(IBroadcastTransceiver broadcastTransceiver)
+        {
+            ServicesContainer.RegisterInstance<IBroadcastTransceiver>(broadcastTransceiver);
+        }
+
+        public void AddBroadcastSessionManager(ISessionManager sessionManager)
+        {
+            ServicesContainer.RegisterInstance<ISessionManager>(sessionManager);
+        }
+
+        public void AddEndPointCollectionProvider(IEndPointCollectionProvider endPointCollectionProvider)
+        {
+            ServicesContainer.RegisterInstance<IEndPointCollectionProvider>(endPointCollectionProvider);
+        }
 
         // -------------------------------------------------------------
         // Miner builder functions
@@ -90,14 +116,17 @@ namespace Microcoin.Microcoin
             ServicesContainer.RegisterInstance(chainStorage);
         }
 
-
-        // -------------------------------------------------------------
-        // ChainsStorage builder functions
         public void AddChainsFetcher()
         {
             ServicesContainer.Register<ChainFetcher.ChainFetcher>(Lifestyle.Singleton);
         }
 
+        // -------------------------------------------------------------
+        // ChainsStorage builder functions
+        public void AddChainProvidersRating(IChainProvidersRating chainProvidersRating)
+        {
+            ServicesContainer.RegisterInstance<IChainProvidersRating>(chainProvidersRating);
+        }
 
         // -------------------------------------------------------------
         // Miner builder functions
@@ -111,6 +140,7 @@ namespace Microcoin.Microcoin
 
         public void AddDefaultServices()
         {
+            AddChainBranchBlocksCount(10);
             AddDefaultMiner();
             AddDefaultAcceptancePools();
             AddDefaultRules();
@@ -121,6 +151,7 @@ namespace Microcoin.Microcoin
 
         public void AddDebugServices()
         {
+            AddChainBranchBlocksCount(10);
             AddDebugMiner();
             AddDefaultAcceptancePools();
             AddDefaultRules();

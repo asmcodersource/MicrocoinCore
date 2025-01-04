@@ -71,7 +71,7 @@ namespace Microcoin.Microcoin.Network.ChainFethingNetwork.FetcherSession
                 var linkedCTS = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, acceptTimeoutCTS.Token);
                 FetcherSession.WrappedSession.SendMessage(JsonTypedWrapper.Serialize(request));
                 var response = await FetcherSession.WrappedSession.ReceiveMessageAsync(cancellationToken);
-                var result = JsonSerializer.Deserialize<ChainDownloadResponseDTO>(response.Payload);
+                var result = JsonTypedWrapper.Deserialize<ChainDownloadResponseDTO>(response.Payload);
                 if (result.IsAccepted is not true)
                     throw new ChainDownloadingException("Chain downloading rejected");
                 Serilog.Log.Debug($"Downloading accepted {this.FetcherSession.GetHashCode()}");

@@ -2,7 +2,7 @@
 
 namespace Microcoin.Microcoin.ChainFetcher
 {
-    internal interface IChainProvidersRating
+    public interface IChainProvidersRating
     {
         public void ChainFetchSuccesful(ICommunicationEndPoint providerSession);
         public void ChainFetchFailed(ICommunicationEndPoint providerSession);
