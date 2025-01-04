@@ -39,13 +39,13 @@ namespace Microcoin.Microcoin
         public async Task SendTransactionsToNetwork(List<Transaction> transactions)
         {
             var transactionJson = JsonSerializer.Serialize(transactions);
-            await BroadcastTransceiver.SendBroadcastMessageAsync(transactionJson, "transactions", 128, CancellationToken.None);
+            BroadcastTransceiver.SendBroadcastMessageAsync(transactionJson, "transactions", 128, CancellationToken.None);
         }
 
         public async Task SendBlockToNetwork(Block block)
         {
             var blockJson = JsonSerializer.Serialize(block);
-            await BroadcastTransceiver.SendBroadcastMessageAsync(block, "block", 128, CancellationToken.None);
+            BroadcastTransceiver.SendBroadcastMessageAsync(block, "block", 128, CancellationToken.None);
         }
     }
 }
