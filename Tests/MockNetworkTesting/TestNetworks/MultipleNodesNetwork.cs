@@ -27,6 +27,7 @@ namespace Tests.NetworkTesting.TestNetworks
             var firstLevel = new List<IBroadcastNode>() { new MockBroadcastNode() };
 
             networkLevels.Add(firstLevel);
+            networkNodes.Add(firstLevel.First());
             for(int level = 1; level < levelsCount; level++)
             {
                 var networkLevel = new List<IBroadcastNode>();
